@@ -38,6 +38,7 @@ class VideoAutomation:
         """启动浏览器"""
         playwright = await async_playwright().start()
         self.browser = await playwright.chromium.launch(
+            channel="msedge",
             headless=self.headless,
             args=['--disable-blink-features=AutomationControlled']  # 防止网站检测自动化
         )
