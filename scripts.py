@@ -96,7 +96,7 @@ class VideoAutomation:
             print("  2. 按F12打开开发者工具 -> Application -> Cookies")
             print("  3. 复制所有Cookie并保存为 cookies.json")
             print("  4. 或使用浏览器扩展导出Cookie（推荐）")
-            print("\n详细说明请查看: COOKIE_GUIDE.md")
+            print("\n详细说明请查看: how_to_get_cookie.md")
             return False
 
         # 访问页面验证Cookie是否有效
