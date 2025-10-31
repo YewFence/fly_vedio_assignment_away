@@ -106,85 +106,43 @@ class VideoAutomation:
         print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
 
-    async def get_video_links(self, page_url: str, link_selector: str) -> List[str]:
+    async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:
         """
-        获取页面上的所有视频链接（简单模式）
+        通过URL模式匹配获取视频链接
         :param page_url: 包含视频链接的页面URL
-        :param link_selector: 链接的CSS选择器
+        :param url_pattern: 视频链接的URL模式（如 "https://example.com/mod/fsresource/view.php?id="）
         :return: 视频链接列表
         """
         print(f"\n正在访问视频列表页面: {page_url}")
         await self.page.goto(page_url, wait_until='networkidle')
 
-        # 等待链接加载
-        await self.page.wait_for_selector(link_selector, timeout=10000)
-
-        # 获取所有链接
-        links = await self.page.eval_on_selector_all(
-            link_selector,
-            "elements => elements.map(e => e.href || e.getAttribute('href'))"
-        )
-
-        # 过滤掉空链接
-        links = [link for link in links if link]
-        print(f"✓ 找到 {len(links)} 个视频链接")
-
-        return links
-
-    async def get_nested_video_links(self, page_url: str,
-                                    video_li_selector: str,
-                                    exclude_class: Optional[str] = None) -> List[str]:
-        """
-        获取嵌套结构中的视频链接（高级模式）
-        适用于: ul > li > ul > li > a 这种嵌套结构
-
-        :param page_url: 包含视频链接的页面URL
-        :param video_li_selector: 包含视频链接的li的CSS选择器（要精确到有视频的li）
-        :param exclude_class: 需要排除的li的class名称（装饰性元素）
-        :return: 视频链接列表
-        """
-        print(f"\n正在访问视频列表页面: {page_url}")
-        await self.page.goto(page_url, wait_until='networkidle')
-
-        # 等待页面加载
+        # 等待页面加载完成
         await asyncio.sleep(2)
 
-        # 使用JavaScript提取所有视频链接
+        # 使用JavaScript提取所有匹配模式的链接
         links = await self.page.evaluate(f"""
             () => {{
-                const links = [];
+                const pattern = '{url_pattern}';
+                const links = new Set();
 
-                // 找到所有包含视频的li元素
-                const videoLis = document.querySelectorAll('{video_li_selector}');
+                // 获取所有a标签
+                const allLinks = document.querySelectorAll('a[href]');
 
-                console.log('找到的li元素数量:', videoLis.length);
-
-                videoLis.forEach((li, index) => {{
-                    // 如果指定了排除的class，检查是否需要跳过
-                    {f"if (li.classList.contains('{exclude_class}')) {{ return; }}" if exclude_class else "// 不排除任何class"}
-
-                    // 在这个li中查找所有a标签
-                    const aElements = li.querySelectorAll('a');
-
-                    aElements.forEach(a => {{
-                        const href = a.href || a.getAttribute('href');
-                        if (href && href.trim() !== '' && href !== '#') {{
-                            // 转换为绝对URL
-                            const absoluteUrl = new URL(href, window.location.href).href;
-                            links.push(absoluteUrl);
-                        }}
-                    }});
+                allLinks.forEach(a => {{
+                    const href = a.href;
+                    if (href && href.includes(pattern)) {{
+                        links.add(href);
+                    }}
                 }});
 
-                console.log('提取的链接数量:', links.length);
-                return links;
+                return Array.from(links);
             }}
         """)
 
-        # 去重
-        links = list(dict.fromkeys(links))
+        # 去重并排序
+        links = sorted(list(set(links)))
 
-        print(f"✓ 找到 {len(links)} 个视频链接")
+        print(f"✓ 找到 {len(links)} 个匹配的视频链接")
 
         # 打印前5个链接作为示例
         if links:
@@ -193,107 +151,11 @@ class VideoAutomation:
                 print(f"  {i}. {link}")
             if len(links) > 5:
                 print(f"  ... 还有 {len(links) - 5} 个链接")
+        else:
+            print(f"\n⚠ 未找到匹配模式 '{url_pattern}' 的链接")
+            print("💡 提示: 检查 URL_PATTERN 配置是否正确")
 
         return links
-
-    async def debug_page_structure(self, page_url: str, container_selector: str = "body"):
-        """
-        调试工具：分析页面结构，帮助找到正确的选择器
-        :param page_url: 要分析的页面URL
-        :param container_selector: 容器选择器（默认body）
-        """
-        print(f"\n正在分析页面结构: {page_url}")
-        await self.page.goto(page_url, wait_until='networkidle')
-        await asyncio.sleep(2)
-
-        structure = await self.page.evaluate(f"""
-            () => {{
-                const container = document.querySelector('{container_selector}');
-                if (!container) return {{ error: '未找到容器元素' }};
-
-                const result = {{
-                    uls: [],
-                    allLiClasses: new Set(),
-                    aTagCount: 0,
-                    structure: []
-                }};
-
-                // 查找所有ul
-                const uls = container.querySelectorAll('ul');
-
-                uls.forEach((ul, ulIndex) => {{
-                    const ulInfo = {{
-                        index: ulIndex,
-                        class: ul.className,
-                        id: ul.id,
-                        liCount: 0,
-                        lis: []
-                    }};
-
-                    const lis = ul.querySelectorAll(':scope > li');
-                    ulInfo.liCount = lis.length;
-
-                    lis.forEach((li, liIndex) => {{
-                        const liClasses = Array.from(li.classList);
-                        liClasses.forEach(cls => result.allLiClasses.add(cls));
-
-                        const aElements = li.querySelectorAll('a');
-                        const nestedUls = li.querySelectorAll('ul');
-
-                        ulInfo.lis.push({{
-                            index: liIndex,
-                            classes: liClasses,
-                            aCount: aElements.length,
-                            nestedUlCount: nestedUls.length,
-                            sampleAHref: aElements[0]?.href || null
-                        }});
-
-                        result.aTagCount += aElements.length;
-                    }});
-
-                    result.uls.push(ulInfo);
-                }});
-
-                result.allLiClasses = Array.from(result.allLiClasses);
-                return result;
-            }}
-        """)
-
-        print("\n" + "="*70)
-        print("页面结构分析报告")
-        print("="*70)
-
-        if "error" in structure:
-            print(f"❌ 错误: {structure['error']}")
-            return
-
-        print(f"\n📊 统计信息:")
-        print(f"  - 找到 {len(structure['uls'])} 个 <ul> 元素")
-        print(f"  - 所有 <a> 标签总数: {structure['aTagCount']}")
-        print(f"  - 发现的li class类型: {', '.join(structure['allLiClasses']) if structure['allLiClasses'] else '无'}")
-
-        print(f"\n📋 UL详细结构:")
-        for ul in structure['uls'][:5]:  # 只显示前5个
-            print(f"\n  UL #{ul['index']}:")
-            print(f"    - Class: '{ul['class']}'" if ul['class'] else "    - Class: (无)")
-            print(f"    - ID: '{ul['id']}'" if ul['id'] else "    - ID: (无)")
-            print(f"    - 直接子li数量: {ul['liCount']}")
-
-            for li in ul['lis'][:3]:  # 每个ul只显示前3个li
-                print(f"\n      LI #{li['index']}:")
-                print(f"        - Classes: {', '.join(li['classes']) if li['classes'] else '(无)'}")
-                print(f"        - 包含的<a>数量: {li['aCount']}")
-                print(f"        - 嵌套的<ul>数量: {li['nestedUlCount']}")
-                if li['sampleAHref']:
-                    print(f"        - 示例链接: {li['sampleAHref'][:60]}...")
-
-        print("\n" + "="*70)
-        print("\n💡 建议:")
-        print("  根据上面的分析，尝试使用以下选择器:")
-        print(f"  - 如果视频链接的li有特定class，使用: 'li.{{class_name}}'")
-        print(f"  - 如果需要排除装饰性li，使用exclude_class参数")
-        print(f"  - 如果是简单的列表，直接使用: 'ul li a'")
-        print("="*70)
 
     async def get_video_duration(self, video_selector: str = "video") -> Optional[float]:
         """
@@ -434,22 +296,14 @@ async def main():
             print("详细说明请查看: COOKIE_GUIDE.md")
             return
 
-        # 3. 获取视频链接（根据配置的模式选择方法）
-        print(f"\n使用 '{config.EXTRACTION_MODE}' 模式提取视频链接...")
+        # 3. 通过URL模式获取视频链接
+        print(f"\n正在提取视频链接...")
+        print(f"URL模式: {config.URL_PATTERN}")
 
-        if config.EXTRACTION_MODE == "nested":
-            # 嵌套模式：处理复杂的多层列表结构
-            video_links = await automation.get_nested_video_links(
-                config.VIDEO_LIST_URL,
-                config.VIDEO_LI_SELECTOR,
-                config.EXCLUDE_CLASS
-            )
-        else:
-            # 简单模式：直接选择所有视频链接
-            video_links = await automation.get_video_links(
-                config.VIDEO_LIST_URL,
-                config.VIDEO_LINK_SELECTOR
-            )
+        video_links = await automation.get_video_links_by_pattern(
+            config.VIDEO_LIST_URL,
+            config.URL_PATTERN
+        )
 
         # 4. 观看所有视频
         if video_links:
@@ -462,9 +316,10 @@ async def main():
         else:
             print("⚠ 没有找到视频链接")
             print("\n💡 提示:")
-            print("  1. 运行 'uv run python debug_page.py' 分析页面结构")
-            print("  2. 检查 config.py 中的选择器配置是否正确")
-            print("  3. 确认是否需要登录才能看到视频列表")
+            print("  1. 检查 config.py 中的 URL_PATTERN 配置是否正确")
+            print("  2. 确认 VIDEO_LIST_URL 是否正确")
+            print("  3. 确认Cookie登录是否成功")
+            print("  4. 在浏览器中手动访问页面，查看视频链接的实际URL格式")
 
     except Exception as e:
         print(f"\n❌ 发生错误: {e}")

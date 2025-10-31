@@ -8,22 +8,13 @@
 
 # ============= Cookie登录配置 =============
 COOKIE_FILE = "cookies.json"  # Cookie文件路径
-BASE_URL = "https://example.com"  # 网站首页URL(用于验证Cookie)
+BASE_URL = "https://moodle.scnu.edu.cn"  # 网站首页URL(用于验证Cookie)
 
 # ============= 视频列表配置 =============
-VIDEO_LIST_URL = "https://example.com/videos"  # 视频列表页面URL
+VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=YOUR_COURSE_ID"  # 视频列表页面URL
 
-# 选择模式：
-# - "simple": 简单模式，直接使用 VIDEO_LINK_SELECTOR 选择所有链接
-# - "nested": 嵌套模式，使用 VIDEO_LI_SELECTOR 和 EXCLUDE_CLASS 处理嵌套列表
-EXTRACTION_MODE = "simple"  # "simple" 或 "nested"
-
-# 简单模式配置（当 EXTRACTION_MODE = "simple" 时使用）
-VIDEO_LINK_SELECTOR = "a.video-link"  # 视频链接的CSS选择器
-
-# 嵌套模式配置（当 EXTRACTION_MODE = "nested" 时使用）
-VIDEO_LI_SELECTOR = "li.video-item"  # 包含视频链接的li的CSS选择器
-EXCLUDE_CLASS = None  # 需要排除的li的class名称（装饰性元素），没有则设为None
+# URL模式匹配（脚本会自动找到所有包含此模式的链接）
+URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="  # 视频链接的URL模式
 
 # ============= 视频播放配置 =============
 VIDEO_ELEMENT_SELECTOR = "video"  # 视频元素的CSS选择器
@@ -36,48 +27,71 @@ HEADLESS = False  # 是否使用无头模式(True=不显示浏览器窗口, Fals
 
 # ============= 配置说明 =============
 """
-如何找到CSS选择器？
+如何配置？
 
-方法1: 使用调试工具（推荐）⭐
-  运行: uv run python debug_page.py
-  工具会自动分析页面结构并给出建议
+1. 获取Cookie
+   - 使用浏览器扩展导出Cookie到 cookies.json
+   - 详见: HOW_TO_GET_COOKIES.md
 
-方法2: 使用浏览器开发者工具
-  1. 打开网站，按 F12
-  2. 按 Ctrl+Shift+C 激活元素选择器
-  3. 点击页面上的元素
-  4. 在 Elements 标签中查看元素的 class、id 等属性
-  5. 右键元素 -> Copy -> Copy selector
+2. 配置网站URL
+   - BASE_URL: 网站首页URL，用于Cookie验证
+   - VIDEO_LIST_URL: 包含视频链接的课程页面URL
+     例如: https://moodle.scnu.edu.cn/course/view.php?id=12345
 
-方法3: 在浏览器Console中测试
-  document.querySelectorAll('你的选择器')
+   如何找到课程ID？
+   - 登录Moodle
+   - 进入你的课程页面
+   - 查看浏览器地址栏，找到 "id=" 后面的数字
+   - 例如: https://moodle.scnu.edu.cn/course/view.php?id=12345
+     这里的 12345 就是课程ID
 
-常见选择器示例:
-  - ID选择器: #username, #password
-  - Class选择器: .video-link, .video-item
-  - 标签选择器: video, button, input
-  - 属性选择器: input[type="text"], button[type="submit"]
-  - 组合选择器: ul.video-list > li.video-item
+3. 配置URL模式
+   - URL_PATTERN: 视频链接的URL模式
+   - 脚本会自动在页面中查找所有包含此模式的链接
+   - 默认值适用于华南师范大学Moodle系统
 
-配置示例:
+   如何找到URL模式？
+   - 在浏览器中访问课程页面
+   - 右键点击任意视频链接 -> 复制链接地址
+   - 找出链接中的固定部分（不包括最后的ID数字）
+   - 将固定部分填入 URL_PATTERN
 
-  示例1: 简单列表
-    EXTRACTION_MODE = "simple"
-    VIDEO_LINK_SELECTOR = "ul.videos li a"
+   示例:
+   如果视频链接是: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=123456
+   那么 URL_PATTERN 应该是: "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="
 
-  示例2: 嵌套列表
-    EXTRACTION_MODE = "nested"
-    VIDEO_LI_SELECTOR = "li.video-item"
-    EXCLUDE_CLASS = "decoration"
+   其他常见Moodle URL模式:
+   - 资源类型: "/mod/resource/view.php?id="
+   - 页面类型: "/mod/page/view.php?id="
+   - URL类型: "/mod/url/view.php?id="
 
-  示例3: 学校网站
-    BASE_URL = "https://school.edu"
-    COOKIE_FILE = "cookies.json"
-    VIDEO_LIST_URL = "https://school.edu/course/python-101"
-    EXTRACTION_MODE = "nested"
-    VIDEO_LI_SELECTOR = "li.lesson-item"
-    EXCLUDE_CLASS = "section-header"
+4. 视频播放配置
+   - VIDEO_ELEMENT_SELECTOR: 视频标签选择器，通常不需要修改
+   - PLAY_BUTTON_SELECTOR: 如果视频需要点击播放按钮，填写按钮选择器
+   - DEFAULT_WAIT_TIME: 无法检测视频时长时的默认等待时间（秒）
 
-注意：本脚本仅支持Cookie登录
-请查看 COOKIE_GUIDE.md 了解如何获取和使用Cookie
+5. 浏览器配置
+   - HEADLESS = False: 显示浏览器窗口（推荐，方便调试）
+   - HEADLESS = True: 无头模式，后台运行（适合服务器）
+
+完整配置示例（华南师范大学）:
+  BASE_URL = "https://moodle.scnu.edu.cn"
+  VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"
+  URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="
+  COOKIE_FILE = "cookies.json"
+
+  # 视频播放
+  VIDEO_ELEMENT_SELECTOR = "video"
+  PLAY_BUTTON_SELECTOR = None
+  DEFAULT_WAIT_TIME = 60
+
+  # 浏览器
+  HEADLESS = False
+
+注意事项:
+  1. 本脚本仅支持Cookie登录
+  2. Cookie会过期，过期后需要重新获取
+  3. 确保填写正确的课程ID
+  4. URL_PATTERN 必须精确匹配视频链接格式
+  5. 查看 HOW_TO_GET_COOKIES.md 了解如何获取Cookie
 """

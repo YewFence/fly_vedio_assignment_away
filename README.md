@@ -1,26 +1,22 @@
-# 视频自动观看脚本
+# 视频自动观看脚本 - 华南师范大学Moodle版
 
-使用 Playwright 自动登录网站、点击视频链接并等待视频播放完成。
+使用 Playwright 自动登录华南师范大学Moodle系统、点击视频链接并等待视频播放完成。
 
 ## 功能特点
 
-- ✅ 自动登录网站（支持Cookie登录）
-- ✅ 自动获取页面上的所有视频链接
-- ✅ **支持嵌套列表结构（ul > li > ul > li）**
-- ✅ **智能排除装饰性元素**
+- ✅ Cookie登录（无需配置复杂的用户名密码）
+- ✅ **URL模式自动匹配视频链接**（超简单！）
 - ✅ 自动播放视频并等待播放完成
-- ✅ 智能检测视频时长(如果无法检测则使用默认等待时间)
+- ✅ 智能检测视频时长
 - ✅ 显示进度条和实时状态
 - ✅ 支持有头/无头模式运行
-- ✅ **内置页面结构调试工具**
-- ✅ **配置与代码分离**
+- ✅ 专为华南师范大学Moodle系统优化
 
 ## 📚 快速导航
 
-- **配置文件使用**（必读）→ 查看 [CONFIG_USAGE.md](CONFIG_USAGE.md) ⭐
-- **嵌套列表结构**（多层ul/li）→ 查看 [NESTED_LIST_GUIDE.md](NESTED_LIST_GUIDE.md)
-- **Cookie登录**（免密码登录）→ 查看 [COOKIE_GUIDE.md](COOKIE_GUIDE.md)
-- **快速开始**（新手指南）→ 查看 [QUICK_START.md](QUICK_START.md)
+- **获取Cookie**: [HOW_TO_GET_COOKIES.md](HOW_TO_GET_COOKIES.md) ⭐ 必读
+- **Cookie详细指南**: [COOKIE_GUIDE.md](COOKIE_GUIDE.md)
+- **更新日志**: [CHANGELOG.md](CHANGELOG.md)
 
 ## 安装步骤
 
@@ -28,7 +24,7 @@
 
 ---
 
-## 🚀 快速开始（4步完成）
+## 🚀 快速开始（3步完成！）
 
 ### 第一步：获取Cookie
 
@@ -37,15 +33,15 @@
 **最简单的方法**：
 
 1. 安装浏览器扩展 [Cookie-Editor](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)
-2. 在浏览器中登录你的目标网站
+2. 在浏览器中登录 Moodle (https://moodle.scnu.edu.cn)
 3. 点击扩展图标 → Export → JSON
 4. 保存为 `cookies.json` 到 `school_vedio_hw` 目录
 
 **详细说明**: [HOW_TO_GET_COOKIES.md](HOW_TO_GET_COOKIES.md) ⭐
 
-### 第二步：创建配置文件
+### 第二步：配置脚本
 
-从示例文件复制一份配置文件：
+从示例文件复制一份配置：
 
 ```bash
 # Windows
@@ -55,209 +51,212 @@ copy config_example.py config.py
 cp config_example.py config.py
 ```
 
-### 第三步：编辑配置
-
-打开 `config.py` 文件，填入你的实际配置：
-
-```python
-# Cookie登录
-BASE_URL = "https://your-website.com"  # 改为你的网站首页
-COOKIE_FILE = "cookies.json"  # Cookie文件路径
-
-# 视频列表配置
-VIDEO_LIST_URL = "https://your-website.com/videos"  # 改为视频列表页面URL
-
-# 选择提取模式
-EXTRACTION_MODE = "simple"  # "simple" 或 "nested"
-
-# 简单模式（当 EXTRACTION_MODE = "simple" 时）
-VIDEO_LINK_SELECTOR = "a.video-link"  # 改为视频链接的选择器
-
-# 嵌套模式（当 EXTRACTION_MODE = "nested" 时）
-VIDEO_LI_SELECTOR = "li.video-item"  # 包含视频链接的li选择器
-EXCLUDE_CLASS = "decoration"  # 需要排除的li的class
-```
-
-**💡 如何找到选择器？**
-
-运行调试工具自动分析页面结构：
-
-```bash
-# 先编辑 debug_page.py，填入你的视频列表页面URL
-# 然后运行：
-uv run python debug_page.py
-```
-
-工具会告诉你所有可用的选择器！
-
-详细配置说明：[CONFIG_USAGE.md](CONFIG_USAGE.md)
-
-### 第四步:运行脚本
-
-```bash
-cd school_vedio_hw
-uv run python scripts.py
-```
-
----
-
-### 方式二：嵌套列表结构（高级）
-
-**如果你的网站视频链接在嵌套的列表中**（例如：主题 > 子主题 > 视频），使用这个方式。
-
-#### 第一步：使用调试工具分析页面结构
-
-编辑 `debug_page.py`：
-
-```python
-PAGE_URL = "https://your-website.com/videos"  # 改为你的视频列表页面
-```
-
-运行调试工具：
-
-```bash
-cd school_vedio_hw
-uv run python debug_page.py
-```
-
-调试工具会输出详细的页面结构分析，包括：
-- 所有 `<ul>` 和 `<li>` 的数量
-- 每个 `<li>` 的 class 名称
-- `<a>` 标签的分布情况
-- 示例链接
-
-#### 第二步：找到正确的选择器
-
-根据调试输出，确定：
-
-1. **包含视频链接的 `<li>` 的选择器**
-   - 例如：`li.video-item`、`li.lesson`、`ul.video-list > li`
-
-2. **需要排除的装饰性 `<li>` 的 class**（如果有）
-   - 例如：`decoration`、`divider`、`separator`
-
-#### 第三步：配置脚本
-
 编辑 `config.py` 文件：
 
 ```python
-# 选择嵌套模式
-EXTRACTION_MODE = "nested"
+# Cookie登录
+BASE_URL = "https://moodle.scnu.edu.cn"
+COOKIE_FILE = "cookies.json"
 
-# 视频列表配置（嵌套结构）
-VIDEO_LIST_URL = "https://your-website.com/videos"
-VIDEO_LI_SELECTOR = "li.video-item"  # 包含视频链接的li选择器
-EXCLUDE_CLASS = "decoration"  # 需要排除的li的class（如果没有则设为None）
+# 视频列表（重要！填写你的课程ID）
+VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成你的课程ID
+
+# URL模式（通常不需要修改）
+URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="
+
+# 视频播放
+VIDEO_ELEMENT_SELECTOR = "video"
+PLAY_BUTTON_SELECTOR = None
+DEFAULT_WAIT_TIME = 60
+
+# 浏览器
+HEADLESS = False
 ```
 
-**注意**：设置 `EXTRACTION_MODE = "nested"` 后，脚本会自动使用嵌套提取方法。
+**如何找到课程ID？**
+1. 登录Moodle
+2. 进入你的课程页面
+3. 查看浏览器地址栏：`https://moodle.scnu.edu.cn/course/view.php?id=12345`
+4. `12345` 就是课程ID
 
-#### 第四步：运行脚本
+**什么是URL模式？**
+- 脚本会自动在课程页面中查找所有包含此模式的链接
+- 默认值 `"https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="` 适用于Moodle的资源类型视频
+- 无需配置选择器，脚本自动匹配！
+
+### 第三步：运行脚本
 
 ```bash
 cd school_vedio_hw
 uv run python scripts.py
 ```
 
-**详细指南**：查看 [NESTED_LIST_GUIDE.md](NESTED_LIST_GUIDE.md) 获取完整的嵌套列表使用教程。
+---
+
+## 📖 工作原理
+
+脚本使用URL模式匹配，自动查找页面中所有符合模式的视频链接：
+
+```
+1. 登录Moodle（使用Cookie）
+   ↓
+2. 访问课程页面
+   ↓
+3. 自动查找所有包含URL模式的链接
+   例如: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=123456
+   ↓
+4. 依次访问每个视频链接
+   ↓
+5. 自动播放并等待视频完成
+   ↓
+完成！
+```
+
+**无需配置复杂的CSS选择器！** 只需要知道视频链接的URL格式即可！
 
 ---
 
-## 高级用法
+## 🔧 配置说明
 
-### 1. 使用无头模式(后台运行,不显示浏览器窗口)
+### 必须配置的项
 
-在配置区域设置:
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| `VIDEO_LIST_URL` | 课程页面URL | `https://moodle.scnu.edu.cn/course/view.php?id=12345` |
+| `cookies.json` | Cookie文件 | 使用扩展导出 |
+
+### 通常不需要修改的项
+
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `BASE_URL` | Moodle首页 | `https://moodle.scnu.edu.cn` |
+| `URL_PATTERN` | 视频链接模式 | `.../mod/fsresource/view.php?id=` |
+| `VIDEO_ELEMENT_SELECTOR` | 视频标签 | `video` |
+
+### 可选配置
+
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `PLAY_BUTTON_SELECTOR` | 播放按钮选择器 | `None`（自动播放）|
+| `DEFAULT_WAIT_TIME` | 默认等待时间（秒） | `60` |
+| `HEADLESS` | 是否显示浏览器 | `False`（显示）|
+
+---
+
+## 💡 常见问题
+
+### Q: 如何找到URL模式？
+
+**A**:
+1. 在浏览器中访问课程页面
+2. 右键点击任意视频链接 → 复制链接地址
+3. 链接格式通常是: `https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=123456`
+4. 固定部分就是URL模式（不包括最后的数字）
+
+### Q: 脚本没有找到视频链接？
+
+**A**: 检查以下几点：
+1. 确认Cookie登录是否成功
+2. 确认课程ID是否正确
+3. 确认URL模式是否匹配实际的视频链接格式
+4. 在浏览器中手动访问课程页面，查看视频链接的实际URL
+
+### Q: Cookie多久会过期？
+
+**A**: 通常3-7天，过期后重新导出即可。
+
+### Q: 可以用于其他Moodle网站吗？
+
+**A**: 可以！只需要修改：
+- `BASE_URL`: 改为你的Moodle网站地址
+- `VIDEO_LIST_URL`: 改为你的课程页面URL
+- `URL_PATTERN`: 改为匹配你的网站的视频链接格式
+
+---
+
+## ⚙️ 高级用法
+
+### 无头模式（后台运行）
+
 ```python
 HEADLESS = True
 ```
 
-### 2. 直接指定视频链接列表
+### 调整等待时间
 
-如果你不想从页面获取链接,而是想直接指定视频URL,可以修改 `main()` 函数:
+如果视频较长，可以增加默认等待时间：
 
 ```python
-# 不使用 get_video_links,直接指定链接
-video_links = [
-    "https://your-website.com/video/1",
-    "https://your-website.com/video/2",
-    "https://your-website.com/video/3",
-]
+DEFAULT_WAIT_TIME = 120  # 等待120秒（2分钟）
 ```
 
-### 3. 调整等待时间
+### 其他URL模式
 
-如果脚本能检测到视频时长,会自动等待相应时间。如果无法检测,会使用 `DEFAULT_WAIT_TIME`。
+Moodle常见的资源URL模式：
 
-你可以根据视频实际长度调整这个值:
 ```python
-DEFAULT_WAIT_TIME = 120  # 改为120秒(2分钟)
+# 资源文件
+URL_PATTERN = "https://moodle.scnu.edu.cn/mod/resource/view.php?id="
+
+# 页面
+URL_PATTERN = "https://moodle.scnu.edu.cn/mod/page/view.php?id="
+
+# 外部URL
+URL_PATTERN = "https://moodle.scnu.edu.cn/mod/url/view.php?id="
 ```
 
-## 常见问题
+---
 
-### Q: 如何找到正确的CSS选择器?
+## 📂 项目文件结构
 
-A:
-1. 对于输入框:通常是 `input[name="username"]` 或 `#username`
-2. 对于按钮:通常是 `button[type="submit"]` 或 `.login-btn`
-3. 对于链接:右键点击链接 -> 检查 -> Copy selector
+```
+school_vedio_hw/
+├── scripts.py              # 主脚本（已优化）✅
+├── config.py               # 配置文件
+├── config_example.py       # 配置示例
+├── cookies.json            # Cookie文件 ⭐ 必需
+│
+├── README.md               # 本文档
+├── HOW_TO_GET_COOKIES.md   # Cookie获取指南 ⭐
+├── COOKIE_GUIDE.md         # Cookie详细指南
+├── CHANGELOG.md            # 更新日志
+│
+├── .gitignore              # Git忽略文件
+└── pyproject.toml          # 项目依赖
+```
 
-### Q: 登录失败怎么办?
+---
 
-A:
-1. 检查用户名、密码是否正确
-2. 检查选择器是否正确(用开发者工具验证)
-3. 有些网站有验证码,需要手动处理
-4. 登录后可能需要等待跳转,调整 `asyncio.sleep(3)` 的时间
+## 🔒 安全注意事项
 
-### Q: 找不到视频链接怎么办?
+- ✅ `config.py` 和 `cookies.json` 已添加到 `.gitignore`
+- ⚠️ 不要分享Cookie文件
+- ⚠️ 不要上传配置文件到公开平台
+- ⚠️ Cookie会过期，定期更新
 
-A:
-1. 确认 `VIDEO_LINK_SELECTOR` 是否正确
-2. 可以在浏览器中测试: `document.querySelectorAll('你的选择器')`
-3. 有些网站视频是动态加载的,可能需要等待更长时间
+---
 
-### Q: 视频时长检测不到怎么办?
+## 📝 版本信息
 
-A:
-1. 检查 `VIDEO_ELEMENT_SELECTOR` 是否正确
-2. 有些网站使用自定义播放器,可能需要修改检测逻辑
-3. 使用固定的 `DEFAULT_WAIT_TIME` 也可以
+**当前版本**: 2.0 - URL模式匹配版
 
-## 脚本说明
+**主要特点**:
+- 使用URL模式自动匹配视频链接
+- 移除了复杂的CSS选择器配置
+- 更简单、更可靠
 
-### 主要类: `VideoAutomation`
+查看完整更新日志: [CHANGELOG.md](CHANGELOG.md)
 
-- `setup()`: 启动浏览器
-- `login()`: 登录网站
-- `get_video_links()`: 获取视频链接列表
-- `get_video_duration()`: 获取视频时长
-- `play_video()`: 播放单个视频
-- `watch_videos()`: 批量观看视频
-- `close()`: 关闭浏览器
+---
 
-### 运行流程
+## 🎉 总结
 
-1. 启动浏览器
-2. 访问登录页面并登录
-3. 访问视频列表页面获取所有视频链接
-4. 依次访问每个视频页面
-5. 检测视频时长并等待播放完成
-6. 关闭浏览器
+使用URL模式匹配，配置超简单：
 
-## 注意事项
+1. ✅ 导出Cookie到 `cookies.json`
+2. ✅ 填写课程ID到 `VIDEO_LIST_URL`
+3. ✅ 运行 `uv run python scripts.py`
 
-⚠️ **重要提醒:**
-- 请确保你有权限访问和观看这些视频
-- 不要用于非法用途
-- 某些网站可能有反爬虫机制,使用时请注意
-- 建议先用少量视频测试
+**无需配置复杂的CSS选择器！**
 
-## 技术支持
-
-如果遇到问题:
-1. 检查配置是否正确
-2. 查看控制台输出的错误信息
-3. 使用 `HEADLESS = False` 查看浏览器实际操作过程
-4. 必要时可以添加更多的 `await asyncio.sleep()` 等待页面加载
+需要帮助？查看 [HOW_TO_GET_COOKIES.md](HOW_TO_GET_COOKIES.md) 或相关文档！🚀
