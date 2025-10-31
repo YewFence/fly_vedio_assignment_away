@@ -13,6 +13,7 @@ wheels/
 config.py
 
 # Cookie files - 重要！不要上传Cookie文件
+browser_cookies.json
 cookies.json
 *.cookie
 session.json
