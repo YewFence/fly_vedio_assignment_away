@@ -183,7 +183,7 @@ class VideoAutomation:
                 print(f"✓ 视频时长: {duration:.1f} 秒 ({duration/60:.1f} 分钟)")
                 return duration
             else:
-                print("⚠ 无法获取视频时长,将使用默认等待时间")
+                print("⚠ 无法获取视频时长,可能并非视频页，将在默认等待时间后跳转下一链接")
                 return None
 
         except Exception as e:
@@ -214,7 +214,7 @@ class VideoAutomation:
                 await self.page.click(play_button_selector)
                 print("✓ 已点击播放按钮")
             except:
-                print("⚠ 未找到播放按钮,视频可能自动播放")
+                print("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
 
         # 获取视频时长
         duration = await self.get_video_duration(video_selector)
