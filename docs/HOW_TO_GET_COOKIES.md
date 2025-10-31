@@ -206,13 +206,7 @@ school_vedio_hw/
 └── ...
 ```
 
----
-
-## 需要帮助？
-
-查看完整的Cookie指南：[COOKIE_GUIDE.md](COOKIE_GUIDE.md)
-
----
+----
 
 ## 快速开始
 
