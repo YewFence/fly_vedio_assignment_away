@@ -19,7 +19,7 @@ URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="  # 视频
 # ============= 视频播放配置 =============
 VIDEO_ELEMENT_SELECTOR = "video"  # 视频元素的CSS选择器
 PLAY_BUTTON_SELECTOR = ".vjs-big-play-button"  # 播放按钮的CSS选择器(如果不需要点击则设为None)
-DEFAULT_WAIT_TIME = 60  # 如果无法获取视频时长,默认等待时间(秒)
+DEFAULT_WAIT_TIME = 2  # 如果无法获取视频时长,默认等待时间(秒)
 
 # ============= 浏览器配置 =============
-HEADLESS = False  # 是否使用无头模式(True=不显示浏览器窗口, False=显示浏览器)
+HEADLESS = True  # 是否使用无头模式(True=不显示浏览器窗口, False=显示浏览器)
