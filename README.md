@@ -4,30 +4,47 @@
 
 ## 功能特点
 
-- ✅ 自动登录网站
+- ✅ 自动登录网站（支持Cookie登录）
 - ✅ 自动获取页面上的所有视频链接
+- ✅ **支持嵌套列表结构（ul > li > ul > li）**
+- ✅ **智能排除装饰性元素**
 - ✅ 自动播放视频并等待播放完成
 - ✅ 智能检测视频时长(如果无法检测则使用默认等待时间)
 - ✅ 显示进度条和实时状态
 - ✅ 支持有头/无头模式运行
+- ✅ **内置页面结构调试工具**
+- ✅ **配置与代码分离**
+
+## 📚 快速导航
+
+- **配置文件使用**（必读）→ 查看 [CONFIG_USAGE.md](CONFIG_USAGE.md) ⭐
+- **嵌套列表结构**（多层ul/li）→ 查看 [NESTED_LIST_GUIDE.md](NESTED_LIST_GUIDE.md)
+- **Cookie登录**（免密码登录）→ 查看 [COOKIE_GUIDE.md](COOKIE_GUIDE.md)
+- **快速开始**（新手指南）→ 查看 [QUICK_START.md](QUICK_START.md)
 
 ## 安装步骤
 
 本项目已使用 `uv` 管理依赖,Playwright 和浏览器已安装完成。
 
-## 使用方法
+---
 
-### 第一步:找到网站元素的CSS选择器
+## 🚀 快速开始（3步完成）
 
-1. 打开你的目标网站
-2. 按 `F12` 打开浏览器开发者工具
-3. 点击左上角的"选择元素"工具(或按 `Ctrl+Shift+C`)
-4. 点击页面上的元素(用户名输入框、密码输入框、登录按钮、视频链接等)
-5. 在Elements标签中右键该元素 -> `Copy` -> `Copy selector`
+### 第一步：创建配置文件
 
-### 第二步:配置脚本
+从示例文件复制一份配置文件：
 
-编辑 `scripts.py` 文件中的 `main()` 函数里的配置区域:
+```bash
+# Windows
+copy config_example.py config.py
+
+# Linux/Mac
+cp config_example.py config.py
+```
+
+### 第二步：编辑配置
+
+打开 `config.py` 文件，填入你的实际配置：
 
 ```python
 # 登录配置
@@ -40,13 +57,31 @@ SUBMIT_SELECTOR = "button[type='submit']"  # 改为登录按钮的选择器
 
 # 视频列表配置
 VIDEO_LIST_URL = "https://your-website.com/videos"  # 改为视频列表页面URL
+
+# 选择提取模式
+EXTRACTION_MODE = "simple"  # "simple" 或 "nested"
+
+# 简单模式（当 EXTRACTION_MODE = "simple" 时）
 VIDEO_LINK_SELECTOR = "a.video-link"  # 改为视频链接的选择器
 
-# 视频播放配置
-VIDEO_ELEMENT_SELECTOR = "video"  # 视频元素选择器(通常不需要改)
-PLAY_BUTTON_SELECTOR = None  # 如果需要点击播放按钮,填写选择器
-DEFAULT_WAIT_TIME = 60  # 默认等待时间(秒)
+# 嵌套模式（当 EXTRACTION_MODE = "nested" 时）
+VIDEO_LI_SELECTOR = "li.video-item"  # 包含视频链接的li选择器
+EXCLUDE_CLASS = "decoration"  # 需要排除的li的class
 ```
+
+**💡 如何找到选择器？**
+
+运行调试工具自动分析页面结构：
+
+```bash
+# 先编辑 debug_page.py，填入你的视频列表页面URL
+# 然后运行：
+uv run python debug_page.py
+```
+
+工具会告诉你所有可用的选择器！
+
+详细配置说明：[CONFIG_USAGE.md](CONFIG_USAGE.md)
 
 ### 第三步:运行脚本
 
@@ -54,6 +89,70 @@ DEFAULT_WAIT_TIME = 60  # 默认等待时间(秒)
 cd school_vedio_hw
 uv run python scripts.py
 ```
+
+---
+
+### 方式二：嵌套列表结构（高级）
+
+**如果你的网站视频链接在嵌套的列表中**（例如：主题 > 子主题 > 视频），使用这个方式。
+
+#### 第一步：使用调试工具分析页面结构
+
+编辑 `debug_page.py`：
+
+```python
+PAGE_URL = "https://your-website.com/videos"  # 改为你的视频列表页面
+```
+
+运行调试工具：
+
+```bash
+cd school_vedio_hw
+uv run python debug_page.py
+```
+
+调试工具会输出详细的页面结构分析，包括：
+- 所有 `<ul>` 和 `<li>` 的数量
+- 每个 `<li>` 的 class 名称
+- `<a>` 标签的分布情况
+- 示例链接
+
+#### 第二步：找到正确的选择器
+
+根据调试输出，确定：
+
+1. **包含视频链接的 `<li>` 的选择器**
+   - 例如：`li.video-item`、`li.lesson`、`ul.video-list > li`
+
+2. **需要排除的装饰性 `<li>` 的 class**（如果有）
+   - 例如：`decoration`、`divider`、`separator`
+
+#### 第三步：配置脚本
+
+编辑 `config.py` 文件：
+
+```python
+# 选择嵌套模式
+EXTRACTION_MODE = "nested"
+
+# 视频列表配置（嵌套结构）
+VIDEO_LIST_URL = "https://your-website.com/videos"
+VIDEO_LI_SELECTOR = "li.video-item"  # 包含视频链接的li选择器
+EXCLUDE_CLASS = "decoration"  # 需要排除的li的class（如果没有则设为None）
+```
+
+**注意**：设置 `EXTRACTION_MODE = "nested"` 后，脚本会自动使用嵌套提取方法。
+
+#### 第四步：运行脚本
+
+```bash
+cd school_vedio_hw
+uv run python scripts.py
+```
+
+**详细指南**：查看 [NESTED_LIST_GUIDE.md](NESTED_LIST_GUIDE.md) 获取完整的嵌套列表使用教程。
+
+---
 
 ## 高级用法
 
