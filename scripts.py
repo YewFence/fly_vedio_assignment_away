@@ -11,6 +11,15 @@ import re
 import json
 from pathlib import Path
 
+# 导入配置
+try:
+    import config
+except ImportError:
+    print("❌ 错误: 找不到 config.py 文件!")
+    print("请确保 config.py 文件存在于当前目录")
+    print("你可以从 config_example.py 复制一份并重命名为 config.py")
+    exit(1)
+
 
 class VideoAutomation:
     """视频自动化观看类"""
@@ -270,38 +279,12 @@ class VideoAutomation:
 
 
 async def main():
-    """主函数 - 在这里配置你的参数"""
+    """主函数 - 配置请在 config.py 中修改"""
 
-    # ============= 配置区域 - 根据实际情况修改 =============
+    # 从 config.py 读取配置
+    print("正在加载配置...")
 
-    # Cookie登录配置
-    USE_COOKIE_LOGIN = True  # 是否使用Cookie登录(推荐)
-    COOKIE_FILE = "cookies.json"  # Cookie文件路径
-    BASE_URL = "https://example.com"  # 网站首页URL(用于验证Cookie)
-
-    # 登录配置(仅在Cookie登录失败时使用)
-    LOGIN_URL = "https://example.com/login"  # 登录页面URL
-    USERNAME = "your_username"  # 你的用户名
-    PASSWORD = "your_password"  # 你的密码
-    USERNAME_SELECTOR = "#username"  # 用户名输入框选择器
-    PASSWORD_SELECTOR = "#password"  # 密码输入框选择器
-    SUBMIT_SELECTOR = "button[type='submit']"  # 登录按钮选择器
-
-    # 视频列表配置
-    VIDEO_LIST_URL = "https://example.com/videos"  # 视频列表页面URL
-    VIDEO_LINK_SELECTOR = "a.video-link"  # 视频链接选择器
-
-    # 视频播放配置
-    VIDEO_ELEMENT_SELECTOR = "video"  # 视频元素选择器
-    PLAY_BUTTON_SELECTOR = None  # 播放按钮选择器(如果不需要点击则设为None)
-    DEFAULT_WAIT_TIME = 60  # 如果无法获取视频时长,默认等待时间(秒)
-
-    # 浏览器配置
-    HEADLESS = False  # 是否使用无头模式(True=不显示浏览器窗口)
-
-    # ====================================================
-
-    automation = VideoAutomation(headless=HEADLESS)
+    automation = VideoAutomation(headless=config.HEADLESS)
 
     try:
         # 1. 启动浏览器
@@ -310,45 +293,69 @@ async def main():
         # 2. 登录
         login_success = False
 
-        if USE_COOKIE_LOGIN:
+        if config.USE_COOKIE_LOGIN:
             # 优先尝试Cookie登录
-            login_success = await automation.login_with_cookies(BASE_URL, COOKIE_FILE)
+            login_success = await automation.login_with_cookies(
+                config.BASE_URL,
+                config.COOKIE_FILE
+            )
 
         if not login_success:
             # Cookie登录失败或未启用,使用账号密码登录
             print("\n使用账号密码登录...")
             await automation.login(
-                LOGIN_URL,
-                USERNAME,
-                PASSWORD,
-                USERNAME_SELECTOR,
-                PASSWORD_SELECTOR,
-                SUBMIT_SELECTOR,
+                config.LOGIN_URL,
+                config.USERNAME,
+                config.PASSWORD,
+                config.USERNAME_SELECTOR,
+                config.PASSWORD_SELECTOR,
+                config.SUBMIT_SELECTOR,
                 save_cookies=True,  # 登录成功后保存Cookie
-                cookie_file=COOKIE_FILE
+                cookie_file=config.COOKIE_FILE
             )
 
-        # 3. 获取视频链接
-        video_links = await automation.get_video_links(
-            VIDEO_LIST_URL,
-            VIDEO_LINK_SELECTOR
-        )
+        # 3. 获取视频链接（根据配置的模式选择方法）
+        print(f"\n使用 '{config.EXTRACTION_MODE}' 模式提取视频链接...")
+
+        if config.EXTRACTION_MODE == "nested":
+            # 嵌套模式：处理复杂的多层列表结构
+            video_links = await automation.get_nested_video_links(
+                config.VIDEO_LIST_URL,
+                config.VIDEO_LI_SELECTOR,
+                config.EXCLUDE_CLASS
+            )
+        else:
+            # 简单模式：直接选择所有视频链接
+            video_links = await automation.get_video_links(
+                config.VIDEO_LIST_URL,
+                config.VIDEO_LINK_SELECTOR
+            )
 
         # 4. 观看所有视频
         if video_links:
             await automation.watch_videos(
                 video_links,
-                VIDEO_ELEMENT_SELECTOR,
-                PLAY_BUTTON_SELECTOR,
-                DEFAULT_WAIT_TIME
+                config.VIDEO_ELEMENT_SELECTOR,
+                config.PLAY_BUTTON_SELECTOR,
+                config.DEFAULT_WAIT_TIME
             )
         else:
             print("⚠ 没有找到视频链接")
+            print("\n💡 提示:")
+            print("  1. 运行 'uv run python debug_page.py' 分析页面结构")
+            print("  2. 检查 config.py 中的选择器配置是否正确")
+            print("  3. 确认是否需要登录才能看到视频列表")
 
     except Exception as e:
         print(f"\n❌ 发生错误: {e}")
         import traceback
         traceback.print_exc()
+
+        print("\n💡 故障排查建议:")
+        print("  1. 检查 config.py 中的配置是否正确")
+        print("  2. 运行 'uv run python debug_page.py' 分析页面结构")
+        print("  3. 确认网站URL是否正确且可访问")
+        print("  4. 检查登录凭据是否有效")
 
     finally:
         # 5. 关闭浏览器
