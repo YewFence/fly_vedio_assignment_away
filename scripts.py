@@ -81,61 +81,30 @@ class VideoAutomation:
 
     async def login_with_cookies(self, base_url: str, cookie_file: str = "cookies.json"):
         """
-        使用Cookie登录(无需用户名密码)
+        使用Cookie登录
         :param base_url: 网站首页或任意需要登录的页面URL
         :param cookie_file: Cookie文件路径
         :return: 是否登录成功
         """
-        print("尝试使用Cookie登录...")
+        print("正在使用Cookie登录...")
 
         # 加载Cookie
         if not await self.load_cookies(cookie_file):
+            print("\n❌ Cookie加载失败!")
+            print("💡 请按以下步骤手动获取Cookie:")
+            print("  1. 在浏览器中登录网站")
+            print("  2. 按F12打开开发者工具 -> Application -> Cookies")
+            print("  3. 复制所有Cookie并保存为 cookies.json")
+            print("  4. 或使用浏览器扩展导出Cookie（推荐）")
+            print("\n详细说明请查看: COOKIE_GUIDE.md")
             return False
 
         # 访问页面验证Cookie是否有效
         await self.page.goto(base_url, wait_until='networkidle')
         await asyncio.sleep(2)
 
-        print(f"✓ 使用Cookie登录成功,当前页面: {self.page.url}")
+        print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
-
-    async def login(self, login_url: str, username: str, password: str,
-                   username_selector: str, password_selector: str,
-                   submit_selector: str, save_cookies: bool = True,
-                   cookie_file: str = "cookies.json"):
-        """
-        登录网站(使用用户名密码)
-        :param login_url: 登录页面URL
-        :param username: 用户名
-        :param password: 密码
-        :param username_selector: 用户名输入框的CSS选择器
-        :param password_selector: 密码输入框的CSS选择器
-        :param submit_selector: 提交按钮的CSS选择器
-        :param save_cookies: 是否保存Cookie到文件
-        :param cookie_file: Cookie保存路径
-        """
-        print(f"正在访问登录页面: {login_url}")
-        await self.page.goto(login_url, wait_until='networkidle')
-
-        # 等待登录表单加载
-        await self.page.wait_for_selector(username_selector, timeout=10000)
-
-        # 输入用户名和密码
-        await self.page.fill(username_selector, username)
-        await self.page.fill(password_selector, password)
-        print("✓ 已输入用户名和密码")
-
-        # 点击登录按钮
-        await self.page.click(submit_selector)
-        print("✓ 已点击登录按钮")
-
-        # 等待登录完成(等待URL变化或特定元素出现)
-        await asyncio.sleep(3)
-        print(f"✓ 登录成功,当前页面: {self.page.url}")
-
-        # 保存Cookie
-        if save_cookies:
-            await self.save_cookies(cookie_file)
 
     async def get_video_links(self, page_url: str, link_selector: str) -> List[str]:
         """
@@ -454,29 +423,16 @@ async def main():
         # 1. 启动浏览器
         await automation.setup()
 
-        # 2. 登录
-        login_success = False
-
-        if config.USE_COOKIE_LOGIN:
-            # 优先尝试Cookie登录
-            login_success = await automation.login_with_cookies(
-                config.BASE_URL,
-                config.COOKIE_FILE
-            )
+        # 2. 使用Cookie登录
+        login_success = await automation.login_with_cookies(
+            config.BASE_URL,
+            config.COOKIE_FILE
+        )
 
         if not login_success:
-            # Cookie登录失败或未启用,使用账号密码登录
-            print("\n使用账号密码登录...")
-            await automation.login(
-                config.LOGIN_URL,
-                config.USERNAME,
-                config.PASSWORD,
-                config.USERNAME_SELECTOR,
-                config.PASSWORD_SELECTOR,
-                config.SUBMIT_SELECTOR,
-                save_cookies=True,  # 登录成功后保存Cookie
-                cookie_file=config.COOKIE_FILE
-            )
+            print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
+            print("详细说明请查看: COOKIE_GUIDE.md")
+            return
 
         # 3. 获取视频链接（根据配置的模式选择方法）
         print(f"\n使用 '{config.EXTRACTION_MODE}' 模式提取视频链接...")
@@ -517,9 +473,10 @@ async def main():
 
         print("\n💡 故障排查建议:")
         print("  1. 检查 config.py 中的配置是否正确")
-        print("  2. 运行 'uv run python debug_page.py' 分析页面结构")
-        print("  3. 确认网站URL是否正确且可访问")
-        print("  4. 检查登录凭据是否有效")
+        print("  2. 确认 cookies.json 文件存在且有效")
+        print("  3. 运行 'uv run python debug_page.py' 分析页面结构")
+        print("  4. 确认网站URL是否正确且可访问")
+        print("  5. 查看 COOKIE_GUIDE.md 了解如何获取Cookie")
 
     finally:
         # 5. 关闭浏览器

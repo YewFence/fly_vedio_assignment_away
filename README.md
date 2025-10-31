@@ -28,9 +28,22 @@
 
 ---
 
-## 🚀 快速开始（3步完成）
+## 🚀 快速开始（4步完成）
 
-### 第一步：创建配置文件
+### 第一步：获取Cookie
+
+本脚本使用Cookie登录，无需配置用户名密码。
+
+**最简单的方法**：
+
+1. 安装浏览器扩展 [Cookie-Editor](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)
+2. 在浏览器中登录你的目标网站
+3. 点击扩展图标 → Export → JSON
+4. 保存为 `cookies.json` 到 `school_vedio_hw` 目录
+
+**详细说明**: [HOW_TO_GET_COOKIES.md](HOW_TO_GET_COOKIES.md) ⭐
+
+### 第二步：创建配置文件
 
 从示例文件复制一份配置文件：
 
@@ -42,18 +55,14 @@ copy config_example.py config.py
 cp config_example.py config.py
 ```
 
-### 第二步：编辑配置
+### 第三步：编辑配置
 
 打开 `config.py` 文件，填入你的实际配置：
 
 ```python
-# 登录配置
-LOGIN_URL = "https://your-website.com/login"  # 改为你的登录页面URL
-USERNAME = "your_username"  # 改为你的用户名
-PASSWORD = "your_password"  # 改为你的密码
-USERNAME_SELECTOR = "#username"  # 改为用户名输入框的选择器
-PASSWORD_SELECTOR = "#password"  # 改为密码输入框的选择器
-SUBMIT_SELECTOR = "button[type='submit']"  # 改为登录按钮的选择器
+# Cookie登录
+BASE_URL = "https://your-website.com"  # 改为你的网站首页
+COOKIE_FILE = "cookies.json"  # Cookie文件路径
 
 # 视频列表配置
 VIDEO_LIST_URL = "https://your-website.com/videos"  # 改为视频列表页面URL
@@ -83,7 +92,7 @@ uv run python debug_page.py
 
 详细配置说明：[CONFIG_USAGE.md](CONFIG_USAGE.md)
 
-### 第三步:运行脚本
+### 第四步:运行脚本
 
 ```bash
 cd school_vedio_hw

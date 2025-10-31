@@ -7,17 +7,8 @@
 """
 
 # ============= Cookie登录配置 =============
-USE_COOKIE_LOGIN = True  # 是否使用Cookie登录(推荐)
 COOKIE_FILE = "cookies.json"  # Cookie文件路径
 BASE_URL = "https://example.com"  # 网站首页URL(用于验证Cookie)
-
-# ============= 登录配置(仅在Cookie登录失败时使用) =============
-LOGIN_URL = "https://example.com/login"  # 登录页面URL
-USERNAME = "your_username"  # 你的用户名
-PASSWORD = "your_password"  # 你的密码
-USERNAME_SELECTOR = "#username"  # 用户名输入框选择器
-PASSWORD_SELECTOR = "#password"  # 密码输入框选择器
-SUBMIT_SELECTOR = "button[type='submit']"  # 登录按钮选择器
 
 # ============= 视频列表配置 =============
 VIDEO_LIST_URL = "https://example.com/videos"  # 视频列表页面URL
@@ -80,14 +71,13 @@ HEADLESS = False  # 是否使用无头模式(True=不显示浏览器窗口, Fals
     EXCLUDE_CLASS = "decoration"
 
   示例3: 学校网站
-    LOGIN_URL = "https://school.edu/login"
-    USERNAME = "202012345"
-    PASSWORD = "MyPassword123"
-    USERNAME_SELECTOR = "input[name='username']"
-    PASSWORD_SELECTOR = "input[name='password']"
-    SUBMIT_SELECTOR = "button.login-btn"
+    BASE_URL = "https://school.edu"
+    COOKIE_FILE = "cookies.json"
     VIDEO_LIST_URL = "https://school.edu/course/python-101"
     EXTRACTION_MODE = "nested"
     VIDEO_LI_SELECTOR = "li.lesson-item"
     EXCLUDE_CLASS = "section-header"
+
+注意：本脚本仅支持Cookie登录
+请查看 COOKIE_GUIDE.md 了解如何获取和使用Cookie
 """
