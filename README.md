@@ -58,8 +58,8 @@ cp config_example.py config.py
 BASE_URL = "https://moodle.scnu.edu.cn"
 COOKIE_FILE = "cookies.json"
 
-# 视频列表（重要！填写你的课程ID）
-VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成你的课程ID
+# 视频列表（重要！填写你的课程链接）
+VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成你的课程链接
 
 # URL模式（通常不需要修改）
 URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="
@@ -73,7 +73,7 @@ DEFAULT_WAIT_TIME = 60
 HEADLESS = False
 ```
 
-**如何找到课程ID？**
+**如何找到课程链接？**
 1. 登录Moodle
 2. 进入你的课程页面
 3. 查看浏览器地址栏：`https://moodle.scnu.edu.cn/course/view.php?id=12345`
@@ -129,7 +129,6 @@ uv run python scripts.py
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
-| `BASE_URL` | Moodle首页 | `https://moodle.scnu.edu.cn` |
 | `URL_PATTERN` | 视频链接模式 | `.../mod/fsresource/view.php?id=` |
 | `VIDEO_ELEMENT_SELECTOR` | 视频标签 | `video` |
 
@@ -145,7 +144,7 @@ uv run python scripts.py
 
 ## 💡 常见问题
 
-### Q: 如何找到URL模式？
+### Q: 如何找到课程URL？
 
 **A**:
 1. 在浏览器中访问课程页面
@@ -153,24 +152,6 @@ uv run python scripts.py
 3. 链接格式通常是: `https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=123456`
 4. 固定部分就是URL模式（不包括最后的数字）
 
-### Q: 脚本没有找到视频链接？
-
-**A**: 检查以下几点：
-1. 确认Cookie登录是否成功
-2. 确认课程ID是否正确
-3. 确认URL模式是否匹配实际的视频链接格式
-4. 在浏览器中手动访问课程页面，查看视频链接的实际URL
-
-### Q: Cookie多久会过期？
-
-**A**: 通常3-7天，过期后重新导出即可。
-
-### Q: 可以用于其他Moodle网站吗？
-
-**A**: 可以！只需要修改：
-- `BASE_URL`: 改为你的Moodle网站地址
-- `VIDEO_LIST_URL`: 改为你的课程页面URL
-- `URL_PATTERN`: 改为匹配你的网站的视频链接格式
 
 ---
 
@@ -190,20 +171,6 @@ HEADLESS = True
 DEFAULT_WAIT_TIME = 120  # 等待120秒（2分钟）
 ```
 
-### 其他URL模式
-
-Moodle常见的资源URL模式：
-
-```python
-# 资源文件
-URL_PATTERN = "https://moodle.scnu.edu.cn/mod/resource/view.php?id="
-
-# 页面
-URL_PATTERN = "https://moodle.scnu.edu.cn/mod/page/view.php?id="
-
-# 外部URL
-URL_PATTERN = "https://moodle.scnu.edu.cn/mod/url/view.php?id="
-```
 
 ---
 

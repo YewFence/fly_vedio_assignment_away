@@ -167,15 +167,6 @@ uv run python scripts.py
 
 ## 常见问题
 
-### Q: Cookie多久会过期？
-
-A: 取决于网站设置，一般：
-- 学校网站：3-7天
-- 视频网站：30-90天
-- 金融网站：15-30分钟
-
-Cookie过期后需要重新获取。
-
 ### Q: Cookie安全吗？
 
 A: Cookie包含你的登录凭证，请注意：
@@ -187,10 +178,6 @@ A: Cookie包含你的登录凭证，请注意：
 ### Q: 如何判断Cookie已过期？
 
 A: 运行脚本时如果提示"登录失败"，说明Cookie可能已过期，需要重新获取。
-
-### Q: 可以在多台电脑上用同一个Cookie吗？
-
-A: 部分网站允许，但有些网站会检测IP或设备，可能导致Cookie失效。
 
 ---
 
@@ -212,7 +199,7 @@ school_vedio_hw/
 
 1. ✅ 在浏览器中登录网站
 2. ✅ 使用扩展导出Cookie为 `cookies.json`
-3. ✅ 将文件放到 `school_vedio_hw` 目录
+3. ✅ 将文件放到当前目录
 4. ✅ 运行 `uv run python scripts.py`
 
 就这么简单！🚀
