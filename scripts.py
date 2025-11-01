@@ -357,7 +357,7 @@ async def main():
 
         if not login_success:
             print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
-            print("详细说明请查看: COOKIE_GUIDE.md")
+            print("详细说明请查看: how_to_get_cookie.md")
             return
 
         # 3. 通过URL模式获取视频链接
@@ -379,11 +379,11 @@ async def main():
             )
         else:
             print("⚠ 没有找到视频链接")
-            print("\n💡 提示:")
-            print("  1. 检查 config.py 中的 URL_PATTERN 配置是否正确")
-            print("  2. 确认 VIDEO_LIST_URL 是否正确")
-            print("  3. 确认Cookie登录是否成功")
-            print("  4. 在浏览器中手动访问页面，查看视频链接的实际URL格式")
+            print("\n💡 故障排查建议:")
+            print("  1. 检查 config.py 中是否正确配置了课程链接")
+            print("  2. 确认 cookies.json 文件存在")
+            print("  3. 确认 Cookie 是否有效")
+            print("  4. 确认网络状态良好")
 
     except Exception as e:
         print(f"\n❌ 发生错误: {e}")
@@ -391,12 +391,10 @@ async def main():
         traceback.print_exc()
 
         print("\n💡 故障排查建议:")
-        print("  1. 检查 config.py 中的配置是否正确")
-        print("  2. 确认 cookies.json 文件存在且有效")
-        print("  3. 运行 'uv run python debug_page.py' 分析页面结构")
-        print("  4. 确认网站URL是否正确且可访问")
-        print("  5. 查看 COOKIE_GUIDE.md 了解如何获取Cookie")
-
+        print("  1. 检查 config.py 中是否正确配置了课程链接")
+        print("  2. 确认 cookies.json 文件存在")
+        print("  3. 确认 Cookie 是否有效")
+        print("  4. 确认网络状态良好")
     finally:
         # 5. 关闭浏览器
         await automation.close()
