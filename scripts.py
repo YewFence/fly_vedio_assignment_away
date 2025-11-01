@@ -10,6 +10,7 @@ from typing import List, Optional
 import re
 import json
 from pathlib import Path
+from cookie_fix import cookie_fix
 
 # 导入配置
 try:
@@ -336,6 +337,12 @@ class VideoAutomation:
 
 async def main():
     """主函数 - 配置请在 config.py 中修改"""
+    # 自动格式化cookie文件
+    if cookie_fix():
+        print("✓ Cookie文件格式化成功")
+    else:
+        print("⚠ Cookie文件格式化失败，请检查browser_cookie.json是否配置正确，程序即将结束")
+        return
 
     # 从 config.py 读取配置
     print("正在加载配置...")
@@ -346,14 +353,8 @@ async def main():
         # 1. 启动浏览器
         await automation.setup()
 
-        # 2. 使用Cookie登录
-        login_page = await automation.login_with_cookies(
-            config.BASE_URL,
-            config.COOKIE_FILE
-        )
-
-        # 检查登录是否成功
-        login_success = await automation.login_with_cookies(login_page, config.COOKIE_FILE)
+        # 使用cookie登录
+        login_success = await automation.login_with_cookies(config.BASE_URL, config.COOKIE_FILE)
 
         if not login_success:
             print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
