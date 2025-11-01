@@ -1,131 +1,24 @@
 """
-自动视频观看脚本
-使用 Playwright 自动登录网站、点击链接并等待视频播放完成
+视频操作模块
+负责视频链接获取、播放控制和时长管理
 """
 
 import asyncio
-import time
-from playwright.async_api import async_playwright, Page, TimeoutError as PlaywrightTimeoutError
 from typing import List, Optional
-import re
-import json
-from pathlib import Path
-from cookie_fix import cookie_fix
-
-# 导入配置
-try:
-    import config
-except ImportError:
-    print("❌ 错误: 找不到 config.py 文件!")
-    print("请确保 config.py 文件存在于当前目录")
-    print("你可以从 config_example.py 复制一份并重命名为 config.py")
-    exit(1)
+from playwright.async_api import Page
 
 
-class VideoAutomation:
-    """视频自动化观看类"""
+class VideoManager:
+    """视频管理器"""
 
-    def __init__(self, headless: bool = False):
+    def __init__(self, page: Page, auth_manager):
         """
-        初始化
-        :param headless: 是否使用无头模式(不显示浏览器窗口)
+        初始化视频管理器
+        :param page: Playwright页面对象
+        :param auth_manager: 认证管理器实例
         """
-        self.headless = headless
-        self.browser = None
-        self.context = None
-        self.page = None
-
-    async def setup(self):
-        """启动浏览器"""
-        playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(
-            channel= config.BROWSER,
-            headless=self.headless,
-            args=[
-                '--disable-blink-features=AutomationControlled',  # 防止网站检测自动化
-                '--mute-audio'  # 静音浏览器
-            ]
-        )
-        self.context = await self.browser.new_context(
-            viewport={'width': 1920, 'height': 1080},
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        )
-        self.page = await self.context.new_page()
-        print("✓ 浏览器启动成功 (已静音)")
-
-    async def save_cookies(self, cookie_file: str = "cookies.json"):
-        """
-        保存当前浏览器的Cookie到文件
-        :param cookie_file: Cookie文件路径
-        """
-        cookies = await self.context.cookies()
-        with open(cookie_file, 'w', encoding='utf-8') as f:
-            json.dump(cookies, f, indent=2, ensure_ascii=False)
-        print(f"✓ Cookie已保存到: {cookie_file}")
-
-    async def load_cookies(self, cookie_file: str = "cookies.json"):
-        """
-        从文件加载Cookie到浏览器
-        :param cookie_file: Cookie文件路径
-        :return: 是否成功加载
-        """
-        cookie_path = Path(cookie_file)
-        if not cookie_path.exists():
-            print(f"⚠ Cookie文件不存在: {cookie_file}")
-            return False
-
-        try:
-            with open(cookie_file, 'r', encoding='utf-8') as f:
-                cookies = json.load(f)
-            await self.context.add_cookies(cookies)
-            print(f"✓ Cookie已从文件加载: {cookie_file}")
-            return True
-        except Exception as e:
-            print(f"⚠ 加载Cookie失败: {e}")
-            return False
-
-    async def login_with_cookies(self, base_url: str, cookie_file: str = "cookies.json"):
-        """
-        使用Cookie登录
-        :param base_url: 网站首页或任意需要登录的页面URL
-        :param cookie_file: Cookie文件路径
-        :return: 是否登录成功
-        """
-        print("正在使用Cookie登录...")
-
-        # 加载Cookie
-        if not await self.load_cookies(cookie_file):
-            print("\n❌ Cookie加载失败!")
-            print("💡 请按以下步骤手动获取Cookie:")
-            print("  1. 在浏览器中登录网站")
-            print("  2. 按F12打开开发者工具 -> Application -> Cookies")
-            print("  3. 复制所有Cookie并保存为 cookies.json")
-            print("  4. 或使用浏览器扩展导出Cookie（推荐）")
-            print("\n详细说明请查看: how_to_get_cookie.md")
-            return False
-
-        # 访问页面验证Cookie是否有效
-        await self.page.goto(base_url, wait_until='networkidle')
-        await asyncio.sleep(2)
-
-        # 检查是否发生重定向（登录失败会被重定向到登录页）
-        current_url = self.page.url
-
-        # 提取域名和路径进行比较（忽略查询参数的差异）
-        from urllib.parse import urlparse
-        base_parsed = urlparse(base_url)
-        current_parsed = urlparse(current_url)
-
-        # 判断是否重定向到了不同的页面
-        if base_parsed.netloc != current_parsed.netloc or \
-           current_parsed.path.startswith('/login') or \
-           current_parsed.path.startswith('/auth'):
-            print(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
-            print("💡 Cookie可能已过期，请重新获取Cookie")
-            return False
-
-        print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
-        return True
+        self.page = page
+        self.auth_manager = auth_manager
 
     async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:
         """
@@ -161,23 +54,6 @@ class VideoAutomation:
             print("💡 提示: 检查 URL_PATTERN 配置是否正确")
 
         return links
-
-    async def check_cookie_validity(self) -> bool:
-        """
-        检查Cookie是否有效
-        通过检查页面内容是否包含"访客不能访问此课程"来判断
-        :return: True表示Cookie有效，False表示Cookie已失效
-        """
-        try:
-            page_content = await self.page.content()
-            if "访客不能访问此课程" in page_content:
-                print("❌ 检测到Cookie已失效！页面显示: 访客不能访问此课程")
-                print("💡 请重新导出browser_cookies.json并运行脚本")
-                return False
-            return True
-        except Exception as e:
-            print(f"⚠ Cookie有效性检测出错: {e}")
-            return True  # 检测失败时默认认为有效，避免误判
 
     async def get_video_duration(self, video_selector: str = "video") -> Optional[float]:
         """
@@ -229,7 +105,7 @@ class VideoAutomation:
         await asyncio.sleep(2)
 
         # 检查Cookie是否有效
-        if not await self.check_cookie_validity():
+        if not await self.auth_manager.check_cookie_validity():
             print("⚠ Cookie已失效，停止观看视频")
             raise Exception("Cookie已失效，请重新获取Cookie")
 
@@ -353,79 +229,3 @@ class VideoAutomation:
 
         print(f"\n{'='*60}")
         print(f"✓ 所有视频观看完成! 共完成 {len(video_links)} 个视频")
-
-    async def close(self):
-        """关闭浏览器"""
-        if self.browser:
-            await self.browser.close()
-            print("\n✓ 浏览器已关闭")
-
-
-async def main():
-    """主函数 - 配置请在 config.py 中修改"""
-    # 自动格式化cookie文件
-    if cookie_fix():
-        print("✓ Cookie文件格式化成功")
-    else:
-        print("⚠ Cookie文件格式化失败，请检查browser_cookie.json是否配置正确，程序即将结束")
-        return
-
-    # 从 config.py 读取配置
-    print("正在加载配置...")
-
-    automation = VideoAutomation(headless=config.HEADLESS)
-
-    try:
-        # 1. 启动浏览器
-        await automation.setup()
-
-        # 使用cookie登录
-        login_success = await automation.login_with_cookies(config.BASE_URL, config.COOKIE_FILE)
-
-        if not login_success:
-            print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
-            print("详细说明请查看: how_to_get_cookie.md")
-            return
-
-        # 3. 通过URL模式获取视频链接
-        print(f"\n正在提取视频链接...")
-        print(f"URL模式: {config.URL_PATTERN}")
-
-        video_links = await automation.get_video_links_by_pattern(
-            config.VIDEO_LIST_URL,
-            config.URL_PATTERN
-        )
-
-        # 4. 观看所有视频
-        if video_links:
-            await automation.watch_videos(
-                video_links,
-                config.VIDEO_ELEMENT_SELECTOR,
-                config.PLAY_BUTTON_SELECTOR,
-                config.DEFAULT_WAIT_TIME
-            )
-        else:
-            print("⚠ 没有找到视频链接")
-            print("\n💡 故障排查建议:")
-            print("  1. 检查 config.py 中是否正确配置了课程链接")
-            print("  2. 确认 cookies.json 文件存在")
-            print("  3. 确认 Cookie 是否有效")
-            print("  4. 确认网络状态良好")
-
-    except Exception as e:
-        print(f"\n❌ 发生错误: {e}")
-        import traceback
-        traceback.print_exc()
-
-        print("\n💡 故障排查建议:")
-        print("  1. 检查 config.py 中是否正确配置了课程链接")
-        print("  2. 确认 cookies.json 文件存在")
-        print("  3. 确认 Cookie 是否有效")
-        print("  4. 确认网络状态良好")
-    finally:
-        # 5. 关闭浏览器
-        await automation.close()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
