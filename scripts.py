@@ -210,10 +210,56 @@ class VideoAutomation:
                 print("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
                 return
 
-        # 获取视频时长
-        duration = await self.get_video_duration(video_selector)
+        # 智能计算视频剩余时间
+        duration = None
 
-        if duration:
+        try:
+            # 获取视频总时长
+            video_duration = await self.get_video_duration(video_selector)
+
+            if video_duration is None:
+                print("⚠ 无法获取视频总时长")
+            else:
+                # 尝试获取已观看时长
+                watched_locator = self.page.locator(".num-gksc > span")
+
+                if await watched_locator.count() > 0:
+                    watched_text = await watched_locator.text_content()
+
+                    if watched_text:
+                        # 尝试解析已观看时长（去除空格和可能的单位）
+                        watched_text = watched_text.strip()
+                        try:
+                            watched_duration = float(watched_text)
+
+                            # 计算剩余时间
+                            remaining = video_duration - watched_duration
+
+                            if remaining < 0:
+                                print(f"⚠ 已观看时长({watched_duration:.1f}秒) 大于总时长({video_duration:.1f}秒)，视频可能已完成")
+                                duration = 0  # 视频已完成，无需等待
+                            elif remaining == 0:
+                                print("✓ 视频已观看完毕")
+                                duration = 0
+                            else:
+                                duration = remaining
+                                print(f"✓ 视频总时长: {video_duration:.1f}秒, 已观看: {watched_duration:.1f}秒, 剩余: {duration:.1f}秒")
+                        except ValueError:
+                            print(f"⚠ 无法解析已观看时长: '{watched_text}', 使用视频总时长")
+                            duration = video_duration
+                    else:
+                        print("⚠ 已观看时长元素为空，使用视频总时长")
+                        duration = video_duration
+                else:
+                    print("⚠ 未找到已观看时长元素，使用视频总时长")
+                    duration = video_duration
+
+        except Exception as e:
+            print(f"⚠ 计算剩余时间时出错: {e}")
+            duration = None
+
+        # 根据计算结果等待
+        if duration is not None and duration > 0:
             # 等待视频播放完成(加上5秒缓冲时间)
             wait_time = duration + 5
             print(f"⏳ 等待视频播放完成(预计 {wait_time:.1f} 秒)...")
@@ -225,8 +271,12 @@ class VideoAutomation:
                 await asyncio.sleep(chunk)
                 elapsed += chunk
                 print(f"   已等待 {elapsed:.0f}/{wait_time:.0f} 秒 ({elapsed/wait_time*100:.0f}%)")
+        elif duration == 0:
+            # 视频已完成，无需等待
+            print("✓ 视频无需等待")
         else:
             # 使用默认等待时间
+            print("⚠ 无法获取视频时长，使用默认等待时间...")
             print(f"⏳ 等待 {default_wait_time} 秒...")
             await asyncio.sleep(default_wait_time)
 
