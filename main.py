@@ -94,6 +94,7 @@ async def main():
         print("  4. 确认网络状态良好")
     finally:
         # 6. 关闭浏览器
+        input("\n按回车键退出并关闭浏览器...")
         await browser_manager.close()
 
 

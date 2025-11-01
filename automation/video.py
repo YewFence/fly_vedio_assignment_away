@@ -104,6 +104,9 @@ class VideoManager:
         # 等待页面加载
         await asyncio.sleep(2)
 
+        # 尝试自动延长会话
+        await self.auth_manager.refresh_cookies()
+        
         # 检查Cookie是否有效
         if not await self.auth_manager.check_cookie_validity():
             print("⚠ Cookie已失效，停止观看视频")

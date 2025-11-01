@@ -54,6 +54,20 @@ class AuthManager:
             json.dump(cookies, f, indent=2, ensure_ascii=False)
         print(f"✓ Cookie已保存到: {cookie_file}")
 
+    async def refresh_cookies(self, cookie_file: str = "cookies.json"):
+        """
+        刷新并保存当前浏览器的Cookie到文件
+        :param cookie_file: Cookie文件路径
+        """
+        refresh_button = self.page.get_by_role('button', name='延长会话')
+
+        # 检查按钮是否存在
+        if await refresh_button.count() > 0:
+            print("✓ 检测到延长会话按钮，正在点击以刷新Cookie...")
+            await refresh_button.click()
+            await asyncio.sleep(1)  # 等待cookie更新
+            await self.save_cookies(cookie_file)
+
     async def check_cookie_validity(self) -> bool:
         """
         检查Cookie是否有效
