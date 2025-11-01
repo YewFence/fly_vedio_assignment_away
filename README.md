@@ -130,7 +130,7 @@ VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成
 
 在项目根目录下运行
 ```bash
-uv run python scripts.py
+uv run python main.py
 ```
 
 ---
@@ -162,7 +162,12 @@ uv run python scripts.py
 
 ```
 school_vedio_hw/
-├── scripts.py              # 主脚本 ⭐
+├── automation/              # 自动化框架包
+│   ├── __init__.py         # 包初始化，导出所有管理器类
+│   ├── browser.py          # 浏览器管理模块
+│   ├── auth.py             # 认证和Cookie管理模块
+│   └── video.py            # 视频操作模块
+├── main.py                 # 主入口文件
 ├── cookie_fix.py           # Cookie格式转换工具
 ├── config.py               # 配置文件 ⭐ 需要自己创建并配置课程链接
 ├── config_example.py       # 配置示例
