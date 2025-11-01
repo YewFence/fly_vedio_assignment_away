@@ -120,26 +120,10 @@ class VideoAutomation:
         # 等待页面加载完成
         await asyncio.sleep(2)
 
-        # 使用JavaScript提取所有匹配模式的链接
-        links = await self.page.evaluate(f"""
-            () => {{
-                const pattern = '{url_pattern}';
-                const links = new Set();
-
-                // 获取所有a标签
-                const allLinks = document.querySelectorAll('a[href]');
-
-                allLinks.forEach(a => {{
-                    const href = a.href;
-                    if (href && href.includes(pattern)) {{
-                        links.add(href);
-                    }}
-                }});
-
-                return Array.from(links);
-            }}
-        """)
-
+        # 获取所有链接
+        links = await self.page.locator(f'a[href*="{url_pattern}"]').evaluate_all(
+            'elements => elements.map(e => e.href)'
+        )
         # 去重并排序
         links = sorted(list(set(links)))
 
@@ -207,6 +191,15 @@ class VideoAutomation:
         # 等待页面加载
         await asyncio.sleep(2)
 
+        # 检查视频是否已完成
+        tips_locator = self.page.locator(".tips-completion")
+        if await tips_locator.count() > 0:
+            # 获取文字内容
+            text = await tips_locator.text_content()
+            if text and "已完成" in text.strip():
+                print("✓ 该视频已标记为完成,跳过观看")
+                return
+
         # 如果需要点击播放按钮
         if play_button_selector:
             try:
@@ -215,6 +208,7 @@ class VideoAutomation:
                 print("✓ 已点击播放按钮")
             except:
                 print("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
+                return
 
         # 获取视频时长
         duration = await self.get_video_duration(video_selector)
