@@ -25,3 +25,6 @@ session.json
 # OS
 .DS_Store
 Thumbs.db
+
+# LLM
+.claude/
