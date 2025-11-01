@@ -7,8 +7,7 @@
 ### Chrome/Edge
 
 1. 安装扩展：
-   - [Cookie-Editor](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm) （推荐）
-   - [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
+   - [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi) （推荐）
 
 2. 在浏览器中**登录你的目标网站**
 
@@ -16,7 +15,9 @@
 
 4. 选择 "Export" → "JSON"
 
-5. 保存为 `cookies.json` 到 `school_vedio_hw` 目录
+5. 新建 `browser_cookies.json` 到项目根目录
+
+6. 粘贴你刚刚复制的文本并保存 
 
 ### Firefox
 
@@ -186,7 +187,7 @@ A: 运行脚本时如果提示"登录失败"，说明Cookie可能已过期，需
 确保 `cookies.json` 文件放在正确的位置：
 
 ```
-school_vedio_hw/
+fly_vedio_assignment_away/
 ├── scripts.py
 ├── config.py
 ├── cookies.json          ← Cookie文件放这里

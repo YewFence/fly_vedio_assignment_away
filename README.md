@@ -97,8 +97,9 @@ where msedge
 
 1. 安装浏览器扩展 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
 2. 在浏览器中登录网站 (https://moodle.scnu.edu.cn/my/)
-3. 使用扩展导出cookie为json文件
-4. 保存为 `browser_cookies.json` 到项目目录
+3. 使用扩展导出cookie为json格式
+4. 新建 `browser_cookies.json` 到项目目录
+5. 粘贴你刚刚复制的cookie并保存
 
 **详细说明**: [how_to_get_cookie.md](docs/how_to_get_cookie.md) ⭐
 
@@ -122,7 +123,7 @@ VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成
 
 **如何找到课程链接？**
 1. 登录lry
-2. 进入你的课程页面
+2. 进入你要刷的课程页面
 3. 查看浏览器地址栏，类似于：`https://moodle.scnu.edu.cn/course/view.php?id=12345` 直接复制粘贴即可
 
 ### 第三步：运行脚本
@@ -196,16 +197,16 @@ school_vedio_hw/
 
 ### Q1: 项目占用多少空间？
 **A**:
-- Python 虚拟环境: ~200 MB
-- Playwright 包: ~97 MB
-- **总计**: ~300 MB
+主要是Playwright 包: ~97 MB  
+**总计**: ~ 98MB
 
 ### Q2: 为什么不需要安装浏览器？
 **A**: 脚本使用 `channel="msedge"` 参数调用 Windows 系统自带的 Microsoft Edge 浏览器，无需通过 Playwright 下载浏览器。
 
 ### Q3: 其他系统（Linux/macOS）怎么使用？
 **A**: 需要修改 `config.py` 中的浏览器启动配置：
-`BROWSER="firefox"`
+`BROWSER="firefox"`或者`chrome`
+~~但是我没有实测过不保证它正常工作~~
 
 ### Q4: Cookie 转换失败怎么办？
 **A**:
