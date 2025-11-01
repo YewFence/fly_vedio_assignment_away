@@ -162,6 +162,23 @@ class VideoAutomation:
 
         return links
 
+    async def check_cookie_validity(self) -> bool:
+        """
+        检查Cookie是否有效
+        通过检查页面内容是否包含"访客不能访问此课程"来判断
+        :return: True表示Cookie有效，False表示Cookie已失效
+        """
+        try:
+            page_content = await self.page.content()
+            if "访客不能访问此课程" in page_content:
+                print("❌ 检测到Cookie已失效！页面显示: 访客不能访问此课程")
+                print("💡 请重新导出browser_cookies.json并运行脚本")
+                return False
+            return True
+        except Exception as e:
+            print(f"⚠ Cookie有效性检测出错: {e}")
+            return True  # 检测失败时默认认为有效，避免误判
+
     async def get_video_duration(self, video_selector: str = "video") -> Optional[float]:
         """
         获取视频时长(秒)
@@ -210,6 +227,11 @@ class VideoAutomation:
 
         # 等待页面加载
         await asyncio.sleep(2)
+
+        # 检查Cookie是否有效
+        if not await self.check_cookie_validity():
+            print("⚠ Cookie已失效，停止观看视频")
+            raise Exception("Cookie已失效，请重新获取Cookie")
 
         # 检查视频是否已完成
         tips_locator = self.page.locator(".tips-completion")
