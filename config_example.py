@@ -4,10 +4,12 @@
 """
 
 # ============= 必须配置 =============
-VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=18179"  # 课程链接页面URL
+VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=YOUR_COURSE_ID"  # 课程链接页面URL
 
 
 # ============= 可选配置 =============
+# 浏览器
+BROWSER = "msedge"  # 浏览器类型(msedge/chrome/firefox)
 # Cookie登录配置
 COOKIE_FILE = "cookies.json"  # Cookie文件路径
 BASE_URL = "https://moodle.scnu.edu.cn"  # 网站首页URL(用于验证Cookie)
