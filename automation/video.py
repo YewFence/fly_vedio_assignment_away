@@ -20,6 +20,29 @@ class VideoManager:
         self.page = page
         self.auth_manager = auth_manager
 
+    async def check_browser_closed(self):
+        """
+        检查浏览器是否已被用户手动关闭
+        如果浏览器已关闭，打印提示信息并抛出异常
+        如果浏览器正常运行，静默返回
+        """
+        try:
+            # 检查页面是否已关闭
+            if self.page.is_closed():
+                print("\n⚠️ 检测到浏览器已被手动关闭")
+                print("💡 程序即将退出")
+                raise Exception("浏览器已被用户手动关闭")
+            # 尝试获取页面标题来验证页面是否仍然可访问
+            await self.page.title()
+        except Exception as e:
+            # 如果是我们自己抛出的异常，直接传递
+            if "浏览器已被用户手动关闭" in str(e):
+                raise
+            # 其他异常也视为浏览器已关闭
+            print("\n⚠️ 检测到浏览器已被手动关闭")
+            print("💡 程序即将退出")
+            raise Exception("浏览器已被用户手动关闭")
+
     async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:
         """
         通过URL模式匹配获取视频链接
@@ -103,6 +126,9 @@ class VideoManager:
 
         # 等待页面加载
         await asyncio.sleep(2)
+
+        # 检查浏览器是否已关闭
+        await self.check_browser_closed()
 
         # 尝试自动延长会话
         await self.auth_manager.refresh_cookies()
@@ -193,14 +219,18 @@ class VideoManager:
                 elapsed += chunk
                 print(f"   已等待 {elapsed:.0f}/{wait_time:.0f} 秒 ({elapsed/wait_time*100:.0f}%)", end='\r', flush=True)
 
+                # 检查浏览器是否已关闭
+                await self.check_browser_closed()
+
                 # 尝试自动延长会话
                 await self.auth_manager.refresh_cookies()
-                
+
                 # 检查Cookie是否有效
                 if not await self.auth_manager.check_cookie_validity():
-                    print("⚠ Cookie已失效，停止观看视频")
+                    print("\n⚠ Cookie已失效，停止观看视频")
                     raise Exception("Cookie已失效，请重新获取Cookie")
-                    print()  # 完成后换行
+
+            print()  # 完成后换行
         elif duration == 0:
             # 视频已完成，无需等待
             print("✓ 视频无需等待")
@@ -226,6 +256,9 @@ class VideoManager:
         print(f"\n开始观看 {len(video_links)} 个视频")
 
         for i, link in enumerate(video_links, 1):
+            # 检查浏览器是否已关闭
+            await self.check_browser_closed()
+
             print(f"\n[{i}/{len(video_links)}] 当前视频:")
             await self.play_video(
                 link,
