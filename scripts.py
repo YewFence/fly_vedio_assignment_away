@@ -41,14 +41,17 @@ class VideoAutomation:
         self.browser = await playwright.chromium.launch(
             channel="msedge",
             headless=self.headless,
-            args=['--disable-blink-features=AutomationControlled']  # 防止网站检测自动化
+            args=[
+                '--disable-blink-features=AutomationControlled',  # 防止网站检测自动化
+                '--mute-audio'  # 静音浏览器
+            ]
         )
         self.context = await self.browser.new_context(
             viewport={'width': 1920, 'height': 1080},
             user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         )
         self.page = await self.context.new_page()
-        print("✓ 浏览器启动成功")
+        print("✓ 浏览器启动成功 (已静音)")
 
     async def save_cookies(self, cookie_file: str = "cookies.json"):
         """
