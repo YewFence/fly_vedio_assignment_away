@@ -104,6 +104,22 @@ class VideoAutomation:
         await self.page.goto(base_url, wait_until='networkidle')
         await asyncio.sleep(2)
 
+        # 检查是否发生重定向（登录失败会被重定向到登录页）
+        current_url = self.page.url
+
+        # 提取域名和路径进行比较（忽略查询参数的差异）
+        from urllib.parse import urlparse
+        base_parsed = urlparse(base_url)
+        current_parsed = urlparse(current_url)
+
+        # 判断是否重定向到了不同的页面
+        if base_parsed.netloc != current_parsed.netloc or \
+           current_parsed.path.startswith('/login') or \
+           current_parsed.path.startswith('/auth'):
+            print(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
+            print("💡 Cookie可能已过期，请重新获取Cookie")
+            return False
+
         print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
 
@@ -331,10 +347,13 @@ async def main():
         await automation.setup()
 
         # 2. 使用Cookie登录
-        login_success = await automation.login_with_cookies(
+        login_page = await automation.login_with_cookies(
             config.BASE_URL,
             config.COOKIE_FILE
         )
+
+        # 检查登录是否成功
+        login_success = await automation.login_with_cookies(login_page, config.COOKIE_FILE)
 
         if not login_success:
             print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
