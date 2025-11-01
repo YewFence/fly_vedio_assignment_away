@@ -106,7 +106,7 @@ class VideoManager:
 
         # 尝试自动延长会话
         await self.auth_manager.refresh_cookies()
-        
+
         # 检查Cookie是否有效
         if not await self.auth_manager.check_cookie_validity():
             print("⚠ Cookie已失效，停止观看视频")
@@ -192,7 +192,15 @@ class VideoManager:
                 await asyncio.sleep(chunk)
                 elapsed += chunk
                 print(f"   已等待 {elapsed:.0f}/{wait_time:.0f} 秒 ({elapsed/wait_time*100:.0f}%)", end='\r', flush=True)
-            print()  # 完成后换行
+
+                # 尝试自动延长会话
+                await self.auth_manager.refresh_cookies()
+                
+                # 检查Cookie是否有效
+                if not await self.auth_manager.check_cookie_validity():
+                    print("⚠ Cookie已失效，停止观看视频")
+                    raise Exception("Cookie已失效，请重新获取Cookie")
+                    print()  # 完成后换行
         elif duration == 0:
             # 视频已完成，无需等待
             print("✓ 视频无需等待")
