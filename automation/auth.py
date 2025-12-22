@@ -121,10 +121,16 @@ class AuthManager:
         current_url = self.page.url
 
         # 判断是否重定向到了不同的页面
-        if current_url != base_url:
-            print(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
-            print("💡 Cookie可能已过期，请重新获取Cookie")
-            return False
+        current_parsed = urlparse(current_url)
+        base_parsed = urlparse(base_url)
+    
+        # Compare scheme, netloc, and path (ignoring query params and fragments)
+        if (current_parsed.scheme != base_parsed.scheme or 
+            current_parsed.netloc != base_parsed.netloc or
+            current_parsed.path.rstrip('/') != base_parsed.path.rstrip('/')):
+                print(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
+                print("💡 Cookie可能已过期，请重新获取Cookie")
+                return False
 
         print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
