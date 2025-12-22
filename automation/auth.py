@@ -148,7 +148,7 @@ class AuthManager:
         await self.page.set_viewport_size({"width": 800, "height": 600})
         print(f"✅ 登录页面已打开: {login_url}")
         print("📝 请在浏览器中完成登录操作")
-        input("🔑 登录完成后，请按回车键继续...")
+        await asyncio.get_running_loop().run_in_executor(None, input, "🔑 登录完成后，请按回车键继续...")
         print("🔍 尝试获取cookie...")
         try:
             # 查找文本为"砺儒云课堂"的a标签
