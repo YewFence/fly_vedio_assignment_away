@@ -19,12 +19,7 @@ except ImportError:
 
 async def main():
     """主函数"""
-    # 自动格式化cookie文件
-    if cookie_fix():
-        print("✓ Cookie文件格式化成功")
-    else:
-        print("⚠ Cookie文件格式化失败，请检查browser_cookies.json是否配置正确，程序即将结束")
-        return
+
 
     # 从 config.py 读取配置
     print("正在加载配置...")
@@ -38,7 +33,6 @@ async def main():
     try:
         # 1. 启动浏览器
         await browser_manager.setup()
-
         # 2. 初始化认证和视频管理器
         page = browser_manager.get_page()
         context = browser_manager.get_context()
@@ -46,14 +40,46 @@ async def main():
         auth_manager = AuthManager(page, context)
         video_manager = VideoManager(page, auth_manager)
 
-        # 3. 使用cookie登录
-        login_success = await auth_manager.login_with_cookies(
-            config.BASE_URL,
-            config.COOKIE_FILE
-        )
+        # 3. 选择登录方式
+        print("\n🔐 请选择登录方式:")
+        print("   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookie")
+        print("   2. Cookie文件登录 - 使用现有的cookies.json文件登录")
+        print("💡 提示：按 Ctrl+C 可随时结束程序")
+        
+        login_success = False
+        while True:
+            try:
+                loop = asyncio.get_running_loop()
+                choice = await loop.run_in_executor(None, input, "请输入选择 (1/2，默认为1): ")
+                choice = choice.strip()
+
+                if choice in ("", "1"):
+                    # 默认使用交互式登录
+                    login_success = await auth_manager.interactive_login_and_save_cookies(
+                        config.LOGIN_URL,
+                        config.BASE_URL,
+                        config.COOKIE_FILE
+                    )
+                    break
+                elif choice == "2":
+                    # 使用旧的cookie文件登录方式
+                    if cookie_fix():
+                        print("✓ Cookie文件格式化成功")
+                        login_success = await auth_manager.login_with_cookies(
+                            config.BASE_URL,
+                            config.COOKIE_FILE
+                        )
+                    else:
+                        print("⚠ Cookie文件格式化失败，请检查browser_cookies.json是否配置正确，程序即将结束")
+                    break
+                else:
+                    print("⚠️  输入无效，请输入 1 或 2，或按 Ctrl+C 结束程序")
+            except KeyboardInterrupt:
+                print("\n\n程序已由用户中断。")
+                return
 
         if not login_success:
-            print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件")
+            print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件或完成手动登录")
             print("详细说明请查看: how_to_get_cookie.md")
             return
 
