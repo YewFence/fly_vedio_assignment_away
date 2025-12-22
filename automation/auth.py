@@ -144,7 +144,6 @@ class AuthManager:
         print("📝 请在浏览器中完成登录操作")
         input("🔑 登录完成后，请按回车键继续...")
         print("🔍 尝试获取cookie...")
-        # 找到文本是"砺儒云课堂"的a标签，然后点击它，等待跳转到https://moodle.scnu.edu.cn/my/
         try:
             # 查找文本为"砺儒云课堂"的a标签
             li_ru_link = self.page.get_by_text("砺儒云课堂")
@@ -169,11 +168,13 @@ class AuthManager:
         if await self.check_login_status(base_url):
             print("✅ 登录验证成功！")
         else:
-            print("❌ 登录验证失败！请确认您已完成登录")
-            retry = input("是否重试？(y/n): ").lower()
-            if retry == 'y' or retry == 'yes':
-                return await self.interactive_login_and_save_cookies(login_url, base_url, cookie_file)
-            return False
+            while not await self.check_login_status(base_url):
+                print("❌ 登录验证失败！请确认您已完成登录")
+                loop = asyncio.get_running_loop()
+                retry = await loop.run_in_executor(None, input, "是否重试？(y/n): ")
+                if retry.lower() not in ('y', 'yes'):
+                    return False
+            print("✅ 登录验证成功！")
 
         # 保存当前浏览器的Cookie
         await self.save_cookies(cookie_file)

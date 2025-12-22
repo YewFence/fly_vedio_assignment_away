@@ -46,10 +46,14 @@ async def main():
         print("   2. Cookie文件登录 - 使用现有的cookies.json文件登录")
         print("💡 提示：按 Ctrl+C 可随时结束程序")
         
+        login_success = False
         while True:
             try:
-                choice = input("请输入选择 (1/2，默认为1): ").strip()
-                if choice == "" or choice == "1":
+                loop = asyncio.get_running_loop()
+                choice = await loop.run_in_executor(None, input, "请输入选择 (1/2，默认为1): ")
+                choice = choice.strip()
+
+                if choice in ("", "1"):
                     # 默认使用交互式登录
                     login_success = await auth_manager.interactive_login_and_save_cookies(
                         config.LOGIN_URL,
@@ -59,22 +63,21 @@ async def main():
                     break
                 elif choice == "2":
                     # 使用旧的cookie文件登录方式
-                        # 自动格式化cookie文件
                     if cookie_fix():
                         print("✓ Cookie文件格式化成功")
+                        login_success = await auth_manager.login_with_cookies(
+                            config.BASE_URL,
+                            config.COOKIE_FILE
+                        )
                     else:
                         print("⚠ Cookie文件格式化失败，请检查browser_cookies.json是否配置正确，程序即将结束")
-                        return
                     break
                 else:
                     print("⚠️  输入无效，请输入 1 或 2，或按 Ctrl+C 结束程序")
             except KeyboardInterrupt:
                 print("\n\n程序已由用户中断。")
                 return
-        login_success = await auth_manager.login_with_cookies(
-            config.BASE_URL,
-            config.COOKIE_FILE
-        )
+
         if not login_success:
             print("\n❌ 登录失败! 请确保已正确配置 cookies.json 文件或完成手动登录")
             print("详细说明请查看: how_to_get_cookie.md")
