@@ -20,24 +20,34 @@ class VideoManager:
         self.page = page
         self.auth_manager = auth_manager
 
-    async def ensure_video_playing(self, video_selector: str = "video") -> bool:
+    async def ensure_video_playing(self, video_selector: str = "video") -> dict:
         """
-        确保视频正在播放，如果暂停则自动恢复
+        确保视频正在播放，如果暂停则自动恢复，并返回视频状态
         :param video_selector: 视频元素的CSS选择器
-        :return: True 表示视频正在播放或已恢复，False 表示无法恢复播放
+        :return: 包含视频状态的字典 {paused, currentTime, duration, ended}，获取失败返回 None
         """
         try:
-            is_paused = await self.page.evaluate(f"""
+            # 获取视频状态
+            video_state = await self.page.evaluate(f"""
                 () => {{
                     const video = document.querySelector('{video_selector}');
                     if (video) {{
-                        return video.paused;
+                        return {{
+                            paused: video.paused,
+                            currentTime: video.currentTime,
+                            duration: video.duration,
+                            ended: video.ended
+                        }};
                     }}
                     return null;
                 }}
             """)
 
-            if is_paused is True:
+            if video_state is None:
+                return None
+
+            # 如果视频暂停了（且未播放完毕），自动恢复播放
+            if video_state.get('paused') and not video_state.get('ended'):
                 print("\n⚠️ 检测到视频已暂停，正在自动恢复播放...")
                 await self.page.evaluate(f"""
                     () => {{
@@ -48,15 +58,12 @@ class VideoManager:
                     }}
                 """)
                 print("✓ 视频已恢复播放")
-                return True
-            elif is_paused is False:
-                return True  # 视频正在播放
-            else:
-                return True  # 未找到视频元素，跳过检测
+
+            return video_state
 
         except Exception:
-            # 检测失败时不影响主流程
-            return True
+            # 检测失败时返回 None
+            return None
 
     async def check_browser_closed(self):
         """
@@ -245,23 +252,39 @@ class VideoManager:
 
         # 根据计算结果等待
         if duration is not None and duration > 0:
-            # 等待视频播放完成(加上5秒缓冲时间)
-            wait_time = duration + 5
-            print(f"⏳ 等待视频播放完成(预计 {wait_time:.1f} 秒)...")
+            # 等待视频播放完成(加上5秒缓冲时间作为最大等待时间)
+            max_wait_time = duration + 60  # 最大等待时间，防止无限循环
+            print(f"⏳ 等待视频播放完成(预计 {duration:.1f} 秒)...")
 
-            # 分段等待,每10秒显示一次进度
+            # 基于视频实际进度等待
             elapsed = 0
-            while elapsed < wait_time:
-                chunk = min(10, wait_time - elapsed)
-                await asyncio.sleep(chunk)
-                elapsed += chunk
-                print(f"   已等待 {elapsed:.0f}/{wait_time:.0f} 秒 ({elapsed/wait_time*100:.0f}%)", end='\r', flush=True)
+            while elapsed < max_wait_time:
+                await asyncio.sleep(5)  # 每5秒检查一次
+                elapsed += 5
 
                 # 检查浏览器是否已关闭
                 await self.check_browser_closed()
 
-                # 检查并恢复视频播放状态
-                await self.ensure_video_playing(video_selector)
+                # 检查视频状态并恢复播放
+                video_state = await self.ensure_video_playing(video_selector)
+
+                if video_state:
+                    current_time = video_state.get('currentTime', 0)
+                    video_duration = video_state.get('duration', 0)
+                    ended = video_state.get('ended', False)
+
+                    # 视频已播放完毕
+                    if ended or (video_duration > 0 and current_time >= video_duration - 1):
+                        print(f"\n✓ 视频播放完毕 ({current_time:.1f}/{video_duration:.1f}秒)")
+                        break
+
+                    # 显示实际播放进度
+                    if video_duration > 0:
+                        progress = current_time / video_duration * 100
+                        print(f"   播放进度: {current_time:.0f}/{video_duration:.0f} 秒 ({progress:.0f}%)", end='\r', flush=True)
+                else:
+                    # 无法获取视频状态时，显示等待时间
+                    print(f"   已等待 {elapsed:.0f} 秒...", end='\r', flush=True)
 
                 # 尝试自动延长会话
                 await self.auth_manager.refresh_cookies()
