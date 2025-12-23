@@ -4,11 +4,15 @@
 
 ## 功能特点
 
-- ✅ Cookie登录
-- ✅ **URL模式自动匹配视频链接**（超简单！）
+- ✅ Cookie登录/交互式登录
+- ✅ 自动刷新登录状态
+- ✅ URL模式自动匹配视频链接
 - ✅ 自动播放视频并等待播放完成
 - ✅ 智能检测剩余需要播放时长
-- ✅ 显示实时状态
+- ✅ 基于实际播放进度判断视频完成状态
+- ✅ 自动继续视频，防止意外暂停
+- ✅ 使用 rich 库美化进度条，实时显示播放状态
+- ✅ 时间显示格式优化（时:分:秒）
 - ✅ 支持窗口模式/后台模式运行
 - ✅ 专为华南师范大学lry系统优化
 
@@ -26,6 +30,7 @@
 
 #### 2. Python 包依赖
 - `playwright >= 1.55.0` - 浏览器自动化框架
+- `rich >= 14.2.0` - 终端美化库（进度条显示）
 
 #### 3. 浏览器依赖
 - **Microsoft Edge** - 脚本使用系统已安装的 Edge 浏览器（默认配置）
@@ -64,7 +69,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # 3. 安装依赖
-pip install playwright>=1.55.0
+pip install playwright>=1.55.0 rich>=14.2.0
 ```
 
 #### 验证安装
@@ -89,11 +94,21 @@ where msedge
 
 ## 🚀 快速开始（3步完成！）
 
-### 第一步：获取Cookie
+### 第一步：选择登录方式
 
-本脚本使用Cookie登录，无需配置用户名密码。
+脚本支持两种登录方式：
 
-**最简单的方法**：
+#### 方式一：交互式登录（推荐）✨
+
+运行脚本后选择交互式登录，会打开浏览器窗口让你手动登录，登录成功后脚本会自动继续执行。
+
+- 无需手动导出 Cookie
+- 更加直观简单
+- 适合首次使用
+
+#### 方式二：Cookie 文件登录
+
+如果你更喜欢使用 Cookie 文件登录：
 
 1. 安装浏览器扩展 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
 2. 在浏览器中登录网站 (https://moodle.scnu.edu.cn/my/)
@@ -101,7 +116,7 @@ where msedge
 4. 新建 `browser_cookies.json` 到项目目录
 5. 粘贴你刚刚复制的cookie并保存
 
-**详细说明**: [how_to_get_cookie.md](docs/how_to_get_cookie.md) ⭐
+**详细说明**: [how_to_get_cookie.md](docs/how_to_get_cookie.md)
 
 ### 第二步：配置脚本
 
