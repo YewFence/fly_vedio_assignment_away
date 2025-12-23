@@ -25,9 +25,8 @@ class VideoManager:
         seconds = int(seconds)
         if seconds < 0:
             return "0:00"
-        hours = seconds // 3600
-        minutes = (seconds % 3600) // 60
-        secs = seconds % 60
+        minutes, secs = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
         if hours > 0:
             return f"{hours}:{minutes:02d}:{secs:02d}"
         return f"{minutes}:{secs:02d}"
@@ -48,42 +47,30 @@ class VideoManager:
         :return: 包含视频状态的字典 {paused, currentTime, duration, ended}，获取失败返回 None
         """
         try:
-            # 获取视频状态
-            video_state = await self.page.evaluate(f"""
-                () => {{
-                    const video = document.querySelector('{video_selector}');
-                    if (video) {{
-                        return {{
-                            paused: video.paused,
-                            currentTime: video.currentTime,
-                            duration: video.duration,
-                            ended: video.ended
-                        }};
-                    }}
-                    return null;
-                }}
-            """)
-
-            if video_state is None:
+            video = self.page.locator(video_selector)
+            if await video.count() == 0:
                 return None
+
+            # 获取视频状态
+            video_state = await video.evaluate("""
+                el => ({
+                    paused: el.paused,
+                    currentTime: el.currentTime,
+                    duration: el.duration,
+                    ended: el.ended
+                })
+            """)
 
             # 如果视频暂停了（且未播放完毕），自动恢复播放
             if video_state.get('paused') and not video_state.get('ended'):
-                print("\n⚠️ 检测到视频已暂停，正在自动恢复播放...")
-                await self.page.evaluate(f"""
-                    () => {{
-                        const video = document.querySelector('{video_selector}');
-                        if (video) {{
-                            video.play();
-                        }}
-                    }}
-                """)
-                print("✓ 视频已恢复播放")
+                console.print("\n[yellow]⚠️ 检测到视频已暂停，正在自动恢复播放...[/yellow]")
+                await video.evaluate("el => el.play()")
+                console.print("[green]✓ 视频已恢复播放[/green]")
 
             return video_state
 
-        except Exception:
-            # 检测失败时返回 None
+        except Exception as e:
+            console.print(f"\n[red]❌ 检测视频播放状态时出现异常: {e}[/red]")
             return None
 
     async def check_browser_closed(self):
@@ -151,19 +138,11 @@ class VideoManager:
         :return: 视频时长(秒),如果获取失败返回None
         """
         try:
-            # 等待视频元素加载
-            await self.page.wait_for_selector(video_selector, timeout=10000)
+            video = self.page.locator(video_selector)
+            await video.wait_for(timeout=10000)
 
             # 获取视频时长
-            duration = await self.page.evaluate(f"""
-                () => {{
-                    const video = document.querySelector('{video_selector}');
-                    if (video && video.duration) {{
-                        return video.duration;
-                    }}
-                    return null;
-                }}
-            """)
+            duration = await video.evaluate("el => el.duration || null")
 
             if duration:
                 print(f"✓ 视频时长: {self.format_time(duration)}")
