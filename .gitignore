@@ -9,8 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-# Config files - 重要！不要上传包含敏感信息的配置文件
-config.py
+# Env files - 重要！不要上传包含敏感信息的环境变量文件
+.env
 
 # Cookie files - 重要！不要上传Cookie文件
 browser_cookies.json

@@ -184,13 +184,12 @@ A: 运行脚本时如果提示"登录失败"，说明Cookie可能已过期，需
 
 ## 文件位置
 
-确保 `cookies.json` 文件放在正确的位置：
+确保 `browser_cookies.json` 文件放在正确的位置：
 
 ```
 fly_vedio_assignment_away/
-├── scripts.py
-├── config.py
-├── cookies.json          ← Cookie文件放这里
+├── ...
+├── browser_cookies.json          ← Cookie文件放这里
 └── ...
 ```
 
@@ -199,8 +198,9 @@ fly_vedio_assignment_away/
 ## 快速开始
 
 1. ✅ 在浏览器中登录网站
-2. ✅ 使用扩展导出Cookie为 `cookies.json`
-3. ✅ 将文件放到当前目录
-4. ✅ 运行 `uv run python scripts.py`
+2. ✅ 使用扩展导出Cookie为json格式到你的剪贴板
+3. ✅ 粘贴到 `browser_cookies.json` 文件里面 
+4. ✅ 将文件放到当前目录
+5. ✅ 运行程序
 
 就这么简单！🚀
