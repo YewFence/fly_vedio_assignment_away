@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact_name: school-video-hw-windows.exe
-            asset_name: school-video-hw-windows.exe
+            artifact_name: fly_video_assignment_away-windows.exe
+            asset_name: fly_video_assignment_away-windows.exe
           - os: macos-latest
-            artifact_name: school-video-hw-macos
-            asset_name: school-video-hw-macos
+            artifact_name: fly_video_assignment_away-macos
+            asset_name: fly_video_assignment_away-macos
 
     runs-on: ${{ matrix.os }}
 
@@ -47,17 +47,17 @@ jobs:
 
       - name: Build executable
         run: |
-          uv run pyinstaller --onefile --name school-video-hw main.py
+          uv run pyinstaller --onefile --name fly_video_assignment_away main.py
 
       - name: Rename artifact (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          mv dist/school-video-hw.exe dist/${{ matrix.artifact_name }}
+          mv dist/fly_video_assignment_away.exe dist/${{ matrix.artifact_name }}
 
       - name: Rename artifact (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          mv dist/school-video-hw dist/${{ matrix.artifact_name }}
+          mv dist/fly_video_assignment_away dist/${{ matrix.artifact_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -83,6 +83,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/school-video-hw-windows.exe/school-video-hw-windows.exe
-            artifacts/school-video-hw-macos/school-video-hw-macos
+            artifacts/fly_video_assignment_away-windows.exe/fly_video_assignment_away-windows.exe
+            artifacts/fly_video_assignment_away-macos/fly_video_assignment_away-macos
           generate_release_notes: true
