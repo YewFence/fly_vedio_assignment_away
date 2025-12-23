@@ -20,6 +20,44 @@ class VideoManager:
         self.page = page
         self.auth_manager = auth_manager
 
+    async def ensure_video_playing(self, video_selector: str = "video") -> bool:
+        """
+        确保视频正在播放，如果暂停则自动恢复
+        :param video_selector: 视频元素的CSS选择器
+        :return: True 表示视频正在播放或已恢复，False 表示无法恢复播放
+        """
+        try:
+            is_paused = await self.page.evaluate(f"""
+                () => {{
+                    const video = document.querySelector('{video_selector}');
+                    if (video) {{
+                        return video.paused;
+                    }}
+                    return null;
+                }}
+            """)
+
+            if is_paused is True:
+                print("\n⚠️ 检测到视频已暂停，正在自动恢复播放...")
+                await self.page.evaluate(f"""
+                    () => {{
+                        const video = document.querySelector('{video_selector}');
+                        if (video) {{
+                            video.play();
+                        }}
+                    }}
+                """)
+                print("✓ 视频已恢复播放")
+                return True
+            elif is_paused is False:
+                return True  # 视频正在播放
+            else:
+                return True  # 未找到视频元素，跳过检测
+
+        except Exception:
+            # 检测失败时不影响主流程
+            return True
+
     async def check_browser_closed(self):
         """
         检查浏览器是否已被用户手动关闭
@@ -221,6 +259,9 @@ class VideoManager:
 
                 # 检查浏览器是否已关闭
                 await self.check_browser_closed()
+
+                # 检查并恢复视频播放状态
+                await self.ensure_video_playing(video_selector)
 
                 # 尝试自动延长会话
                 await self.auth_manager.refresh_cookies()
