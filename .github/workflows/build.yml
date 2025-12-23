@@ -68,7 +68,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(inputs.ref, 'v') || startsWith(github.ref, 'refs/tags/v')
 
     permissions:
       contents: write
@@ -82,6 +82,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.ref || github.ref_name }}
           files: |
             artifacts/fly_video_assignment_away-windows.exe/fly_video_assignment_away-windows.exe
             artifacts/fly_video_assignment_away-macos/fly_video_assignment_away-macos
