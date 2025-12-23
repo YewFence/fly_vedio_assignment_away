@@ -22,7 +22,7 @@
 
 ### 第一步：下载可执行文件
 
-前往 [Releases](../../releases) 页面，下载对应系统的可执行文件：
+前往 [Releases](https://github.com/YewFence/fly_vedio_assignment_away/releases) 页面，下载对应系统的可执行文件：
 - **Windows**: `school-video-hw-windows.exe`
 - **macOS**: `school-video-hw-macos`
 
@@ -138,4 +138,4 @@ uv run python main.py
 
 ---
 
-需要帮助？遇到BUG？请提出 [Issue](../../issues) 🚀
+需要帮助？遇到BUG？请提出 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues) 🚀
