@@ -11,6 +11,23 @@ from playwright.async_api import Page
 class VideoManager:
     """视频管理器"""
 
+    @staticmethod
+    def format_time(seconds: float) -> str:
+        """
+        将秒数格式化为友好的时分秒格式
+        :param seconds: 秒数
+        :return: 格式化后的字符串，如 "1:23:45" 或 "12:34"
+        """
+        seconds = int(seconds)
+        if seconds < 0:
+            return "0:00"
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        secs = seconds % 60
+        if hours > 0:
+            return f"{hours}:{minutes:02d}:{secs:02d}"
+        return f"{minutes}:{secs:02d}"
+
     def __init__(self, page: Page, auth_manager):
         """
         初始化视频管理器
@@ -145,7 +162,7 @@ class VideoManager:
             """)
 
             if duration:
-                print(f"✓ 视频时长: {duration:.1f} 秒 ({duration/60:.1f} 分钟)")
+                print(f"✓ 视频时长: {self.format_time(duration)}")
                 return duration
             else:
                 print("⚠ 无法获取视频时长,可能并非视频页，将在默认等待时间后跳转下一链接")
@@ -228,14 +245,14 @@ class VideoManager:
                             remaining = video_duration - watched_duration
 
                             if remaining < 0:
-                                print(f"⚠ 已观看时长({watched_duration:.1f}秒) 大于总时长({video_duration:.1f}秒)，视频可能已完成")
+                                print(f"⚠ 已观看时长({self.format_time(watched_duration)}) 大于总时长({self.format_time(video_duration)})，视频可能已完成")
                                 duration = 0  # 视频已完成，无需等待
                             elif remaining == 0:
                                 print("✓ 视频已观看完毕")
                                 duration = 0
                             else:
                                 duration = remaining
-                                print(f"✓ 视频总时长: {video_duration:.1f}秒, 已观看: {watched_duration:.1f}秒, 剩余: {duration:.1f}秒")
+                                print(f"✓ 总时长: {self.format_time(video_duration)}, 已观看: {self.format_time(watched_duration)}, 剩余: {self.format_time(duration)}")
                         except ValueError:
                             print(f"⚠ 无法解析已观看时长: '{watched_text}', 使用视频总时长")
                             duration = video_duration
@@ -254,7 +271,7 @@ class VideoManager:
         if duration is not None and duration > 0:
             # 等待视频播放完成(加上5秒缓冲时间作为最大等待时间)
             max_wait_time = duration + 60  # 最大等待时间，防止无限循环
-            print(f"⏳ 等待视频播放完成(预计 {duration:.1f} 秒)...")
+            print(f"⏳ 等待视频播放完成(预计 {self.format_time(duration)})...")
 
             # 基于视频实际进度等待
             elapsed = 0
@@ -275,16 +292,16 @@ class VideoManager:
 
                     # 视频已播放完毕
                     if ended or (video_duration > 0 and current_time >= video_duration - 1):
-                        print(f"\n✓ 视频播放完毕 ({current_time:.1f}/{video_duration:.1f}秒)")
+                        print(f"\n✓ 视频播放完毕 ({self.format_time(current_time)}/{self.format_time(video_duration)})")
                         break
 
                     # 显示实际播放进度
                     if video_duration > 0:
                         progress = current_time / video_duration * 100
-                        print(f"   播放进度: {current_time:.0f}/{video_duration:.0f} 秒 ({progress:.0f}%)", end='\r', flush=True)
+                        print(f"   播放进度: {self.format_time(current_time)}/{self.format_time(video_duration)} ({progress:.0f}%)", end='\r', flush=True)
                 else:
                     # 无法获取视频状态时，显示等待时间
-                    print(f"   已等待 {elapsed:.0f} 秒...", end='\r', flush=True)
+                    print(f"   已等待 {self.format_time(elapsed)}...", end='\r', flush=True)
 
                 # 尝试自动延长会话
                 await self.auth_manager.refresh_cookies()
@@ -301,7 +318,7 @@ class VideoManager:
         else:
             # 使用默认等待时间
             print("⚠ 无法获取视频时长，使用默认等待时间...")
-            print(f"⏳ 等待 {default_wait_time} 秒...")
+            print(f"⏳ 等待 {self.format_time(default_wait_time)}...")
             await asyncio.sleep(default_wait_time)
 
         print("✓ 视频播放完成")
