@@ -12,7 +12,8 @@ load_dotenv()
 # ============= 从环境变量读取的配置 =============
 BROWSER = os.getenv("BROWSER", "msedge")  # 浏览器类型(msedge/chrome/firefox)
 HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"  # 是否使用无头模式
-VIDEO_LIST_URL = os.getenv("VIDEO_LIST_URL", "")  # 课程链接页面URL
+if not (VIDEO_LIST_URL := os.getenv("VIDEO_LIST_URL")):
+    raise ValueError("错误: 环境变量 'VIDEO_LIST_URL' 未设置或为空。请在 .env 文件中配置它。")
 
 
 # ============= 其他配置 =============
