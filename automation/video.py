@@ -6,6 +6,10 @@
 import asyncio
 from typing import List, Optional
 from playwright.async_api import Page
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
+from rich.console import Console
+
+console = Console()
 
 
 class VideoManager:
@@ -269,49 +273,65 @@ class VideoManager:
 
         # 根据计算结果等待
         if duration is not None and duration > 0:
-            # 等待视频播放完成(加上5秒缓冲时间作为最大等待时间)
+            # 等待视频播放完成
             max_wait_time = duration + 60  # 最大等待时间，防止无限循环
-            print(f"⏳ 等待视频播放完成(预计 {self.format_time(duration)})...")
+            console.print(f"[cyan]⏳ 等待视频播放完成(预计 {self.format_time(duration)})...[/cyan]")
 
-            # 基于视频实际进度等待
-            elapsed = 0
-            while elapsed < max_wait_time:
-                await asyncio.sleep(5)  # 每5秒检查一次
-                elapsed += 5
+            # 使用 rich 进度条显示播放进度
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(bar_width=40),
+                TaskProgressColumn(),
+                TextColumn("•"),
+                TimeElapsedColumn(),
+                console=console,
+                transient=True,
+            ) as progress:
+                task = progress.add_task("播放中", total=100)
 
-                # 检查浏览器是否已关闭
-                await self.check_browser_closed()
+                elapsed = 0
+                while elapsed < max_wait_time:
+                    await asyncio.sleep(5)  # 每5秒检查一次
+                    elapsed += 5
 
-                # 检查视频状态并恢复播放
-                video_state = await self.ensure_video_playing(video_selector)
+                    # 检查浏览器是否已关闭
+                    await self.check_browser_closed()
 
-                if video_state:
-                    current_time = video_state.get('currentTime', 0)
-                    video_duration = video_state.get('duration', 0)
-                    ended = video_state.get('ended', False)
+                    # 检查视频状态并恢复播放
+                    video_state = await self.ensure_video_playing(video_selector)
 
-                    # 视频已播放完毕
-                    if ended or (video_duration > 0 and current_time >= video_duration - 1):
-                        print(f"\n✓ 视频播放完毕 ({self.format_time(current_time)}/{self.format_time(video_duration)})")
-                        break
+                    if video_state:
+                        current_time = video_state.get('currentTime', 0)
+                        video_duration = video_state.get('duration', 0)
+                        ended = video_state.get('ended', False)
 
-                    # 显示实际播放进度
-                    if video_duration > 0:
-                        progress = current_time / video_duration * 100
-                        print(f"   播放进度: {self.format_time(current_time)}/{self.format_time(video_duration)} ({progress:.0f}%)", end='\r', flush=True)
-                else:
-                    # 无法获取视频状态时，显示等待时间
-                    print(f"   已等待 {self.format_time(elapsed)}...", end='\r', flush=True)
+                        # 视频已播放完毕
+                        if ended or (video_duration > 0 and current_time >= video_duration - 1):
+                            progress.update(task, completed=100, description="[green]播放完毕[/green]")
+                            break
 
-                # 尝试自动延长会话
-                await self.auth_manager.refresh_cookies()
+                        # 更新进度条
+                        if video_duration > 0:
+                            percent = current_time / video_duration * 100
+                            progress.update(
+                                task,
+                                completed=percent,
+                                description=f"[cyan]{self.format_time(current_time)}[/cyan]/[dim]{self.format_time(video_duration)}[/dim]"
+                            )
+                    else:
+                        # 无法获取视频状态时
+                        progress.update(task, description=f"[yellow]等待中 {self.format_time(elapsed)}[/yellow]")
 
-                # 检查Cookie是否有效
-                if not await self.auth_manager.check_cookie_validity():
-                    print("\n⚠ Cookie已失效，停止观看视频")
-                    raise Exception("Cookie已失效，请重新获取Cookie")
+                    # 尝试自动延长会话
+                    await self.auth_manager.refresh_cookies()
 
-            print()  # 完成后换行
+                    # 检查Cookie是否有效
+                    if not await self.auth_manager.check_cookie_validity():
+                        console.print("[red]⚠ Cookie已失效，停止观看视频[/red]")
+                        raise Exception("Cookie已失效，请重新获取Cookie")
+
+            console.print(f"[green]✓ 视频播放完毕[/green]")
         elif duration == 0:
             # 视频已完成，无需等待
             print("✓ 视频无需等待")
