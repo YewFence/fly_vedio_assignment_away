@@ -16,135 +16,69 @@
 - ✅ 支持窗口模式/后台模式运行
 - ✅ 专为华南师范大学lry系统优化
 
-## 📋 环境要求
-
-### 系统要求
-- **操作系统**: Windows 10/11（需要系统已安装 Microsoft Edge 浏览器）
-- **其他系统**: Linux/macOS 需要更改配置文件中的浏览器选项
-
-### 依赖项
-
-#### 1. Python 环境
-- **Python 版本**: >= 3.13
-- **包管理工具**: [uv](https://github.com/astral-sh/uv)（推荐）或 pip
-
-#### 2. Python 包依赖
-- `playwright >= 1.55.0` - 浏览器自动化框架
-- `rich >= 14.2.0` - 终端美化库（进度条显示）
-
-#### 3. 浏览器依赖
-- **Microsoft Edge** - 脚本使用系统已安装的 Edge 浏览器（默认配置）
-- **firefox/chrome** - 需要更改配置文件
-
-### 安装步骤
-
-#### 方法一：使用 uv（推荐）
-
-```bash
-# 1. 安装 uv（如果还没安装）
-# Windows (PowerShell)
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Linux/macOS
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. 克隆项目
-git clone <your-repo-url>
-cd school_vedio_hw
-
-# 3. uv 会自动创建虚拟环境并安装依赖
-uv sync
-```
-
-#### 方法二：使用 pip
-
-```bash
-# 1. 创建虚拟环境
-python -m venv .venv
-
-# 2. 激活虚拟环境
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
-
-# 3. 安装依赖
-pip install playwright>=1.55.0 rich>=14.2.0
-```
-
-#### 验证安装
-
-```bash
-# 检查 Python 版本
-python --version  # 应显示 >= 3.13
-
-# 检查 playwright 是否安装
-uv pip list | grep playwright
-# 或
-pip list | grep playwright
-
-# 检查 Edge 浏览器（Windows）
-where msedge
-# 应显示 Edge 浏览器的安装路径
-```
-
 ---
 
-## 使用步骤
+## 🚀 快速开始（推荐）
 
-## 🚀 快速开始（3步完成！）
+### 第一步：下载可执行文件
 
-### 第一步：选择登录方式
+前往 [Releases](../../releases) 页面，下载对应系统的可执行文件：
+- **Windows**: `school-video-hw-windows.exe`
+- **macOS**: `school-video-hw-macos`
 
-脚本支持两种登录方式：
+### 第二步：创建配置文件
 
-#### 方式一：交互式登录（推荐）✨
+在可执行文件同目录下参考 [env.example](./.env.example) 创建 `.env` 文件：
 
-运行脚本后选择交互式登录，会打开浏览器窗口让你手动登录，登录成功后脚本会自动继续执行。
+```env
+# 浏览器类型 (msedge/chrome/firefox)
+BROWSER=msedge
 
-- 无需手动导出 Cookie
-- 更加直观简单
-- 适合首次使用
+# 是否使用无头模式 (true/false)
+HEADLESS=false
 
-#### 方式二：Cookie 文件登录
-
-如果你更喜欢使用 Cookie 文件登录：
-
-1. 安装浏览器扩展 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
-2. 在浏览器中登录网站 (https://moodle.scnu.edu.cn/my/)
-3. 使用扩展导出cookie为json格式
-4. 新建 `browser_cookies.json` 到项目目录
-5. 粘贴你刚刚复制的cookie并保存
-
-**详细说明**: [how_to_get_cookie.md](docs/how_to_get_cookie.md)
-
-### 第二步：配置脚本
-
-从示例文件复制一份配置：
-
-```bash
-# Windows
-copy config_example.py config.py
-
-# Linux/Mac
-cp config_example.py config.py
-```
-
-编辑 `config.py` 文件，粘贴你要刷的课程链接，其他一般不需要修改
-
-```python
-VIDEO_LIST_URL = "https://moodle.scnu.edu.cn/course/view.php?id=12345"  # 改成你的课程链接
+# 课程链接页面URL（改成你自己的课程链接）
+VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 ```
 
 **如何找到课程链接？**
-1. 登录lry
+1. 登录lry系统
 2. 进入你要刷的课程页面
-3. 查看浏览器地址栏，类似于：`https://moodle.scnu.edu.cn/course/view.php?id=12345` 直接复制粘贴即可
+3. 复制浏览器地址栏的链接（类似 `https://moodle.scnu.edu.cn/course/view.php?id=12345`）
 
-### 第三步：运行脚本
+### 第三步：运行程序
 
-在项目根目录下运行
+双击运行可执行文件，选择「交互式登录」，在弹出的浏览器窗口中登录即可。
+
+---
+
+## 🐍 开发者使用方式
+
+如果你熟悉 Python，可以直接运行源码：
+
+### 环境要求
+
+- **Python**: >= 3.13
+- **包管理**: [uv](https://github.com/astral-sh/uv)（推荐）
+- **浏览器**: Microsoft Edge（Windows 默认）/ Chrome / Firefox
+
+### 安装步骤
+
 ```bash
+# 1. 克隆项目
+git clone https://github.com/YewFence/fly_vedio_assignment_away.git
+cd fly_vedio_assignment_away
+
+# 2. 安装依赖
+uv sync
+
+# 3. 创建配置文件
+copy .env.example .env  # Windows
+cp .env.example .env    # Linux/macOS
+
+# 4. 编辑 .env 文件，填入课程链接
+
+# 5. 运行
 uv run python main.py
 ```
 
@@ -152,94 +86,56 @@ uv run python main.py
 
 ## 📖 工作原理
 
-脚本使用URL模式匹配，自动查找页面中所有符合模式的视频链接：
-
 ```
-1. 登录Moodle（使用Cookie）
+1. 登录Moodle（交互式登录或Cookie）
    ↓
 2. 访问课程页面
    ↓
-3. 自动查找所有包含URL模式的链接
-   例如: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=123456
+3. 自动查找所有视频链接
    ↓
-4. 依次访问每个视频链接
-   ↓
-5. 自动播放并等待视频完成
+4. 依次播放并等待完成
    ↓
 完成！
 ```
 
-**无需配置复杂的CSS选择器！** 只需要知道视频链接的URL格式即可！
-
 ---
 
-## 📂 项目文件结构
+## 🔐 登录方式
 
-```
-school_vedio_hw/
-├── automation/              # 自动化框架包
-│   ├── __init__.py         # 包初始化，导出所有管理器类
-│   ├── browser.py          # 浏览器管理模块
-│   ├── auth.py             # 认证和Cookie管理模块
-│   └── video.py            # 视频操作模块
-├── main.py                 # 主入口文件
-├── cookie_fix.py           # Cookie格式转换工具
-├── config.py               # 配置文件 ⭐ 需要自己创建并配置课程链接
-├── config_example.py       # 配置示例
-├── browser_cookies.json    # 浏览器导出的原始Cookie ⭐ 需要自己导出
-├── cookies.json            # 转换后的Cookie（自动生成）
-├── pyproject.toml          # 项目依赖配置
-├── uv.lock                 # uv 依赖锁定文件
-├── .python-version         # Python 版本配置
-├── .gitignore              # Git 忽略文件
-├── README.md               # 本文档
-└── docs/
-    └── how_to_get_cookie.md   # Cookie获取指南
-```
+### 方式一：交互式登录（推荐）
 
-**关键文件说明**:
-- ⭐ **必须配置**: `config.py`, `browser_cookies.json`
-- 🤖 **自动生成**: `cookies.json`（由 cookie_fix.py 自动转换）
-- 📦 **依赖管理**: `pyproject.toml`, `uv.lock`
+运行程序后选择交互式登录，会打开浏览器窗口让你手动登录，登录成功后程序会自动继续。
+
+### 方式二：Cookie 文件登录
+
+1. 安装浏览器扩展 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
+2. 登录 https://moodle.scnu.edu.cn/my/
+3. 使用扩展导出 Cookie 为 JSON 格式
+4. 保存为项目目录下的 `browser_cookies.json`
+
+详细说明: [how_to_get_cookie.md](docs/how_to_get_cookie.md)
 
 ---
 
 ## 🔒 安全注意事项
 
-- ✅ `config.py` 和 `cookies.json` 和 `browser_cookie.json` 已添加到 `.gitignore`
-- ⚠️ 不要分享Cookie文件
+- ⚠️ 不要分享 `.env` 文件和 Cookie 文件
 - ⚠️ 不要上传配置文件到公开平台
-- ⚠️ Cookie会过期，定期更新
+- ⚠️ Cookie 会过期，需定期更新
 
 ---
 
 ## ❓ 常见问题
 
-### Q1: 项目占用多少空间？
-**A**:
-主要是Playwright 包: ~97 MB  
-**总计**: ~ 98MB
+### Q: 为什么不需要安装浏览器？
+**A**: 程序使用系统已安装的浏览器（默认 Edge），无需额外下载。
 
-### Q2: 为什么不需要安装浏览器？
-**A**: 脚本使用 `channel="msedge"` 参数调用 Windows 系统自带的 Microsoft Edge 浏览器，无需通过 Playwright 下载浏览器。
+### Q: macOS/Linux 怎么使用？
+**A**: 修改 `.env` 中的 `BROWSER=chrome` 或 `BROWSER=firefox`。
 
-### Q3: 其他系统（Linux/macOS）怎么使用？
-**A**: 需要修改 `config.py` 中的浏览器启动配置：
-`BROWSER="firefox"`或者`chrome`
-~~但是我没有实测过不保证它正常工作~~
-
-### Q4: Cookie 转换失败怎么办？
-**A**:
-1. 确保 `browser_cookies.json` 存在且不为空
-2. 检查 JSON 格式是否正确
-3. 重新从浏览器导出 Cookie
-
-### Q5: 登录失败被重定向？
-**A**:
-1. Cookie 可能已过期，重新获取 Cookie
-2. 检查 `browser_cookies.json` 是否包含 `MoodleSession` Cookie
-3. 确保在浏览器中能正常登录
+### Q: Cookie 过期/登录失败？
+**A**: 重新使用交互式登录，或重新导出 Cookie。
 
 ---
 
-需要帮助？遇到BUG？请提出issue 🚀
+需要帮助？遇到BUG？请提出 [Issue](../../issues) 🚀
