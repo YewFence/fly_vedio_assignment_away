@@ -1,141 +1,152 @@
-# 视频自动观看脚本 - 华南师范大学lry系统
+# SCNU 砺儒云 (Moodle) 视频自动观看工具
 
-使用 Playwright 自动登录华南师范大学lry系统、点击视频链接并等待视频播放完成。
+基于 Playwright 的自动化脚本，支持自动登录华南师范大学砺儒云系统、解析视频列表并完成自动播放。
 
-## 功能特点
+## ✨ 功能特点
 
-- ✅ Cookie登录/交互式登录
-- ✅ 自动刷新登录状态
-- ✅ URL模式自动匹配视频链接
-- ✅ 自动播放视频并等待播放完成
-- ✅ 智能检测剩余需要播放时长
-- ✅ 基于实际播放进度判断视频完成状态
-- ✅ 自动继续视频，防止意外暂停
-- ✅ 使用 rich 库美化进度条，实时显示播放状态
-- ✅ 时间显示格式优化（时:分:秒）
-- ✅ 支持窗口模式/后台模式运行
-- ✅ 专为华南师范大学lry系统优化
+- ✅ **多种登录方式**: 支持 Cookie 登录及交互式手动登录
+- ✅ **状态自动维护**: 自动检测并刷新登录状态
+- ✅ **智能链接解析**: 自动匹配并提取课程中的视频链接
+- ✅ **精准播放控制**: 实时检测播放进度，确保视频真正播放完成
+- ✅ **断点续播**: 自动处理播放中断，确保流程不间断
+- ✅ **可视化进度**: 基于 `rich` 库构建的美化进度条，实时展示剩余时长
+- ✅ **多模式支持**: 支持有界面窗口模式或后台无头模式运行
+- ✅ **专为 SCNU 优化**: 深度适配华南师范大学 Moodle 平台
 
 ---
 
 ## 🚀 快速开始（推荐）
 
-### 第一步：下载可执行文件
+### 前置要求
+
+本程序依赖系统中已安装的浏览器，请确保您的电脑上安装了以下任一浏览器：
+- **Microsoft Edge** (推荐，已通过完整测试)
+- **Google Chrome**
+- **Mozilla Firefox**
+- **Safari**
+
+> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交 Issue](#反馈与建议) 反馈。
+
+### 第一步：下载程序
 
 前往 [Releases](https://github.com/YewFence/fly_vedio_assignment_away/releases) 页面，下载对应系统的可执行文件：
 - **Windows**: `school-video-hw-windows.exe`
 - **macOS**: `school-video-hw-macos`
 
+> ⚠️ **重要提示**: 目前生成的二进制发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
+> 
+> 若您在运行过程中遇到严重问题，建议：
+> 1. 前往 Tags 下载 [v1.0.0 版本的源码](https://github.com/YewFence/fly_vedio_assignment_away/releases/tag/v1.0.0)。
+> 2. 参考该版本内的 `README.md` 进行环境配置与手动运行。
+> 3. 欢迎[提交 Issue](#反馈与建议) 报告问题，我会尽快进行修复。
+
 ### 第二步：创建配置文件
 
-在可执行文件同目录下参考 [env.example](./.env.example) 创建 `.env` 文件：
+在程序所在目录下参考 [.env.example](./.env.example) 创建 `.env` 配置文件：
 
 ```env
 # 浏览器类型 (msedge/chrome/firefox)
 BROWSER=msedge
 
-# 是否使用无头模式 (true/false)
+# 是否开启无头模式（true 表示隐藏浏览器界面，false 表示显示）
 HEADLESS=false
 
-# 课程链接页面URL（改成你自己的课程链接）
+# 课程详情页 URL
 VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 ```
 
-**如何找到课程链接？**
-1. 登录lry系统
-2. 进入你要刷的课程页面
-3. 复制浏览器地址栏的链接（类似 `https://moodle.scnu.edu.cn/course/view.php?id=12345`）
+**如何获取课程链接？**
+1. 登录 [砺儒云系统](https://moodle.scnu.edu.cn/)。
+2. 点击进入您需要观看视频的课程页面。
+3. 复制浏览器地址栏中的完整 URL（类似于 `https://moodle.scnu.edu.cn/course/view.php?id=XXXXX`）。
 
-### 第三步：运行程序
+### 第三步：启动程序
 
-双击运行可执行文件，选择「交互式登录」，在弹出的浏览器窗口中登录即可。
+直接双击运行程序。推荐选择「交互式登录」，在自动打开的浏览器窗口中完成登录操作，程序随后会自动接管播放流程。
 
 ---
 
-## 🐍 开发者使用方式
+## 🛠️ 开发者指南 (源码运行)
 
-如果你熟悉 Python，可以直接运行源码：
+如果您熟悉 Python 环境，也可以直接运行源代码：
 
 ### 环境要求
+- **Python**: 3.13+
+- **工具**: 推荐使用 [uv](https://github.com/astral-sh/uv)
 
-- **Python**: >= 3.13
-- **包管理**: [uv](https://github.com/astral-sh/uv)（推荐）
-- **浏览器**: Microsoft Edge（Windows 默认）/ Chrome / Firefox
-
-### 安装步骤
-
+### 快速上手
 ```bash
-# 1. 克隆项目
+# 1. 克隆仓库
 git clone https://github.com/YewFence/fly_vedio_assignment_away.git
 cd fly_vedio_assignment_away
 
 # 2. 安装依赖
 uv sync
 
-# 3. 创建配置文件
-copy .env.example .env  # Windows
-cp .env.example .env    # Linux/macOS
+# 3. 配置环境 (编辑 .env 文件)
+cp .env.example .env
 
-# 4. 编辑 .env 文件，填入课程链接
-
-# 5. 运行
+# 4. 运行
 uv run python main.py
 ```
 
 ---
 
-## 📖 工作原理
+## ⚙️ 工作流程
 
-```
-1. 登录Moodle（交互式登录或Cookie）
-   ↓
-2. 访问课程页面
-   ↓
-3. 自动查找所有视频链接
-   ↓
-4. 依次播放并等待完成
-   ↓
-完成！
+```mermaid
+graph TD
+    A[启动程序并登录] --> B[访问指定的课程页面]
+    B --> C[扫描并解析视频资源链接]
+    C --> D[依次进入视频页面播放]
+    D --> E{是否检测到完成?}
+    E -- 否 --> D
+    E -- 是 --> F[检查下一个视频]
+    F -- 全部完成 --> G[退出程序]
 ```
 
 ---
 
 ## 🔐 登录方式
 
-### 方式一：交互式登录（推荐）
+### 1. 交互式登录 (推荐)
+启动程序后，选择交互式模式。脚本会唤起一个浏览器窗口，您可以手动输入账号密码或通过统一身份认证登录。登录完成后，脚本会自动捕获会话状态。
 
-运行程序后选择交互式登录，会打开浏览器窗口让你手动登录，登录成功后程序会自动继续。
+### 2. Cookie 文件登录
+1. 安装 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi) 扩展。
+2. 在浏览器中登录 [SCNU 砺儒云](https://moodle.scnu.edu.cn/)。
+3. 点击插件，选择 "Export" 并导出为 **JSON** 格式。
+4. 将导出的内容保存为项目根目录下的 `browser_cookies.json` 文件。
 
-### 方式二：Cookie 文件登录
-
-1. 安装浏览器扩展 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
-2. 登录 https://moodle.scnu.edu.cn/my/
-3. 使用扩展导出 Cookie 为 JSON 格式
-4. 保存为项目目录下的 `browser_cookies.json`
-
-详细说明: [how_to_get_cookie.md](docs/how_to_get_cookie.md)
+> [详细 Cookie 获取指南](docs/how_to_get_cookie.md)
 
 ---
 
-## 🔒 安全注意事项
+## ⚠️ 安全与规范
 
-- ⚠️ 不要分享 `.env` 文件和 Cookie 文件
-- ⚠️ 不要上传配置文件到公开平台
-- ⚠️ Cookie 会过期，需定期更新
-
----
-
-## ❓ 常见问题
-
-### Q: 为什么不需要安装浏览器？
-**A**: 程序使用系统已安装的浏览器（默认 Edge），无需额外下载。
-
-### Q: macOS/Linux 怎么使用？
-**A**: 修改 `.env` 中的 `BROWSER=chrome` 或 `BROWSER=firefox`。
-
-### Q: Cookie 过期/登录失败？
-**A**: 重新使用交互式登录，或重新导出 Cookie。
+- **隐私保护**: 请妥善保管您的 `.env` 和 `browser_cookies.json` 文件，切勿分享给他人或上传至公开平台。
+- **定期更新**: Cookie 具有时效性，若登录失效请重新获取或使用交互式登录。
+- **合理使用**: 本工具仅用于辅助学习，请确保您的使用行为符合学校相关规定。
 
 ---
 
-需要帮助？遇到BUG？请提出 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues) 🚀
+## ❓ 常见问题 (FAQ)
+
+**Q: 为什么不需要单独下载浏览器驱动？**
+A: 本项目基于 Playwright，默认会尝试调用系统中已安装的浏览器，无需手动管理 WebDriver。
+
+**Q: macOS 或 Linux 用户如何配置？**
+A: 请在 `.env` 文件中将 `BROWSER` 修改为 `chrome` 或 `firefox`，并确保系统中已安装相应浏览器。
+
+**Q: 登录状态失效怎么办？**
+A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择交互式登录。
+
+---
+
+## 🚀 反馈与建议
+如果您在使用过程中遇到任何问题或有改进建议，请随时提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
+
+## 📄 开源协议
+本项目基于 [MIT License](LICENSE) 协议开源。
+
+感谢支持！
