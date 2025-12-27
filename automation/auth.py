@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 from playwright.async_api import Page, BrowserContext
 from urllib.parse import urlparse
-
+from exception_context import exception_context
 
 class AuthManager:
     """认证管理器"""
@@ -23,6 +23,7 @@ class AuthManager:
         self.page = page
         self.context = context
 
+    @exception_context("加载Cookie")
     async def load_cookies(self, cookie_file: str = "cookies.json") -> bool:
         """
         从文件加载Cookie到浏览器
@@ -34,16 +35,13 @@ class AuthManager:
             print(f"⚠ Cookie文件不存在: {cookie_file}")
             return False
 
-        try:
-            with open(cookie_file, 'r', encoding='utf-8') as f:
-                cookies = json.load(f)
-            await self.context.add_cookies(cookies)
-            print(f"✓ Cookie已从文件加载: {cookie_file}")
-            return True
-        except Exception as e:
-            print(f"⚠ 加载Cookie失败: {e}")
-            return False
+        with open(cookie_file, 'r', encoding='utf-8') as f:
+            cookies = json.load(f)
+        await self.context.add_cookies(cookies)
+        print(f"✓ Cookie已从文件加载: {cookie_file}")
+        return True
 
+    @exception_context("保存Cookie")
     async def save_cookies(self, cookie_file: str = "cookies.json"):
         """
         保存当前浏览器的Cookie到文件
@@ -54,6 +52,7 @@ class AuthManager:
             json.dump(cookies, f, indent=2, ensure_ascii=False)
         print(f"✓ Cookie已保存到: {cookie_file}")
 
+    @exception_context("刷新Cookie")
     async def refresh_cookies(self, cookie_file: str = "cookies.json"):
         """
         刷新并保存当前浏览器的Cookie到文件
@@ -69,22 +68,20 @@ class AuthManager:
             await self.save_cookies(cookie_file)
             await self.load_cookies(cookie_file)
 
+    @exception_context("检查Cookie有效性")
     async def check_cookie_validity(self) -> bool:
         """
         检查Cookie是否有效
         通过检查页面内容是否包含"访客不能访问此课程"来判断
         :return: True表示Cookie有效，False表示Cookie已失效
         """
-        try:
-            page_content = await self.page.content()
-            if "访客不能访问此课程" in page_content:
-                print("❌ 检测到Cookie已失效")
-                return False
-            return True
-        except Exception as e:
-            print(f"⚠ Cookie有效性检测出错: {e}")
-            return True  # 检测失败时默认认为有效，避免误判
+        page_content = await self.page.content()
+        if "访客不能访问此课程" in page_content:
+            print("❌ 检测到Cookie已失效")
+            return False
+        return True
 
+    @exception_context("使用Cookie登录")
     async def login_with_cookies(self, base_url: str, cookie_file: str = "cookies.json") -> bool:
         """
         使用Cookie登录
@@ -101,6 +98,7 @@ class AuthManager:
         # 检查登录状态
         return await self.check_login_status(base_url)
 
+    @exception_context("检查登录状态")
     async def check_login_status(self, base_url: str) -> bool:
         """
         检查登录状态是否有效
@@ -129,6 +127,7 @@ class AuthManager:
         print(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
 
+    @exception_context("交互式登录并保存Cookie")
     async def interactive_login_and_save_cookies(self, 
                                                  login_url: str,
                                                  base_url: str,
@@ -150,24 +149,21 @@ class AuthManager:
         # 先前往 SSO 主页
         await self.page.goto(sso_index_url)
         print("🔍 尝试获取cookie...")
-        try:
-            # 查找文本为"砺儒云课堂"的a标签
-            li_ru_link = self.page.get_by_text("砺儒云课堂")
-            if await li_ru_link.count() > 0:
-                # 使用 context.expect_popup() 来捕捉点击后产生的新页面
-                async with self.page.expect_popup() as popup_info:
-                    await li_ru_link.first.click()
+        # 查找文本为"砺儒云课堂"的a标签
+        li_ru_link = self.page.get_by_text("砺儒云课堂")
+        if await li_ru_link.count() > 0:
+            # 使用 context.expect_popup() 来捕捉点击后产生的新页面
+            async with self.page.expect_popup() as popup_info:
+                await li_ru_link.first.click()
 
-                    # 这里的 moodle_page 就是新打开的那个标签页
-                    moodle_page = await popup_info.value
+                # 这里的 moodle_page 就是新打开的那个标签页
+                moodle_page = await popup_info.value
 
-                    # 等待新页面加载完成
-                    await moodle_page.wait_for_load_state()
-                    print("✅ 成功跳转到目标页面")
-            else:
-                print("⚠️ 未找到'砺儒云课堂'链接")
-        except Exception as e:
-            print(f"⚠️ 点击'砺儒云课堂'链接时出错: {e}")
+                # 等待新页面加载完成
+                await moodle_page.wait_for_load_state()
+                print("✅ 成功跳转到目标页面")
+        else:
+            print("⚠️ 未找到'砺儒云课堂'链接")
         # 验证Cookie是否有效
         print("🔍 验证登录状态...")
         if await self.check_login_status(base_url):

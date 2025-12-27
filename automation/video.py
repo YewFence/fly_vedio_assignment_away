@@ -8,6 +8,7 @@ from typing import List, Optional
 from playwright.async_api import Page
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.console import Console
+from exception_context import exception_context
 
 console = Console()
 
@@ -40,62 +41,51 @@ class VideoManager:
         self.page = page
         self.auth_manager = auth_manager
 
+    @exception_context("确保视频播放")
     async def ensure_video_playing(self, video_selector: str = "video") -> dict:
         """
         确保视频正在播放，如果暂停则自动恢复，并返回视频状态
         :param video_selector: 视频元素的CSS选择器
         :return: 包含视频状态的字典 {paused, currentTime, duration, ended}，获取失败返回 None
         """
-        try:
-            video = self.page.locator(video_selector)
-            if await video.count() == 0:
-                return None
-
-            # 获取视频状态
-            video_state = await video.evaluate("""
-                el => ({
-                    paused: el.paused,
-                    currentTime: el.currentTime,
-                    duration: el.duration,
-                    ended: el.ended
-                })
-            """)
-
-            # 如果视频暂停了（且未播放完毕），自动恢复播放
-            if video_state.get('paused') and not video_state.get('ended'):
-                console.print("\n[yellow]⚠️ 检测到视频已暂停，正在自动恢复播放...[/yellow]")
-                await video.evaluate("el => el.play()")
-                console.print("[green]✓ 视频已恢复播放[/green]")
-
-            return video_state
-
-        except Exception as e:
-            console.print(f"\n[red]❌ 检测视频播放状态时出现异常: {e}[/red]")
+        video = self.page.locator(video_selector)
+        if await video.count() == 0:
             return None
 
+        # 获取视频状态
+        video_state = await video.evaluate("""
+            el => ({
+                paused: el.paused,
+                currentTime: el.currentTime,
+                duration: el.duration,
+                ended: el.ended
+            })
+        """)
+
+        # 如果视频暂停了（且未播放完毕），自动恢复播放
+        if video_state.get('paused') and not video_state.get('ended'):
+            console.print("\n[yellow]⚠️ 检测到视频已暂停，正在自动恢复播放...[/yellow]")
+            await video.evaluate("el => el.play()")
+            console.print("[green]✓ 视频已恢复播放[/green]")
+
+        return video_state
+    
+    @exception_context("检查浏览器关闭状态")
     async def check_browser_closed(self):
         """
         检查浏览器是否已被用户手动关闭
         如果浏览器已关闭，打印提示信息并抛出异常
         如果浏览器正常运行，静默返回
         """
-        try:
-            # 检查页面是否已关闭
-            if self.page.is_closed():
-                print("\n⚠️ 检测到浏览器已被手动关闭")
-                print("💡 程序即将退出")
-                raise Exception("浏览器已被用户手动关闭")
-            # 尝试获取页面标题来验证页面是否仍然可访问
-            await self.page.title()
-        except Exception as e:
-            # 如果是我们自己抛出的异常，直接传递
-            if "浏览器已被用户手动关闭" in str(e):
-                raise
-            # 其他异常也视为浏览器已关闭
+        # 检查页面是否已关闭
+        if self.page.is_closed():
             print("\n⚠️ 检测到浏览器已被手动关闭")
             print("💡 程序即将退出")
             raise Exception("浏览器已被用户手动关闭")
+        # 尝试获取页面标题来验证页面是否仍然可访问
+        await self.page.title()
 
+    @exception_context("获取视频链接")
     async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:
         """
         通过URL模式匹配获取视频链接
@@ -131,6 +121,7 @@ class VideoManager:
 
         return links
 
+    @exception_context("获取视频时长")
     async def get_video_duration(self, video_selector: str = "video") -> Optional[float]:
         """
         获取视频时长(秒)
@@ -151,10 +142,12 @@ class VideoManager:
                 print("⚠ 无法获取视频时长,可能并非视频页，将在默认等待时间后跳转下一链接")
                 return None
 
-        except Exception as e:
-            print(f"⚠ 获取视频时长失败: {e}")
+        except TimeoutError:
+            # 视频元素不存在是预期行为（可能不是视频页）
+            print("⚠ 未找到视频元素,可能并非视频页")
             return None
 
+    @exception_context("播放视频并等待完成")
     async def play_video(self, video_url: str, video_selector: str = "video",
                         play_button_selector: Optional[str] = None,
                         default_wait_time: int = 60):
@@ -195,60 +188,55 @@ class VideoManager:
         # 如果需要点击播放按钮
         if play_button_selector:
             try:
-                await self.page.wait_for_selector(play_button_selector, timeout=5000)
-                await self.page.click(play_button_selector)
+                await self.page.click(play_button_selector, timeout=5000)
                 print("✓ 已点击播放按钮")
-            except:
+            except TimeoutError:
                 print("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
                 return
 
         # 智能计算视频剩余时间
         duration = None
 
-        try:
-            # 获取视频总时长
-            video_duration = await self.get_video_duration(video_selector)
+        # 获取视频总时长
+        video_duration = await self.get_video_duration(video_selector)
 
-            if video_duration is None:
-                print("⚠ 无法获取视频总时长")
-            else:
-                # 尝试获取已观看时长
-                watched_locator = self.page.locator(".num-gksc > span")
+        if video_duration is None:
+            print("⚠ 无法获取视频总时长")
+        else:
+            # 尝试获取已观看时长
+            watched_locator = self.page.locator(".num-gksc > span")
 
-                if await watched_locator.count() > 0:
-                    watched_text = await watched_locator.text_content()
+            if await watched_locator.count() > 0:
+                watched_text = await watched_locator.text_content()
 
-                    if watched_text:
-                        # 尝试解析已观看时长（去除空格和可能的单位）
-                        watched_text = watched_text.strip()
-                        try:
-                            watched_duration = float(watched_text)
+                if watched_text:
+                    # 尝试解析已观看时长（去除空格和可能的单位）
+                    watched_text = watched_text.strip()
+                    try:
+                        watched_duration = float(watched_text)
 
-                            # 计算剩余时间
-                            remaining = video_duration - watched_duration
+                        # 计算剩余时间
+                        remaining = video_duration - watched_duration
 
-                            if remaining < 0:
-                                print(f"⚠ 已观看时长({self.format_time(watched_duration)}) 大于总时长({self.format_time(video_duration)})，视频可能已完成")
-                                duration = 0  # 视频已完成，无需等待
-                            elif remaining == 0:
-                                print("✓ 视频已观看完毕")
-                                duration = 0
-                            else:
-                                duration = remaining
-                                print(f"✓ 总时长: {self.format_time(video_duration)}, 已观看: {self.format_time(watched_duration)}, 剩余: {self.format_time(duration)}")
-                        except ValueError:
-                            print(f"⚠ 无法解析已观看时长: '{watched_text}', 使用视频总时长")
-                            duration = video_duration
-                    else:
-                        print("⚠ 已观看时长元素为空，使用视频总时长")
+                        if remaining < 0:
+                            print(f"⚠ 已观看时长({self.format_time(watched_duration)}) 大于总时长({self.format_time(video_duration)})，视频可能已完成")
+                            duration = 0  # 视频已完成，无需等待
+                        elif remaining == 0:
+                            print("✓ 视频已观看完毕")
+                            duration = 0
+                        else:
+                            duration = remaining
+                            print(f"✓ 总时长: {self.format_time(video_duration)}, 已观看: {self.format_time(watched_duration)}, 剩余: {self.format_time(duration)}")
+                    except ValueError:
+                        # 数据解析失败是预期行为，使用降级方案
+                        print(f"⚠ 无法解析已观看时长: '{watched_text}', 使用视频总时长")
                         duration = video_duration
                 else:
-                    print("⚠ 未找到已观看时长元素，使用视频总时长")
+                    print("⚠ 已观看时长元素为空，使用视频总时长")
                     duration = video_duration
-
-        except Exception as e:
-            print(f"⚠ 计算剩余时间时出错: {e}")
-            duration = None
+            else:
+                print("⚠ 未找到已观看时长元素，使用视频总时长")
+                duration = video_duration
 
         # 根据计算结果等待
         if duration is not None and duration > 0:
@@ -322,6 +310,7 @@ class VideoManager:
 
         print("✓ 视频播放完成")
 
+    @exception_context("批量观看视频")
     async def watch_videos(self, video_links: List[str],
                           video_selector: str = "video",
                           play_button_selector: Optional[str] = None,
