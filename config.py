@@ -23,6 +23,7 @@ TEST_LOGIN_MODE = False  # 设置为True以启用登录测试模式（仅测试�
 # Cookie登录配置
 COOKIE_FILE = "cookies.json"  # Cookie文件路径
 BASE_URL = "https://moodle.scnu.edu.cn/my/"  # 网站首页URL(用于验证Cookie)
+SSO_INDEX_URL = "https://sso.scnu.edu.cn/AccountService/user/index.html"  # SSO主页URL
 LOGIN_URL = "https://sso.scnu.edu.cn/AccountService/user/login.html"
 # URL模式匹配（脚本会自动找到所有包含此模式的链接）
 URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="  # 视频链接的URL模式

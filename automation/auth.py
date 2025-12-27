@@ -132,8 +132,8 @@ class AuthManager:
     async def interactive_login_and_save_cookies(self, 
                                                  login_url: str,
                                                  base_url: str,
-                                                 cookie_file: str = "cookies.json",
-                                                 sso_index_url = "https://sso.scnu.edu.cn/AccountService/user/index.html") -> bool:
+                                                 sso_index_url: str,
+                                                 cookie_file: str = "cookies.json") -> bool:
         """
         交互式登录：打开登录页面，等待用户手动登录，然后保存Cookie
         :param login_url: 登录页面URL

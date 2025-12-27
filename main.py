@@ -85,6 +85,7 @@ async def main():
                         login_success = await auth_manager.interactive_login_and_save_cookies(
                             config.LOGIN_URL,
                             config.BASE_URL,
+                            config.SSO_INDEX_URL,
                             config.COOKIE_FILE
                         )
                         break
