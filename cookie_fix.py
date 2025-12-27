@@ -5,11 +5,9 @@ import sys
 def cookie_fix():
     try:
         # 从CLI读取浏览器导出的Cookie
-        print("请粘贴浏览器导出的Cookie JSON (完成后按Ctrl+D或Ctrl+Z结束输入):")
-        lines = []
-        for line in sys.stdin:
-            lines.append(line)
-        content = ''.join(lines).strip()
+        print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
+        lines = list(iter(input, ''))
+        content = '\n'.join(lines)
         
         if content == '':
             print("✗ 输入为空，请检查输入内容")
