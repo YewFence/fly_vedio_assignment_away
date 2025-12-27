@@ -5,6 +5,7 @@
 
 import asyncio
 import traceback
+from pathlib import Path
 from cookie_fix import cookie_fix
 from automation import BrowserManager, AuthManager, VideoManager
 import config
@@ -54,43 +55,53 @@ async def main():
 
         auth_manager = AuthManager(page, context)
         video_manager = VideoManager(page, auth_manager)
-    
-        # 3. 选择登录方式
-        print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
-        print("   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies")
-        print("   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON")
-        
         login_success = False
-        while True:
-            try:
-                loop = asyncio.get_running_loop()
-                choice = await loop.run_in_executor(None, input, "请输入选择 (1/2，默认为1): ")
-                choice = choice.strip()
+        # 如果 cookies.json 文件已存在，尝试直接使用已有 Cookies 登录
+        cookie_path = Path(config.COOKIE_FILE)
+        if cookie_path.exists():
+            print(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
+            login_success = await auth_manager.login_with_cookies(
+                config.BASE_URL,
+                config.COOKIE_FILE
+            )
+        if not login_success:
+            print("登录凭证已失效或不存在")
+            # 选择登录方式
+            print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
+            print("   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies")
+            print("   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON")
+            
+            login_success = False
+            while True:
+                try:
+                    loop = asyncio.get_running_loop()
+                    choice = await loop.run_in_executor(None, input, "请输入选择 (1/2，默认为1): ")
+                    choice = choice.strip()
 
-                if choice in ("", "1"):
-                    # 默认使用交互式登录
-                    login_success = await auth_manager.interactive_login_and_save_cookies(
-                        config.LOGIN_URL,
-                        config.BASE_URL,
-                        config.COOKIE_FILE
-                    )
-                    break
-                elif choice == "2":
-                    # 使用手动导出的 cookies 登录
-                    if cookie_fix():
-                        print("✓ Cookies 格式化成功")
-                        login_success = await auth_manager.login_with_cookies(
+                    if choice in ("", "1"):
+                        # 默认使用交互式登录
+                        login_success = await auth_manager.interactive_login_and_save_cookies(
+                            config.LOGIN_URL,
                             config.BASE_URL,
                             config.COOKIE_FILE
                         )
+                        break
+                    elif choice == "2":
+                        # 使用手动导出的 cookies 登录
+                        if cookie_fix():
+                            print("✓ Cookies 格式化成功")
+                            login_success = await auth_manager.login_with_cookies(
+                                config.BASE_URL,
+                                config.COOKIE_FILE
+                            )
+                        else:
+                            print("⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束")
+                        break
                     else:
-                        print("⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束")
-                    break
-                else:
-                    print("⚠️  输入无效，请输入 1 或 2")
-            except KeyboardInterrupt:
-                print("\n\n程序已由用户中断。")
-                return
+                        print("⚠️  输入无效，请输入 1 或 2")
+                except KeyboardInterrupt:
+                    print("\n\n程序已由用户中断。")
+                    return
 
         if not login_success:
             print("\n❌ 登录失败!")
