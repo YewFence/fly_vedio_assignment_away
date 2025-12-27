@@ -1,6 +1,5 @@
 # convert_cookies.py
 import json
-import sys
 
 def cookie_fix():
     try:

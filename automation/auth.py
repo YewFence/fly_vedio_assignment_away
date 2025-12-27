@@ -177,7 +177,7 @@ class AuthManager:
                 print("❌ 登录验证失败！")
                 loop = asyncio.get_running_loop()
                 retry = await loop.run_in_executor(None, input, "是否重试？(y/n): ")
-                if retry.lower() not in ('y', 'yes', 'Y', 'Yes', 'YES'):
+                if retry.strip().lower() not in ('y', 'yes'):
                     return False
             print("✅ 登录验证成功！")
 
