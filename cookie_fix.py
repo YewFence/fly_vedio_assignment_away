@@ -1,15 +1,17 @@
 # convert_cookies.py
 import json
 
-def cookie_fix(file_name: str = 'browser_cookies.json'):
+def cookie_fix():
     try:
-        # 读取浏览器导出的Cookie
-        with open(file_name, 'r', encoding='utf-8') as f:
-            content = f.read().strip()
-            if content == '':
-                print("✗ Cookie文件为空，请检查文件内容")
-                return False
-            browser_cookies = json.loads(content)
+        # 从CLI读取浏览器导出的Cookie
+        print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
+        lines = list(iter(input, ''))
+        content = '\n'.join(lines)
+        
+        if content == '':
+            print("✗ 输入为空，请检查输入内容")
+            return False
+        browser_cookies = json.loads(content)
 
         # 转换为Playwright格式
         playwright_cookies = []

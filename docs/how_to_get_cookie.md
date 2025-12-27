@@ -1,7 +1,5 @@
 # 如何获取Cookie
 
-本脚本使用Cookie进行登录，无需配置用户名密码。以下是获取Cookie的方法：
-
 ## 方法一：使用浏览器扩展（推荐）⭐
 
 ### Chrome/Edge
@@ -15,9 +13,7 @@
 
 4. 选择 "Export" → "JSON"
 
-5. 新建 `browser_cookies.json` 到项目根目录
-
-6. 粘贴你刚刚复制的文本并保存 
+此时 Cookies 就已经保存在你的剪贴板中了
 
 ### Firefox
 
@@ -27,7 +23,7 @@
 
 3. 点击扩展图标 → Export → JSON
 
-4. 保存为 `cookies.json`
+此时 Cookies 就已经保存在你的剪贴板中了
 
 ---
 
@@ -78,62 +74,6 @@ console.log(JSON.stringify(cookies, null, 2));
 
 3. 复制输出的JSON内容
 
-4. 创建 `cookies.json` 文件并粘贴内容
-
----
-
-## 方法三：手动创建Cookie文件
-
-如果你知道关键的Cookie（如 session_id、token 等），可以手动创建：
-
-```json
-[
-  {
-    "name": "session_id",
-    "value": "你的session值",
-    "domain": ".example.com",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "Lax"
-  }
-]
-```
-
-**注意**：
-- `name`: Cookie的名称
-- `value`: Cookie的值（最重要！）
-- `domain`: 网站域名（加点号表示包括所有子域名）
-- `expires`: 过期时间（-1表示会话Cookie）
-
----
-
-## 验证Cookie是否有效
-
-创建 `cookies.json` 后，运行脚本测试：
-
-```bash
-cd school_vedio_hw
-uv run python scripts.py
-```
-
-如果看到：
-- ✅ `✓ Cookie已从文件加载`
-- ✅ `✓ Cookie登录成功`
-
-说明Cookie有效！
-
-如果看到：
-- ❌ `Cookie加载失败`
-
-检查：
-1. 文件名是否为 `cookies.json`
-2. 文件是否在 `school_vedio_hw` 目录下
-3. JSON格式是否正确
-4. Cookie是否已过期
-
----
 
 ## Cookie文件示例
 
@@ -173,34 +113,7 @@ uv run python scripts.py
 A: Cookie包含你的登录凭证，请注意：
 - ✅ 不要分享Cookie文件
 - ✅ 不要上传到公开平台
-- ✅ 定期更新Cookie
-- ✅ 使用后可以删除
 
 ### Q: 如何判断Cookie已过期？
 
 A: 运行脚本时如果提示"登录失败"，说明Cookie可能已过期，需要重新获取。
-
----
-
-## 文件位置
-
-确保 `browser_cookies.json` 文件放在正确的位置：
-
-```
-fly_vedio_assignment_away/
-├── ...
-├── browser_cookies.json          ← Cookie文件放这里
-└── ...
-```
-
-----
-
-## 快速开始
-
-1. ✅ 在浏览器中登录网站
-2. ✅ 使用扩展导出Cookie为json格式到你的剪贴板
-3. ✅ 粘贴到 `browser_cookies.json` 文件里面 
-4. ✅ 将文件放到当前目录
-5. ✅ 运行程序
-
-就这么简单！🚀
