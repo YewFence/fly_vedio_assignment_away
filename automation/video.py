@@ -70,20 +70,18 @@ class VideoManager:
 
         return video_state
     
-    @exception_context("检查浏览器关闭状态")
-    async def check_browser_closed(self):
+    @exception_context("检查页面状态")
+    async def check_page_closed(self):
         """
-        检查浏览器是否已被用户手动关闭
-        如果浏览器已关闭，打印提示信息并抛出异常
-        如果浏览器正常运行，静默返回
+        检查页面是否已被用户手动关闭
+        如果页面已关闭，打印提示信息并抛出异常
+        如果页面正常，静默返回
         """
         # 检查页面是否已关闭
         if self.page.is_closed():
-            print("\n⚠️ 检测到浏览器已被手动关闭")
+            print("\n⚠️ 检测到页面已被手动关闭")
             print("💡 程序即将退出")
-            raise Exception("浏览器已被用户手动关闭")
-        # 尝试获取页面标题来验证页面是否仍然可访问
-        await self.page.title()
+            raise Exception("页面已被用户手动关闭")
 
     @exception_context("获取视频链接")
     async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:
@@ -166,7 +164,7 @@ class VideoManager:
         await asyncio.sleep(2)
 
         # 检查浏览器是否已关闭
-        await self.check_browser_closed()
+        await self.check_page_closed()
 
         # 尝试自动延长会话
         await self.auth_manager.refresh_cookies()
@@ -263,7 +261,7 @@ class VideoManager:
                     elapsed += 5
 
                     # 检查浏览器是否已关闭
-                    await self.check_browser_closed()
+                    await self.check_page_closed()
 
                     # 检查视频状态并恢复播放
                     video_state = await self.ensure_video_playing(video_selector)
@@ -326,7 +324,7 @@ class VideoManager:
 
         for i, link in enumerate(video_links, 1):
             # 检查浏览器是否已关闭
-            await self.check_browser_closed()
+            await self.check_page_closed()
 
             print(f"\n[{i}/{len(video_links)}] 当前视频:")
             await self.play_video(
