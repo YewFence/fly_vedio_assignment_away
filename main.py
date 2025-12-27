@@ -56,14 +56,16 @@ async def main():
         auth_manager = AuthManager(page, context)
         video_manager = VideoManager(page, auth_manager)
         login_success = False
-        # 如果 cookies.json 文件已存在，尝试直接使用已有 Cookies 登录
-        cookie_path = Path(config.COOKIE_FILE)
-        if cookie_path.exists():
-            print(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
-            login_success = await auth_manager.login_with_cookies(
-                config.BASE_URL,
-                config.COOKIE_FILE
-            )
+        # 测试模式下跳过尝试，进行登录凭证获取测试
+        if not config.TEST_LOGIN_MODE:
+            cookie_path = Path(config.COOKIE_FILE)
+            # 如果 cookies.json 文件已存在，尝试直接使用已有 Cookies 登录
+            if cookie_path.exists():
+                print(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
+                login_success = await auth_manager.login_with_cookies(
+                    config.BASE_URL,
+                    config.COOKIE_FILE
+                )
         if not login_success:
             print("登录凭证已失效或不存在")
             # 选择登录方式

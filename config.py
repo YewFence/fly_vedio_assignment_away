@@ -17,6 +17,9 @@ if not (VIDEO_LIST_URL := os.getenv("VIDEO_LIST_URL")):
 
 
 # ============= 其他配置 =============
+# 测试模式
+TEST_MODE = False  # 设置为True以启用测试模式（仅处理前几个视频以加快测试速度）
+TEST_LOGIN_MODE = False  # 设置为True以启用登录测试模式（仅测试登录功能）
 # Cookie登录配置
 COOKIE_FILE = "cookies.json"  # Cookie文件路径
 BASE_URL = "https://moodle.scnu.edu.cn/my/"  # 网站首页URL(用于验证Cookie)
