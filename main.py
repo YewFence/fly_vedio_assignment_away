@@ -135,18 +135,6 @@ async def main():
         print(f"\n❌ 发生错误: {e}")
         traceback.print_exc()
         suggestions()
-    finally:
-        # 6. 关闭浏览器
-        if browser_manager:
-            try:
-                # 检查浏览器是否仍在运行
-                browser = browser_manager.browser
-                if browser and browser.is_connected():
-                    input("\n按回车键退出并关闭浏览器...")
-                    await browser_manager.close()
-            except Exception:
-                # 浏览器已被手动关闭或其他错误，静默处理
-                pass
 
 def suggestions():
     print("\n💡 故障排查建议:")
