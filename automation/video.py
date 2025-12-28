@@ -8,7 +8,7 @@ from typing import List, Optional
 from playwright.async_api import Page
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.console import Console
-from exception_context import exception_context
+from .exception_context import exception_context
 
 console = Console()
 

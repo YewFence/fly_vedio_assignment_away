@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 from playwright.async_api import Page, BrowserContext
 from urllib.parse import urlparse
-from exception_context import exception_context
+from .exception_context import exception_context
 
 class AuthManager:
     """认证管理器"""
