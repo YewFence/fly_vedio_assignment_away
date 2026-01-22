@@ -4,12 +4,36 @@
 """
 
 import asyncio
+import sys
 import traceback
+import warnings
 from pathlib import Path
 from cookie_fix import cookie_fix
 from automation import BrowserManager, AuthManager, VideoManager
+from automation.exception_context import BrowserClosedError
 from logger import setup_logging, get_logger
 import config
+
+# 抑制 asyncio 在 Windows 上关闭时的资源警告
+warnings.filterwarnings("ignore", category=ResourceWarning, message=".*unclosed.*")
+
+
+def _custom_unraisablehook(unraisable):
+    """自定义 unraisable 异常处理，抑制浏览器关闭时的 asyncio 清理错误"""
+    # 忽略 asyncio transport 相关的清理错误
+    if unraisable.exc_type in (ValueError, OSError):
+        err_msg = str(unraisable.exc_value).lower()
+        if any(keyword in err_msg for keyword in [
+            'i/o operation on closed pipe',
+            'closed pipe',
+            'unclosed transport'
+        ]):
+            return  # 静默忽略
+    # 其他异常使用默认处理
+    sys.__unraisablehook__(unraisable)
+
+
+sys.unraisablehook = _custom_unraisablehook
 
 logger = get_logger(__name__)
 
@@ -136,9 +160,11 @@ async def main():
             logger.error("❌ 未找到任何视频链接。")
             suggestions()
 
+    except BrowserClosedError:
+        logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
     except Exception as e:
-        if "TargetClosedError" in str(e):
-            logger.error("\n❌ 浏览器页面被意外关闭。程序终止")
+        if "TargetClosedError" in str(e) or "browser has been closed" in str(e).lower():
+            logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
         else:
             logger.error(f"\n❌ 发生错误: {e}")
             traceback.print_exc()
