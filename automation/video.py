@@ -8,7 +8,7 @@ from typing import List, Optional
 from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.console import Console
-from .exception_context import exception_context
+from .exception_context import exception_context, BrowserClosedError
 from logger import get_logger
 
 logger = get_logger("automation.video")
@@ -83,7 +83,7 @@ class VideoManager:
         if self.page.is_closed():
             logger.warning("\n⚠️ 检测到页面已被手动关闭")
             logger.info("💡 程序即将退出")
-            raise Exception("页面已被用户手动关闭")
+            raise BrowserClosedError("页面已被用户手动关闭")
 
     @exception_context("获取视频链接")
     async def get_video_links_by_pattern(self, page_url: str, url_pattern: str) -> List[str]:

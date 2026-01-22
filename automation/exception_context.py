@@ -22,7 +22,6 @@ def _is_browser_closed_error(e: Exception) -> bool:
     if any(keyword in error_msg for keyword in [
         'target page, context or browser has been closed',
         'browser has been closed',
-        '页面已被用户手动关闭'
     ]):
         return True
     return False

@@ -176,12 +176,9 @@ async def main():
     except BrowserClosedError:
         logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
     except Exception as e:
-        if "TargetClosedError" in str(e) or "browser has been closed" in str(e).lower():
-            logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
-        else:
-            logger.error(f"\n❌ 发生错误: {e}")
-            traceback.print_exc()
-            suggestions()
+        logger.error(f"\n❌ 发生错误: {e}")
+        traceback.print_exc()
+        suggestions()
 
 def suggestions():
     logger.info("\n💡 故障排查建议:")
