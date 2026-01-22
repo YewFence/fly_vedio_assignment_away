@@ -1,14 +1,18 @@
 # convert_cookies.py
 import json
+from logger import get_logger
+
+logger = get_logger("cookie_fix")
+
 
 def cookie_fix():
-    # 从CLI读取浏览器导出的Cookie
+    # 从CLI读取浏览器导出的Cookie - 保留 print 用于用户交互
     print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
     lines = list(iter(input, ''))
     content = '\n'.join(lines)
-    
+
     if content == '':
-        print("✗ 输入为空，请检查输入内容")
+        logger.error("✗ 输入为空，请检查输入内容")
         return False
     browser_cookies = json.loads(content)
 
@@ -45,5 +49,5 @@ def cookie_fix():
     with open('cookies.json', 'w', encoding='utf-8') as f:
         json.dump(playwright_cookies, f, indent=2, ensure_ascii=False)
 
-    print("✓ Cookie转换完成!")
+    logger.info("✓ Cookie转换完成!")
     return True

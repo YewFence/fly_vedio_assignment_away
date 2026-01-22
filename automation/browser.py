@@ -4,6 +4,9 @@
 """
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+from logger import get_logger
+
+logger = get_logger("automation.browser")
 
 
 class BrowserManager:
@@ -38,13 +41,13 @@ class BrowserManager:
             user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         )
         self.page = await self.context.new_page()
-        print("✓ 浏览器启动成功 (已静音)")
+        logger.info("✓ 浏览器启动成功 (已静音)")
 
     async def close(self):
         """关闭浏览器"""
         if self.browser:
             await self.browser.close()
-            print("\n✓ 浏览器已关闭")
+            logger.info("\n✓ 浏览器已关闭")
 
     def get_page(self) -> Page:
         """获取当前页面对象"""

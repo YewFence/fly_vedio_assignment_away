@@ -8,7 +8,10 @@ import traceback
 from pathlib import Path
 from cookie_fix import cookie_fix
 from automation import BrowserManager, AuthManager, VideoManager
+from logger import setup_logging, get_logger
 import config
+
+logger = get_logger(__name__)
 
 
 def print_welcome():
@@ -34,12 +37,14 @@ def print_welcome():
 
 async def main():
     """主函数"""
-    
+    # 初始化日志系统
+    setup_logging()
+
     # 显示欢迎界面
     print_welcome()
-    
+
     # 从 config.py 读取配置
-    print("📦 正在初始化浏览器...")
+    logger.info("📦 正在初始化浏览器...")
     browser_manager = None
 
     try:
@@ -61,18 +66,18 @@ async def main():
             cookie_path = Path(config.COOKIE_FILE)
             # 如果 cookies.json 文件已存在，尝试直接使用已有 Cookies 登录
             if cookie_path.exists():
-                print(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
+                logger.info(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
                 login_success = await auth_manager.login_with_cookies(
                     config.BASE_URL,
                     config.COOKIE_FILE
                 )
         if not login_success:
-            print("登录凭证已失效或不存在")
-            # 选择登录方式
+            logger.warning("登录凭证已失效或不存在")
+            # 选择登录方式 - 保留 print 用于用户交互
             print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
             print("   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies")
             print("   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON")
-            
+
             login_success = False
             while True:
                 try:
@@ -92,27 +97,27 @@ async def main():
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录
                         if cookie_fix():
-                            print("✓ Cookies 格式化成功")
+                            logger.info("✓ Cookies 格式化成功")
                             login_success = await auth_manager.login_with_cookies(
                                 config.BASE_URL,
                                 config.COOKIE_FILE
                             )
                         else:
-                            print("⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束")
+                            logger.error("⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束")
                         break
                     else:
                         print("⚠️  输入无效，请输入 1 或 2")
                 except KeyboardInterrupt:
-                    print("\n\n程序已由用户中断。")
+                    logger.info("\n\n程序已由用户中断。")
                     return
 
         if not login_success:
-            print("\n❌ 登录失败!")
+            logger.error("\n❌ 登录失败!")
             return
 
         # 4. 通过URL模式获取视频链接
-        print(f"\n正在提取视频链接...")
-        print(f"URL模式: {config.URL_PATTERN}")
+        logger.info(f"\n正在提取视频链接...")
+        logger.info(f"URL模式: {config.URL_PATTERN}")
 
         video_links = await video_manager.get_video_links_by_pattern(
             config.VIDEO_LIST_URL,
@@ -128,21 +133,24 @@ async def main():
                 config.DEFAULT_WAIT_TIME
             )
         else:
-            print("❌ 未找到任何视频链接。")
+            logger.error("❌ 未找到任何视频链接。")
             suggestions()
 
     except Exception as e:
-        print(f"\n❌ 发生错误: {e}")
-        traceback.print_exc()
-        suggestions()
+        if "TargetClosedError" in str(e):
+            logger.error("\n❌ 浏览器页面被意外关闭。程序终止")
+        else:
+            logger.error(f"\n❌ 发生错误: {e}")
+            traceback.print_exc()
+            suggestions()
 
 def suggestions():
-    print("\n💡 故障排查建议:")
-    print("  1. 检查 config.py 中是否正确配置了课程链接")
-    print("  2. 确认 cookies.json 文件存在")
-    print("  3. 确认 Cookie 是否有效")
-    print("  4. 确认网络状态良好")
-    print("  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n")
+    logger.info("\n💡 故障排查建议:")
+    logger.info("  1. 检查 config.py 中是否正确配置了课程链接")
+    logger.info("  2. 确认 cookies.json 文件存在")
+    logger.info("  3. 确认 Cookie 是否有效")
+    logger.info("  4. 确认网络状态良好")
+    logger.info("  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n")
 
 if __name__ == "__main__":
     asyncio.run(main())
