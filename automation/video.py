@@ -5,7 +5,7 @@
 
 import asyncio
 from typing import List, Optional
-from playwright.async_api import Page
+from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.console import Console
 from .exception_context import exception_context
@@ -66,9 +66,9 @@ class VideoManager:
 
         # 如果视频暂停了（且未播放完毕），自动恢复播放
         if video_state.get('paused') and not video_state.get('ended'):
-            logger.warning("\n[yellow]⚠️ 检测到视频已暂停，正在自动恢复播放...[/yellow]")
+            logger.warning("⚠️ 检测到视频已暂停，正在自动恢复播放...")
             await video.evaluate("el => el.play()")
-            logger.info("[green]✓ 视频已恢复播放[/green]")
+            logger.info("✓ 视频已恢复播放")
 
         return video_state
 
@@ -190,7 +190,7 @@ class VideoManager:
             try:
                 await self.page.click(play_button_selector, timeout=5000)
                 logger.info("✓ 已点击播放按钮")
-            except TimeoutError:
+            except PlaywrightTimeoutError:
                 logger.warning("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
                 return
 
@@ -242,7 +242,7 @@ class VideoManager:
         if duration is not None and duration > 0:
             # 等待视频播放完成
             max_wait_time = duration + 60  # 最大等待时间，防止无限循环
-            logger.info(f"[cyan]⏳ 等待视频播放完成(预计 {self.format_time(duration)})...[/cyan]")
+            logger.info(f"⏳ 等待视频播放完成(预计 {self.format_time(duration)})...")
 
             # 使用 rich 进度条显示播放进度
             with Progress(
@@ -295,10 +295,10 @@ class VideoManager:
 
                     # 检查Cookie是否有效
                     if not await self.auth_manager.check_cookie_validity():
-                        logger.error("[red]⚠ Cookie已失效，停止观看视频[/red]")
+                        logger.error("⚠ Cookie已失效，停止观看视频")
                         raise Exception("Cookie已失效，请重新获取Cookie")
 
-            logger.info(f"[green]✓ 视频播放完毕[/green]")
+            logger.info("✓ 视频播放完毕")
         elif duration == 0:
             # 视频已完成，无需等待
             logger.info("✓ 视频无需等待")
