@@ -1,10 +1,12 @@
 # convert_cookies.py
 import json
 from logger import get_logger
+from automation.exception_context import exception_context
 
 logger = get_logger("cookie_fix")
 
 
+@exception_context("Cookie转换")
 def cookie_fix():
     # 从CLI读取浏览器导出的Cookie - 保留 print 用于用户交互
     print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
