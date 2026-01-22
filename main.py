@@ -33,7 +33,20 @@ def _custom_unraisablehook(unraisable):
     sys.__unraisablehook__(unraisable)
 
 
+def _custom_excepthook(exc_type, exc_value, exc_traceback):
+    """全局异常处理器，将未捕获的异常记录到日志文件"""
+    # KeyboardInterrupt 不记录日志，只做友好提示
+    if issubclass(exc_type, KeyboardInterrupt):
+        return
+    # 记录完整的异常信息到日志
+    logger.critical(
+        "未捕获的异常",
+        exc_info=(exc_type, exc_value, exc_traceback)
+    )
+
+
 sys.unraisablehook = _custom_unraisablehook
+sys.excepthook = _custom_excepthook
 
 logger = get_logger(__name__)
 
