@@ -1,6 +1,10 @@
 import logging
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 from rich.logging import RichHandler
+
+# 日志目录
+LOG_DIR = Path(__file__).parent / "log"
 
 _initialized = False
 
@@ -24,7 +28,7 @@ def setup_logging(
     - 文件处理器：使用 RotatingFileHandler 自动轮转，记录所有级别日志
     - 终端处理器：使用 RichHandler 美化 INFO 及以上级别的输出
 
-    :param log_file: 日志文件路径
+    :param log_file: 日志文件名（会自动放到 log 目录下）
     :param max_bytes: 单个日志文件最大字节数，默认 5MB
     :param backup_count: 保留的备份文件数量，默认 3 个
     """
@@ -36,9 +40,13 @@ def setup_logging(
     if _initialized:
         return logger
 
+    # 确保日志目录存在
+    LOG_DIR.mkdir(exist_ok=True)
+    log_path = LOG_DIR / log_file
+
     # --- 1. 文件处理器：自动轮转，记录一切 ---
     file_handler = RotatingFileHandler(
-        log_file,
+        log_path,
         maxBytes=max_bytes,
         backupCount=backup_count,
         encoding="utf-8",
