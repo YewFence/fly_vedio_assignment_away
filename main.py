@@ -5,7 +5,6 @@
 
 import asyncio
 import sys
-import traceback
 import warnings
 from pathlib import Path
 from cookie_fix import cookie_fix
@@ -23,11 +22,14 @@ def _custom_unraisablehook(unraisable):
     # 忽略 asyncio transport 相关的清理错误
     if unraisable.exc_type in (ValueError, OSError):
         err_msg = str(unraisable.exc_value).lower()
-        if any(keyword in err_msg for keyword in [
-            'i/o operation on closed pipe',
-            'closed pipe',
-            'unclosed transport'
-        ]):
+        if any(
+            keyword in err_msg
+            for keyword in [
+                "i/o operation on closed pipe",
+                "closed pipe",
+                "unclosed transport",
+            ]
+        ):
             return  # 静默忽略
     # 其他异常使用默认处理
     sys.__unraisablehook__(unraisable)
@@ -39,10 +41,7 @@ def _custom_excepthook(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         return
     # 记录完整的异常信息到日志
-    logger.critical(
-        "未捕获的异常",
-        exc_info=(exc_type, exc_value, exc_traceback)
-    )
+    logger.critical("未捕获的异常", exc_info=(exc_type, exc_value, exc_traceback))
 
 
 sys.unraisablehook = _custom_unraisablehook
@@ -87,8 +86,7 @@ async def main():
     try:
         # 1. 启动浏览器
         browser_manager = BrowserManager(
-            browser_type=config.BROWSER,
-            headless=config.HEADLESS
+            browser_type=config.BROWSER, headless=config.HEADLESS
         )
         await browser_manager.setup()
         # 2. 初始化认证和视频管理器
@@ -103,32 +101,41 @@ async def main():
             cookie_path = Path(config.COOKIE_FILE)
             # 如果 cookies.json 文件已存在，尝试直接使用已有 Cookies 登录
             if cookie_path.exists():
-                logger.info(f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录...")
+                logger.info(
+                    f"📂 检测到已有 Cookie 文件: {config.COOKIE_FILE}，尝试直接使用该文件登录..."
+                )
                 login_success = await auth_manager.login_with_cookies(
-                    config.BASE_URL,
-                    config.COOKIE_FILE
+                    config.BASE_URL, config.COOKIE_FILE
                 )
         if not login_success:
             logger.warning("登录凭证已失效或不存在")
             # 选择登录方式 - 保留 print 用于用户交互
             print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
-            print("   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies")
-            print("   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON")
+            print(
+                "   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies"
+            )
+            print(
+                "   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON"
+            )
 
             login_success = False
             while True:
                 try:
                     loop = asyncio.get_running_loop()
-                    choice = await loop.run_in_executor(None, input, "请输入选择 (1/2，默认为1): ")
+                    choice = await loop.run_in_executor(
+                        None, input, "请输入选择 (1/2，默认为1): "
+                    )
                     choice = choice.strip()
 
                     if choice in ("", "1"):
                         # 默认使用交互式登录
-                        login_success = await auth_manager.interactive_login_and_save_cookies(
-                            config.LOGIN_URL,
-                            config.BASE_URL,
-                            config.SSO_INDEX_URL,
-                            config.COOKIE_FILE
+                        login_success = (
+                            await auth_manager.interactive_login_and_save_cookies(
+                                config.LOGIN_URL,
+                                config.BASE_URL,
+                                config.SSO_INDEX_URL,
+                                config.COOKIE_FILE,
+                            )
                         )
                         break
                     elif choice == "2":
@@ -136,11 +143,12 @@ async def main():
                         if cookie_fix():
                             logger.info("✓ Cookies 格式化成功")
                             login_success = await auth_manager.login_with_cookies(
-                                config.BASE_URL,
-                                config.COOKIE_FILE
+                                config.BASE_URL, config.COOKIE_FILE
                             )
                         else:
-                            logger.error("⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束")
+                            logger.error(
+                                "⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束"
+                            )
                         break
                     else:
                         print("⚠️  输入无效，请输入 1 或 2")
@@ -157,8 +165,7 @@ async def main():
         logger.info(f"URL模式: {config.URL_PATTERN}")
 
         video_links = await video_manager.get_video_links_by_pattern(
-            config.VIDEO_LIST_URL,
-            config.URL_PATTERN
+            config.VIDEO_LIST_URL, config.URL_PATTERN
         )
 
         # 5. 观看所有视频
@@ -167,7 +174,7 @@ async def main():
                 video_links,
                 config.VIDEO_ELEMENT_SELECTOR,
                 config.PLAY_BUTTON_SELECTOR,
-                config.DEFAULT_WAIT_TIME
+                config.DEFAULT_WAIT_TIME,
             )
         else:
             logger.error("❌ 未找到任何视频链接。")
@@ -175,10 +182,11 @@ async def main():
 
     except BrowserClosedError:
         logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
-    except Exception as e:
-        logger.error(f"\n❌ 发生错误: {e}")
-        traceback.print_exc()
+    except Exception:
+        # 只打印一次：RichHandler 会负责美化堆栈，避免和 traceback.print_exc() 重复输出。
+        logger.error("\n❌ 发生错误", exc_info=True)
         suggestions()
+
 
 def suggestions():
     logger.info("\n💡 故障排查建议:")
@@ -186,7 +194,10 @@ def suggestions():
     logger.info("  2. 确认 cookies.json 文件存在")
     logger.info("  3. 确认 Cookie 是否有效")
     logger.info("  4. 确认网络状态良好")
-    logger.info("  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n")
+    logger.info(
+        "  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
+    )
+
 
 if __name__ == "__main__":
     try:
