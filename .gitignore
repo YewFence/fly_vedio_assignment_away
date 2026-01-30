@@ -28,3 +28,6 @@ Thumbs.db
 
 # LLM
 .claude/
+
+# Logs
+log/
