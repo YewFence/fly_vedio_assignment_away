@@ -7,11 +7,12 @@ import asyncio
 import sys
 import warnings
 from pathlib import Path
-from cookie_fix import cookie_fix
-from automation import BrowserManager, AuthManager, VideoManager
-from automation.exception_context import BrowserClosedError
-from logger import setup_logging, get_logger
+
 import config
+from automation import AuthManager, BrowserManager, VideoManager
+from automation.exception_context import BrowserClosedError
+from cookie_fix import cookie_fix
+from logger import get_logger, setup_logging
 
 # 抑制 asyncio 在 Windows 上关闭时的资源警告
 warnings.filterwarnings("ignore", category=ResourceWarning, message=".*unclosed.*")
@@ -161,7 +162,7 @@ async def main():
             return
 
         # 4. 通过URL模式获取视频链接
-        logger.info(f"\n正在提取视频链接...")
+        logger.info("\n正在提取视频链接...")
         logger.info(f"URL模式: {config.URL_PATTERN}")
 
         video_links = await video_manager.get_video_links_by_pattern(

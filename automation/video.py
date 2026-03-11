@@ -162,6 +162,18 @@ class VideoManager:
             logger.warning("⚠ 未找到视频元素,可能并非视频页")
             return None
 
+    async def check_video_completed(self) -> bool:
+        """
+        检查页面上的完成标记，判断视频是否已被平台标记为完成
+        :return: 如果视频已完成返回 True，否则返回 False
+        """
+        tips_locator = self.page.locator(".tips-completion")
+        if await tips_locator.count() > 0:
+            text = await tips_locator.text_content()
+            if text and "已完成" in text.strip():
+                return True
+        return False
+
     @exception_context("播放视频并等待完成")
     async def play_video(
         self,
@@ -179,7 +191,7 @@ class VideoManager:
         """
         logger.info(f"\n{'=' * 60}")
         logger.info(f"正在访问视频页面: {video_url}")
-        await self.page.goto(video_url, wait_until="networkidle")
+        await self.page.goto(video_url, wait_until="domcontentloaded")
 
         # 等待页面加载
         await asyncio.sleep(2)
@@ -196,13 +208,9 @@ class VideoManager:
             raise Exception("Cookie已失效，请重新获取Cookie")
 
         # 检查视频是否已完成
-        tips_locator = self.page.locator(".tips-completion")
-        if await tips_locator.count() > 0:
-            # 获取文字内容
-            text = await tips_locator.text_content()
-            if text and "已完成" in text.strip():
-                logger.info("✓ 该视频已标记为完成,跳过观看")
-                return
+        if await self.check_video_completed():
+            logger.info("✓ 该视频已标记为完成,跳过观看")
+            return
 
         # 如果需要点击播放按钮
         if play_button_selector:
@@ -292,6 +300,16 @@ class VideoManager:
 
                     # 检查视频状态并恢复播放
                     video_state = await self.ensure_video_playing(video_selector)
+
+                    # 检查平台是否已标记视频完成
+                    if await self.check_video_completed():
+                        progress.update(
+                            task,
+                            completed=100,
+                            description="[green]已完成[/green]",
+                        )
+                        logger.info("✓ 平台已标记视频完成")
+                        break
 
                     if video_state:
                         current_time = video_state.get("currentTime", 0)
