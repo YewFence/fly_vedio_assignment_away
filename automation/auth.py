@@ -131,57 +131,66 @@ class AuthManager:
         logger.info(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
 
-    @exception_context("交互式登录并保存Cookie")
-    async def interactive_login_and_save_cookies(self,
-                                                 login_url: str,
-                                                 base_url: str,
-                                                 sso_index_url: str,
-                                                 cookie_file: str = "cookies.json") -> bool:
+    @exception_context("账号密码登录")
+    async def credential_login(self,
+                               username: str,
+                               password: str,
+                               login_url: str,
+                               base_url: str,
+                               sso_index_url: str,
+                               cookie_file: str = "cookies.json") -> bool:
         """
-        交互式登录：打开登录页面，等待用户手动登录，然后保存Cookie
-        :param login_url: 登录页面URL
-        :param base_url: 网站基础URL
+        使用账号密码自动登录SSO并获取Moodle Cookie
+        :param username: 登录账号
+        :param password: 登录密码
+        :param login_url: SSO登录页面URL
+        :param base_url: Moodle基础URL
+        :param sso_index_url: SSO主页URL
         :param cookie_file: Cookie文件路径
-        :return: 是否成功登录并保存Cookie
+        :return: 是否成功登录
         """
-        logger.info("🌐 正在打开登录页面...")
+        logger.info("正在打开登录页面...")
         await self.page.goto(login_url, wait_until='networkidle')
-        await self.page.set_viewport_size({"width": 800, "height": 600})
-        logger.info(f"✅ 登录页面已打开: {login_url}")
-        logger.info("📝 请在浏览器中完成登录操作")
-        await asyncio.get_running_loop().run_in_executor(None, input, "🔑 登录完成后，请按回车键继续...")
-        # 先前往 SSO 主页
-        await self.page.goto(sso_index_url)
-        logger.info("🔍 尝试获取cookie...")
-        # 查找文本为"砺儒云课堂"的a标签
+
+        # 填写账号密码（使用 ID 定位，避免 placeholder 重复匹配）
+        logger.info("正在填写登录信息...")
+        await self.page.locator("#account").fill(username)
+        await self.page.locator("#password").fill(password)
+
+        # 点击登录按钮
+        await self.page.get_by_role("button", name="登录 Sign in").click()
+
+        # 等待页面跳转离开登录页
+        try:
+            await self.page.wait_for_url(
+                lambda url: "login.html" not in url,
+                timeout=10000
+            )
+        except Exception:
+            logger.error("❌ 登录失败，请检查账号密码是否正确")
+            return False
+
+        logger.info("✓ SSO登录成功，正在获取Cookie...")
+
+        # 前往 SSO 主页，点击"砺儒云课堂"获取 Moodle Cookie
+        await self.page.goto(sso_index_url, wait_until='networkidle')
+
         li_ru_link = self.page.get_by_text("砺儒云课堂")
         if await li_ru_link.count() > 0:
-            # 使用 context.expect_popup() 来捕捉点击后产生的新页面
             async with self.page.expect_popup() as popup_info:
                 await li_ru_link.first.click()
-
-                # 这里的 moodle_page 就是新打开的那个标签页
                 moodle_page = await popup_info.value
-
-                # 等待新页面加载完成
                 await moodle_page.wait_for_load_state()
-                logger.info("✅ 成功跳转到目标页面")
+                logger.info("✓ 成功跳转到砺儒云课堂")
         else:
             logger.warning("⚠️ 未找到'砺儒云课堂'链接")
-        # 验证Cookie是否有效
-        logger.info("🔍 验证登录状态...")
-        if await self.check_login_status(base_url):
-            logger.info("✅ 登录验证成功！")
-        else:
-            while not await self.check_login_status(base_url):
-                logger.error("❌ 登录验证失败！")
-                loop = asyncio.get_running_loop()
-                retry = await loop.run_in_executor(None, input, "是否重试？(y/n): ")
-                if retry.strip().lower() not in ('y', 'yes'):
-                    return False
-            logger.info("✅ 登录验证成功！")
 
-        # 保存当前浏览器的Cookie
-        await self.save_cookies(cookie_file)
-        logger.info(f"✅ Cookie已保存到: {cookie_file}")
-        return True
+        # 验证登录状态并保存Cookie
+        logger.info("正在验证登录状态...")
+        if await self.check_login_status(base_url):
+            await self.save_cookies(cookie_file)
+            logger.info("✅ 登录成功，Cookie已保存")
+            return True
+
+        logger.error("❌ 登录验证失败")
+        return False

@@ -6,6 +6,7 @@
 import asyncio
 import sys
 import warnings
+from getpass import getpass
 from pathlib import Path
 
 import config
@@ -112,9 +113,7 @@ async def main():
             logger.warning("登录凭证已失效或不存在")
             # 选择登录方式 - 保留 print 用于用户交互
             print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
-            print(
-                "   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies"
-            )
+            print("   1. 账号密码登录（推荐）- 在命令行输入账号密码，自动完成登录")
             print(
                 "   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON"
             )
@@ -129,15 +128,27 @@ async def main():
                     choice = choice.strip()
 
                     if choice in ("", "1"):
-                        # 默认使用交互式登录
-                        login_success = (
-                            await auth_manager.interactive_login_and_save_cookies(
+                        # 账号密码登录，最多允许3次尝试
+                        username = await loop.run_in_executor(
+                            None, input, "请输入账号: "
+                        )
+                        for attempt in range(1, 4):
+                            password = await loop.run_in_executor(
+                                None, getpass, "请输入密码（输入时不会显示）: "
+                            )
+                            login_success = await auth_manager.credential_login(
+                                username.strip(),
+                                password,
                                 config.LOGIN_URL,
                                 config.BASE_URL,
                                 config.SSO_INDEX_URL,
                                 config.COOKIE_FILE,
                             )
-                        )
+                            if login_success:
+                                break
+                            remaining = 3 - attempt
+                            if remaining > 0:
+                                logger.warning("密码错误")
                         break
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录
