@@ -62,9 +62,8 @@ def print_welcome():
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  欢迎使用 FlyVedioAssignmentAway                              ║
-║  📖 使用说明: github.com/YewFence/fly_vedio_assignment_away   ║
-║  ⚙️  配置文件: config.py                                      ║
-║  👤 作者: YewFence                                           ║
+║  使用说明: github.com/YewFence/fly_vedio_assignment_away      ║
+║  作者: YewFence                                              ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     """
@@ -148,7 +147,9 @@ async def main():
                                 break
                             remaining = 3 - attempt
                             if remaining > 0:
-                                logger.warning("密码错误")
+                                logger.warning(
+                                    f"本次登录未成功，还可重试 {remaining} 次"
+                                )
                         break
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录

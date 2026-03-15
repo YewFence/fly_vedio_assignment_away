@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from urllib.parse import urlparse
 
-from playwright.async_api import BrowserContext, Page
+from playwright.async_api import BrowserContext, Page, TimeoutError as PlaywrightTimeoutError
 
 from logger import get_logger
 
@@ -173,8 +173,8 @@ class AuthManager:
             await self.page.wait_for_url(
                 lambda url: "login.html" not in url, timeout=10000
             )
-        except Exception:
-            logger.error("❌ 登录失败，请检查账号密码是否正确")
+        except PlaywrightTimeoutError:
+            logger.error("❌ 登录失败，页面未按预期跳转，请检查账号、密码或网络状态")
             return False
 
         logger.info("✓ SSO登录成功，正在获取Cookie...")
