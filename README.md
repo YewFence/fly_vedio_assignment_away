@@ -16,7 +16,7 @@
 
 ---
 
-## 🚀 快速开始（推荐）
+## 🚀 快速开始
 
 ### 前置要求
 
@@ -26,9 +26,9 @@
 
 > 理论上 Playwright 支持 Firefox / Safari(Webkit) ，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_vedio_assignment_away/pulls)
 
-> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交 Issue](#反馈与建议) 反馈。
+> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交反馈](#-反馈与建议)。
 > 
-> **另外...** 本程序目前从未在 Mac 平台进行过测试（作者手中暂无 Mac 设备），非常欢迎有条件的好心人帮忙测试运行效果，并在 [Issue](#反馈与建议) 中反馈！
+> **另外...** 本程序目前从未在 Mac 平台进行过测试（作者手中暂无 Mac 设备），非常欢迎有条件的好心人帮忙测试运行效果，并[提交反馈](#-反馈与建议)！
 
 ### 第一步：下载程序
 
@@ -39,9 +39,9 @@
 > ⚠️ **重要提示**: 目前生成的可执行文件发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
 > 
 > 若您在运行过程中遇到严重问题，建议：
-> 1. 前往 Tags 下载 [v1.0.0 版本的源码](https://github.com/YewFence/fly_vedio_assignment_away/releases/tag/v1.0.0)。
-> 2. 参考该版本内的 `README.md` 进行环境配置与手动运行。
-> 3. 欢迎[提交 Issue](#反馈与建议) 报告问题，我会尽快进行修复。
+> 1. 跟随指引[从源码运行](#️-从源码运行)，源码已经经过端到端测试
+> 2. 欢迎[提交反馈](#-反馈与建议)报告问题，我会~~尽快~~找时间进行修复。
+
 
 ### 第二步：创建配置文件
 
@@ -72,7 +72,7 @@ VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 
 ---
 
-## 🛠️ 开发者指南 (源码运行)
+## 🛠️ 从源码运行
 
 如果您熟悉 Python 环境，也可以直接运行源代码：
 
@@ -112,7 +112,7 @@ python -m venv .venv
 # macOS / Linux:
 source .venv/bin/activate
 
-# 3. 安装依赖 (直接读取 pyproject.toml)
+# 3. 安装依赖
 pip install .
 
 # 4. 配置环境 (编辑 .env 文件)
@@ -182,7 +182,7 @@ A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号
 ---
 
 ## 🚀 反馈与建议
-如果您在使用过程中遇到任何问题或有改进建议，请随时提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
+如果您在使用过程中遇到任何问题或有改进建议，欢迎提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
 
 ## 📄 开源协议
 本项目基于 [MIT License](LICENSE) 协议开源。
