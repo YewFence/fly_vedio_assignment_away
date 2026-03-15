@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from urllib.parse import urlparse
 
-from playwright.async_api import BrowserContext, Page, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import BrowserContext, Page
 
 from logger import get_logger
 
@@ -166,14 +166,30 @@ class AuthManager:
         await self.page.locator("#password").fill(password)
 
         # 点击登录按钮
+        logger.info("正在提交登录信息...")
         await self.page.get_by_role("button", name="登录 Sign in").click()
 
-        # 等待页面跳转离开登录页
-        try:
-            await self.page.wait_for_url(
-                lambda url: "login.html" not in url, timeout=10000
+        # 同时等待：页面跳转成功 / 出现错误提示
+        nav_task = asyncio.create_task(
+            self.page.wait_for_url(
+                lambda url: "login.html" not in url, timeout=15000
             )
-        except PlaywrightTimeoutError:
+        )
+        error_task = asyncio.create_task(
+            self.page.locator("text=用户密码不正确").wait_for(timeout=15000)
+        )
+
+        done, pending = await asyncio.wait(
+            [nav_task, error_task], return_when=asyncio.FIRST_COMPLETED
+        )
+        for t in pending:
+            t.cancel()
+
+        # 判断结果
+        if error_task in done and not error_task.exception():
+            logger.error("❌ 登录失败，用户名或密码不正确")
+            return False
+        if nav_task in done and nav_task.exception():
             logger.error("❌ 登录失败，页面未按预期跳转，请检查账号、密码或网络状态")
             return False
 
