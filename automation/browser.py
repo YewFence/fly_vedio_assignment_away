@@ -16,7 +16,7 @@ class BrowserManager:
     def __init__(self, browser_type: str = "msedge", headless: bool = False):
         """
         初始化浏览器管理器
-        :param browser_type: 浏览器类型 (chrome, msedge, firefox)
+        :param browser_type: 浏览器类型 (chrome, msedge）
         :param headless: 是否使用无头模式
         """
         self.browser_type = browser_type
