@@ -78,9 +78,9 @@ VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 
 ### 环境要求
 - **Python**: 3.13+
-- **工具**: 推荐使用 [uv](https://github.com/astral-sh/uv)
+- **venv 管理**: 推荐使用 [uv](https://github.com/astral-sh/uv)
 
-### 快速上手
+### 快速开始 (uv，推荐)
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/YewFence/fly_vedio_assignment_away.git
@@ -94,6 +94,32 @@ cp .env.example .env
 
 # 4. 运行
 uv run python main.py
+```
+
+### 快速开始 (pip + venv)
+
+如果你不想安装 uv，也可以用 Python 自带的 venv + pip：
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/YewFence/fly_vedio_assignment_away.git
+cd fly_vedio_assignment_away
+
+# 2. 创建并激活虚拟环境
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. 安装依赖 (直接读取 pyproject.toml)
+pip install .
+
+# 4. 配置环境 (编辑 .env 文件)
+cp .env.example .env
+
+# 5. 运行
+python main.py
 ```
 
 ---
