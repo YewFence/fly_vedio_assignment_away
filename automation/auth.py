@@ -3,14 +3,16 @@
 负责Cookie管理和登录验证
 """
 
-import json
 import asyncio
+import json
 from pathlib import Path
-from typing import Optional
-from playwright.async_api import Page, BrowserContext
 from urllib.parse import urlparse
-from .exception_context import exception_context
+
+from playwright.async_api import BrowserContext, Page
+
 from logger import get_logger
+
+from .exception_context import exception_context
 
 logger = get_logger("automation.auth")
 
@@ -39,7 +41,7 @@ class AuthManager:
             logger.warning(f"⚠ Cookie文件不存在: {cookie_file}")
             return False
 
-        with open(cookie_file, 'r', encoding='utf-8') as f:
+        with open(cookie_file, "r", encoding="utf-8") as f:
             cookies = json.load(f)
         await self.context.add_cookies(cookies)
         logger.info(f"✓ Cookie已从文件加载: {cookie_file}")
@@ -52,7 +54,7 @@ class AuthManager:
         :param cookie_file: Cookie文件路径
         """
         cookies = await self.context.cookies()
-        with open(cookie_file, 'w', encoding='utf-8') as f:
+        with open(cookie_file, "w", encoding="utf-8") as f:
             json.dump(cookies, f, indent=2, ensure_ascii=False)
         logger.info(f"✓ Cookie已保存到: {cookie_file}")
 
@@ -62,7 +64,7 @@ class AuthManager:
         刷新并保存当前浏览器的Cookie到文件
         :param cookie_file: Cookie文件路径
         """
-        refresh_button = self.page.get_by_role('button', name='延长会话')
+        refresh_button = self.page.get_by_role("button", name="延长会话")
 
         # 检查按钮是否存在
         if await refresh_button.count() > 0:
@@ -86,7 +88,9 @@ class AuthManager:
         return True
 
     @exception_context("使用Cookie登录")
-    async def login_with_cookies(self, base_url: str, cookie_file: str = "cookies.json") -> bool:
+    async def login_with_cookies(
+        self, base_url: str, cookie_file: str = "cookies.json"
+    ) -> bool:
         """
         使用Cookie登录
         :param base_url: 网站首页或任意需要登录的页面URL
@@ -110,7 +114,7 @@ class AuthManager:
         :return: 是否登录成功
         """
         # 访问页面验证Cookie是否有效
-        await self.page.goto(base_url, wait_until='networkidle')
+        await self.page.goto(base_url, wait_until="networkidle")
         await asyncio.sleep(2)
 
         # 检查是否发生重定向（登录失败会被重定向到登录页）
@@ -121,24 +125,28 @@ class AuthManager:
         base_parsed = urlparse(base_url)
 
         # Compare scheme, netloc, and path (ignoring query params and fragments)
-        if (current_parsed.scheme != base_parsed.scheme or
-            current_parsed.netloc != base_parsed.netloc or
-            current_parsed.path.rstrip('/') != base_parsed.path.rstrip('/')):
-                logger.error(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
-                logger.info("💡 Cookie可能已过期，请重新获取Cookie")
-                return False
+        if (
+            current_parsed.scheme != base_parsed.scheme
+            or current_parsed.netloc != base_parsed.netloc
+            or current_parsed.path.rstrip("/") != base_parsed.path.rstrip("/")
+        ):
+            logger.error(f"❌ Cookie登录失败! 页面被重定向到: {current_url}")
+            logger.info("💡 Cookie可能已过期，请重新获取Cookie")
+            return False
 
         logger.info(f"✓ Cookie登录成功,当前页面: {self.page.url}")
         return True
 
     @exception_context("账号密码登录")
-    async def credential_login(self,
-                               username: str,
-                               password: str,
-                               login_url: str,
-                               base_url: str,
-                               sso_index_url: str,
-                               cookie_file: str = "cookies.json") -> bool:
+    async def credential_login(
+        self,
+        username: str,
+        password: str,
+        login_url: str,
+        base_url: str,
+        sso_index_url: str,
+        cookie_file: str = "cookies.json",
+    ) -> bool:
         """
         使用账号密码自动登录SSO并获取Moodle Cookie
         :param username: 登录账号
@@ -150,7 +158,7 @@ class AuthManager:
         :return: 是否成功登录
         """
         logger.info("正在打开登录页面...")
-        await self.page.goto(login_url, wait_until='networkidle')
+        await self.page.goto(login_url, wait_until="networkidle")
 
         # 填写账号密码（使用 ID 定位，避免 placeholder 重复匹配）
         logger.info("正在填写登录信息...")
@@ -163,8 +171,7 @@ class AuthManager:
         # 等待页面跳转离开登录页
         try:
             await self.page.wait_for_url(
-                lambda url: "login.html" not in url,
-                timeout=10000
+                lambda url: "login.html" not in url, timeout=10000
             )
         except Exception:
             logger.error("❌ 登录失败，请检查账号密码是否正确")
@@ -173,7 +180,7 @@ class AuthManager:
         logger.info("✓ SSO登录成功，正在获取Cookie...")
 
         # 前往 SSO 主页，点击"砺儒云课堂"获取 Moodle Cookie
-        await self.page.goto(sso_index_url, wait_until='networkidle')
+        await self.page.goto(sso_index_url, wait_until="networkidle")
 
         li_ru_link = self.page.get_by_text("砺儒云课堂")
         if await li_ru_link.count() > 0:
@@ -182,6 +189,7 @@ class AuthManager:
                 moodle_page = await popup_info.value
                 await moodle_page.wait_for_load_state()
                 logger.info("✓ 成功跳转到砺儒云课堂")
+                await moodle_page.close()
         else:
             logger.warning("⚠️ 未找到'砺儒云课堂'链接")
 

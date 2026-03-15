@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+
 from rich.logging import RichHandler
 
 # 日志目录
@@ -52,7 +53,7 @@ def setup_logging(
         encoding="utf-8",
     )
     file_handler.setLevel(logging.DEBUG)
-    file_fmt = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    file_fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
     file_handler.setFormatter(file_fmt)
 
     # --- 2. 终端处理器：追求极致美观 ---

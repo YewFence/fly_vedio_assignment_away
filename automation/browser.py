@@ -3,7 +3,8 @@
 负责浏览器的启动、配置和关闭
 """
 
-from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+from playwright.async_api import Browser, BrowserContext, Page, async_playwright
+
 from logger import get_logger
 
 logger = get_logger("automation.browser")
@@ -32,13 +33,13 @@ class BrowserManager:
             channel=self.browser_type,
             headless=self.headless,
             args=[
-                '--disable-blink-features=AutomationControlled',  # 防止网站检测自动化
-                '--mute-audio'  # 静音浏览器
-            ]
+                "--disable-blink-features=AutomationControlled",  # 防止网站检测自动化
+                "--mute-audio",  # 静音浏览器
+            ],
         )
         self.context = await self.browser.new_context(
-            viewport={'width': 1920, 'height': 1080},
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            viewport={"width": 1920, "height": 1080},
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         )
         self.page = await self.context.new_page()
         logger.info("✓ 浏览器启动成功 (已静音)")

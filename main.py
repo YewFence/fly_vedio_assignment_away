@@ -202,12 +202,10 @@ async def main():
 
 def suggestions():
     logger.info("\n💡 故障排查建议:")
-    logger.info("  1. 检查 config.py 中是否正确配置了课程链接")
-    logger.info("  2. 确认 cookies.json 文件存在")
-    logger.info("  3. 确认 Cookie 是否有效")
-    logger.info("  4. 确认网络状态良好")
+    logger.info("  1. 检查 .env 文件中是否正确配置了课程链接")
+    logger.info("  2. 确认网络状态良好")
     logger.info(
-        "  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
+        "  3. 如仍有问题，请附上 log/debug.log 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
     )
 
 
