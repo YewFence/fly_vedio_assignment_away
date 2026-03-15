@@ -1,5 +1,5 @@
-from functools import wraps
 import asyncio
+from functools import wraps
 
 
 class BrowserClosedError(Exception):

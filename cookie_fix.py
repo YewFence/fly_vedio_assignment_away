@@ -1,7 +1,8 @@
 # convert_cookies.py
 import json
-from logger import get_logger
+
 from automation.exception_context import exception_context
+from logger import get_logger
 
 logger = get_logger("cookie_fix")
 

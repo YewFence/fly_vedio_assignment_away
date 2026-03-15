@@ -5,18 +5,22 @@
 
 import asyncio
 from typing import List, Optional
-from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
+
+from playwright.async_api import Page
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from rich.console import Console
 from rich.progress import (
+    BarColumn,
     Progress,
     SpinnerColumn,
-    TextColumn,
-    BarColumn,
     TaskProgressColumn,
+    TextColumn,
     TimeElapsedColumn,
 )
-from rich.console import Console
-from .exception_context import exception_context, BrowserClosedError
+
 from logger import get_logger
+
+from .exception_context import BrowserClosedError, exception_context
 
 logger = get_logger("automation.video")
 console = Console()

@@ -5,7 +5,7 @@
 
 ## ✨ 功能特点
 
-- ✅ **多种登录方式**: 支持 Cookie 登录及交互式手动登录
+- ✅ **多种登录方式**: 支持账号密码自动登录（推荐）及手动 Cookie 登录
 - ✅ **状态自动维护**: 自动检测并刷新登录状态
 - ✅ **智能链接解析**: 自动匹配并提取课程中的视频链接
 - ✅ **精准播放控制**: 实时检测播放进度，确保视频真正播放完成
@@ -16,32 +16,32 @@
 
 ---
 
-## 🚀 快速开始（推荐）
+## 🚀 快速开始
 
 ### 前置要求
 
 本程序依赖系统中已安装的浏览器，请确保您的电脑上安装了以下任一浏览器：
 - **Microsoft Edge** (推荐，已通过完整测试)
 - **Google Chrome**
-- **Mozilla Firefox**
-- **Safari**
 
-> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交 Issue](#反馈与建议) 反馈。
+> 理论上 Playwright 支持 Firefox / Safari(Webkit) ，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_vedio_assignment_away/pulls)
+
+> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交反馈](#-反馈与建议)。
 > 
-> **另外...** 本程序目前从未在 Mac 平台进行过测试（作者手中暂无 Mac 设备），非常欢迎有条件的好心人帮忙测试运行效果，并在 [Issue](#反馈与建议) 中反馈！
+> **另外...** 本程序目前从未在 Mac 平台进行过测试（作者手中暂无 Mac 设备），非常欢迎有条件的好心人帮忙测试运行效果，并[提交反馈](#-反馈与建议)！
 
 ### 第一步：下载程序
 
 前往 [Releases](https://github.com/YewFence/fly_vedio_assignment_away/releases) 页面，下载对应系统的可执行文件：
-- **Windows**: `school-video-hw-windows.exe`
-- **macOS**: `school-video-hw-macos`
+- **Windows**: `fly_video_assignment_away-windows.exe`
+- **macOS**: `fly_video_assignment_away-macos`
 
 > ⚠️ **重要提示**: 目前生成的可执行文件发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
 > 
 > 若您在运行过程中遇到严重问题，建议：
-> 1. 前往 Tags 下载 [v1.0.0 版本的源码](https://github.com/YewFence/fly_vedio_assignment_away/releases/tag/v1.0.0)。
-> 2. 参考该版本内的 `README.md` 进行环境配置与手动运行。
-> 3. 欢迎[提交 Issue](#反馈与建议) 报告问题，我会尽快进行修复。
+> 1. 跟随指引[从源码运行](#️-从源码运行)，源码已经经过端到端测试
+> 2. 欢迎[提交反馈](#-反馈与建议)报告问题，我会~~尽快~~找时间进行修复。
+
 
 ### 第二步：创建配置文件
 
@@ -65,19 +65,22 @@ VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 
 ### 第三步：启动程序
 
-直接双击运行程序。推荐选择「交互式登录」，在自动打开的浏览器窗口中完成登录操作，程序随后会自动接管播放流程。
+直接双击运行程序。如果已有保存的 Cookie 会自动尝试登录；否则推荐选择「账号密码登录」，在命令行中输入账号密码即可自动完成 SSO 登录，程序随后会自动接管播放流程。
+
+> 请注意：短时间登录错误次数过多账户会被锁定一个小时
+> 手动端到端测试登录代码的弊端出现了😢
 
 ---
 
-## 🛠️ 开发者指南 (源码运行)
+## 🛠️ 从源码运行
 
 如果您熟悉 Python 环境，也可以直接运行源代码：
 
 ### 环境要求
 - **Python**: 3.13+
-- **工具**: 推荐使用 [uv](https://github.com/astral-sh/uv)
+- **venv 管理**: 推荐使用 [uv](https://github.com/astral-sh/uv)
 
-### 快速上手
+### 快速开始 (uv，推荐)
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/YewFence/fly_vedio_assignment_away.git
@@ -93,33 +96,65 @@ cp .env.example .env
 uv run python main.py
 ```
 
+### 快速开始 (pip + venv)
+
+如果你不想安装 uv，也可以用 Python 自带的 venv + pip：
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/YewFence/fly_vedio_assignment_away.git
+cd fly_vedio_assignment_away
+
+# 2. 创建并激活虚拟环境
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. 安装依赖
+pip install .
+
+# 4. 配置环境 (编辑 .env 文件)
+cp .env.example .env
+
+# 5. 运行
+python main.py
+```
+
 ---
 
 ## ⚙️ 工作流程
 
 ```mermaid
 graph TD
-    A[启动程序并登录] --> B[访问指定的课程页面]
-    B --> C[扫描并解析视频资源链接]
-    C --> D[依次进入视频页面播放]
-    D --> E{是否检测到完成?}
-    E -- 否 --> D
-    E -- 是 --> F[检查下一个视频]
-    F -- 全部完成 --> G[退出程序]
+    A[启动程序] --> B{存在已保存的 Cookie?}
+    B -- 是 --> C[自动尝试 Cookie 登录]
+    C --> D{登录成功?}
+    D -- 是 --> F[访问指定的课程页面]
+    D -- 否 --> E[选择登录方式]
+    B -- 否 --> E
+    E --> F
+    F --> G[扫描并解析视频资源链接]
+    G --> H[依次进入视频页面播放]
+    H --> I{是否检测到完成?}
+    I -- 否 --> H
+    I -- 是 --> J[检查下一个视频]
+    J -- 全部完成 --> K[退出程序]
 ```
 
 ---
 
 ## 🔐 获取登录凭证
 
-### 1. 交互式登录 (推荐)
-启动程序后，选择 `交互式登录` 模式。脚本会唤起一个浏览器窗口，您可以手动输入账号密码通过统一身份认证登录。登录完成后，脚本会自动捕获会话状态。
+### 1. 账号密码登录 (推荐)
+启动程序后，选择 `账号密码登录` 模式，在命令行中输入账号和密码。程序会自动完成 SSO 登录并获取砺儒云的会话 Cookie，全程无需手动操作浏览器。登录成功后 Cookie 会自动保存，下次启动时会优先尝试复用。
 
 ### 2. 手动获取 Cookies 登录
 1. 安装 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi) 扩展。
 2. 在浏览器中登录 [SCNU 砺儒云](https://moodle.scnu.edu.cn/)。
 3. 点击插件，选择 "Export" 将 Cookies 导出为 **JSON** 格式。
-4. 运行程序，选择 `使用您手动获取的 Cookies 登录` 模式然后运行程序，将导出的内容粘贴进程序中。
+4. 运行程序，选择 `使用您手动获取的 Cookies 登录` 模式，将导出的内容粘贴进程序中。
 
 > [详细 Cookie 获取指南](docs/how_to_get_cookie.md)
 
@@ -127,8 +162,8 @@ graph TD
 
 ## ⚠️ 安全与规范
 
-- **隐私保护**: 请妥善保管您的 `.env` 和 `browser_cookies.json` 文件，切勿分享给他人或上传至公开平台。
-- **定期更新**: Cookie 具有时效性，若登录失效请重新获取或使用交互式登录。
+- **隐私保护**: 请妥善保管您的 `.env` 和 `cookies.json` 文件，切勿分享给他人或上传至公开平台。
+- **定期更新**: Cookie 具有时效性，若登录失效请重新运行程序使用账号密码登录。
 - **合理使用**: 本工具仅用于辅助学习，请确保您的使用行为符合学校相关规定。
 
 ---
@@ -139,15 +174,15 @@ graph TD
 A: 本项目基于 Playwright，默认会尝试调用系统中已安装的浏览器，无需手动管理 WebDriver。
 
 **Q: macOS 或 Linux 用户如何配置？**
-A: 请在 `.env` 文件中将 `BROWSER` 修改为 `chrome` 或 `firefox`，并确保系统中已安装相应浏览器。
+A: 请在 `.env` 文件中将 `BROWSER` 修改为 `msedge` 或 `chrome`，并确保系统中已安装相应浏览器。
 
 **Q: 登录状态失效怎么办？**
-A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择交互式登录。
+A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号密码登录。
 
 ---
 
 ## 🚀 反馈与建议
-如果您在使用过程中遇到任何问题或有改进建议，请随时提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
+如果您在使用过程中遇到任何问题或有改进建议，欢迎提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
 
 ## 📄 开源协议
 本项目基于 [MIT License](LICENSE) 协议开源。

@@ -6,6 +6,7 @@
 import asyncio
 import sys
 import warnings
+from getpass import getpass
 from pathlib import Path
 
 import config
@@ -61,9 +62,8 @@ def print_welcome():
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  欢迎使用 FlyVedioAssignmentAway                              ║
-║  📖 使用说明: github.com/YewFence/fly_vedio_assignment_away   ║
-║  ⚙️  配置文件: config.py                                      ║
-║  👤 作者: YewFence                                           ║
+║  使用说明: github.com/YewFence/fly_vedio_assignment_away      ║
+║  作者: YewFence                                              ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
     """
@@ -112,9 +112,7 @@ async def main():
             logger.warning("登录凭证已失效或不存在")
             # 选择登录方式 - 保留 print 用于用户交互
             print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
-            print(
-                "   1. 交互式登录（推荐）- 自动打开登录页面，您手动登录后程序自动获取Cookies"
-            )
+            print("   1. 账号密码登录（推荐）- 在命令行输入账号密码，自动完成登录")
             print(
                 "   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON"
             )
@@ -129,15 +127,29 @@ async def main():
                     choice = choice.strip()
 
                     if choice in ("", "1"):
-                        # 默认使用交互式登录
-                        login_success = (
-                            await auth_manager.interactive_login_and_save_cookies(
+                        # 账号密码登录，最多允许3次尝试
+                        username = await loop.run_in_executor(
+                            None, input, "请输入账号: "
+                        )
+                        for attempt in range(1, 4):
+                            password = await loop.run_in_executor(
+                                None, getpass, "请输入密码（输入时不会显示）: "
+                            )
+                            login_success = await auth_manager.credential_login(
+                                username.strip(),
+                                password,
                                 config.LOGIN_URL,
                                 config.BASE_URL,
                                 config.SSO_INDEX_URL,
                                 config.COOKIE_FILE,
                             )
-                        )
+                            if login_success:
+                                break
+                            remaining = 3 - attempt
+                            if remaining > 0:
+                                logger.warning(
+                                    f"本次登录未成功，还可重试 {remaining} 次"
+                                )
                         break
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录
@@ -191,12 +203,10 @@ async def main():
 
 def suggestions():
     logger.info("\n💡 故障排查建议:")
-    logger.info("  1. 检查 config.py 中是否正确配置了课程链接")
-    logger.info("  2. 确认 cookies.json 文件存在")
-    logger.info("  3. 确认 Cookie 是否有效")
-    logger.info("  4. 确认网络状态良好")
+    logger.info("  1. 检查 .env 文件中是否正确配置了课程链接")
+    logger.info("  2. 确认网络状态良好")
     logger.info(
-        "  5. 如仍有问题，请提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
+        "  3. 如仍有问题，请附上 log/debug.log 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
     )
 
 
