@@ -9,6 +9,12 @@ import warnings
 from getpass import getpass
 from pathlib import Path
 
+# 1. 先运行配置引导（在 import config 之前）
+from setup_wizard import ensure_env_configured
+
+ensure_env_configured()
+
+# 2. 引导完成后才导入 config
 import config
 from automation import AuthManager, BrowserManager, VideoManager
 from automation.exception_context import BrowserClosedError
