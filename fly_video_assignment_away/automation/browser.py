@@ -5,7 +5,7 @@
 
 from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
-from logger import get_logger
+from fly_video_assignment_away.logger import get_logger
 
 logger = get_logger("automation.browser")
 
