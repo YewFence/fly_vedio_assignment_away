@@ -21,7 +21,7 @@ jobs:
             artifact_name: fly_video_assignment_away-windows.exe
             asset_name: fly_video_assignment_away-windows.exe
           - os: macos-latest
-            artifact_name: fly_video_assignment_away-macos
+            artifact_name: fly_video_assignment_away
             asset_name: fly_video_assignment_away-macos.zip
 
     runs-on: ${{ matrix.os }}
@@ -53,11 +53,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           mv dist/fly_video_assignment_away.exe dist/${{ matrix.artifact_name }}
-
-      - name: Rename artifact (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          mv dist/fly_video_assignment_away dist/${{ matrix.artifact_name }}
 
       - name: Zip artifact (macOS)
         if: matrix.os == 'macos-latest'

@@ -20,13 +20,13 @@ def _needs_setup() -> bool:
     """判断是否需要启动配置引导"""
     env_path = Path(".env")
 
-    # 1. .env 文件不存在
-    if not env_path.exists():
-        return True
-
-    # 2. 加载现有配置检查必填项
-    load_dotenv()
+    # 1. 优先检查真实环境变量，避免在 CI / shell 已配置时强制启动向导
     video_url = os.getenv("VIDEO_LIST_URL", "")
+
+    # 2. 若环境变量未提供，再尝试从 .env 加载
+    if not video_url and env_path.exists():
+        load_dotenv()
+        video_url = os.getenv("VIDEO_LIST_URL", "")
 
     # 3. 必填项缺失或是示例值
     if not video_url or "YOUR_COURSE_ID" in video_url:

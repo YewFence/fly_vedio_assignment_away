@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fly-video = "fly_video_assignment_away.__main__:main"
+fly-video = "fly_video_assignment_away.__main__:cli"
 
 [build-system]
 requires = ["hatchling"]

@@ -208,16 +208,22 @@ async def main():
 
 
 def suggestions():
+    debug_log_path = Path(__file__).parent / "log" / "debug.log"
     logger.info("\n💡 故障排查建议:")
     logger.info("  1. 检查 .env 文件中是否正确配置了课程链接")
     logger.info("  2. 确认网络状态良好")
     logger.info(
-        "  3. 如仍有问题，请附上 log/debug.log 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
+        f"  3. 如仍有问题，请附上 {debug_log_path.as_posix()} 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
     )
 
 
-if __name__ == "__main__":
+def cli():
+    """同步入口，供 console_scripts 调用"""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\n\n👋 程序已由用户中断，再见！")
+
+
+if __name__ == "__main__":
+    cli()

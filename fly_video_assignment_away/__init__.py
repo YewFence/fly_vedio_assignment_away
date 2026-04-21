@@ -7,4 +7,4 @@ __author__ = "YewFence"
 
 from . import automation, cli, logger
 
-__all__ = ["automation", "cli", "config", "logger"]
+__all__ = ["automation", "cli", "logger"]
