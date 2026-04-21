@@ -1,8 +1,9 @@
-# convert_cookies.py
+"""Cookie 转换工具。"""
+
 import json
 
-from automation.exception_context import exception_context
-from logger import get_logger
+from fly_video_assignment_away.automation.exception_context import exception_context
+from fly_video_assignment_away.logger import get_logger
 
 logger = get_logger("cookie_fix")
 

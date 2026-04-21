@@ -12,8 +12,9 @@ FlyVedioAssignmentAway —— 华南师范大学砺儒云 (Moodle) 视频自动�
 # 安装依赖
 uv sync
 
-# 运行程序
-uv run python main.py
+# 运行程序（两种方式）
+uv run python main.py                    # 通过入口脚本
+uv run python -m fly_video_assignment_away  # 通过包模块
 
 # 构建可执行文件 (CI 使用)
 uv add pyinstaller
@@ -24,19 +25,26 @@ Python 版本要求: **3.13+**，使用 uv 管理依赖，无 lint/test 配置�
 
 ## 架构
 
-项目采用 **Manager 三层架构**，入口为 `main.py`，核心逻辑在 `automation/` 包中：
+项目采用 **Manager 三层架构** + **包结构**，入口为 `main.py`，核心逻辑在 `fly_video_assignment_away/` 包中：
 
-```
-main.py              # 入口：欢迎界面 → 登录流程 → 视频播放流程
-config.py             # 配置中心：从 .env 读取敏感配置 + 硬编码的平台常量
-cookie_fix.py         # CLI 工具：将浏览器导出的 Cookie JSON 转换为 Playwright 格式
-logger.py             # 日志系统：RichHandler (终端美化) + RotatingFileHandler (log/debug.log)
+```text
+main.py                                  # 入口脚本（向后兼容）
 
-automation/
-├── browser.py        # BrowserManager - 浏览器生命周期管理 (Chromium channel 模式)
-├── auth.py           # AuthManager - 登录认证 (Cookie 登录 / 账号密码 SSO 登录)
-├── video.py          # VideoManager - 视频链接提取、播放控制、进度监控 (rich 进度条)
-└── exception_context.py  # 异常处理装饰器 + BrowserClosedError 自定义异常
+fly_video_assignment_away/               # 主包
+├── __init__.py                          # 包初始化
+├── __main__.py                          # 主入口：欢迎界面 → 登录流程 → 视频播放流程
+├── config.py                            # 配置中心：从 .env 读取敏感配置 + 硬编码的平台常量
+├── logger.py                            # 日志系统：RichHandler (终端美化) + RotatingFileHandler (log/debug.log)
+├── automation/                          # 自动化核心逻辑
+│   ├── __init__.py
+│   ├── browser.py                       # BrowserManager - 浏览器生命周期管理 (Chromium channel 模式)
+│   ├── auth.py                          # AuthManager - 登录认证 (Cookie 登录 / 账号密码 SSO 登录)
+│   ├── video.py                         # VideoManager - 视频链接提取、播放控制、进度监控 (rich 进度条)
+│   └── exception_context.py             # 异常处理装饰器 + BrowserClosedError 自定义异常
+└── cli/                                 # CLI 工具包
+    ├── __init__.py
+    ├── cookie_fix.py                    # Cookie 转换工具：将浏览器导出的 Cookie JSON 转换为 Playwright 格式
+    └── setup_wizard.py                  # 配置向导：首次运行交互式配置
 ```
 
 ### 核心流程
@@ -62,7 +70,7 @@ automation/
 | `HEADLESS` | 无头模式 | `false` |
 | `VIDEO_LIST_URL` | 课程页面 URL（必填） | 无 |
 
-平台相关常量（SSO URL、CSS 选择器等）硬编码在 `config.py` 中。
+平台相关常量（SSO URL、CSS 选择器等）硬编码在 `fly_video_assignment_away/config.py` 中。
 
 ## CI/CD
 

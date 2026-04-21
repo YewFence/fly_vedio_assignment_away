@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from playwright.async_api import BrowserContext, Page
 
-from logger import get_logger
+from fly_video_assignment_away.logger import get_logger
 
 from .exception_context import exception_context
 

@@ -18,7 +18,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from logger import get_logger
+from fly_video_assignment_away.logger import get_logger
 
 from .exception_context import BrowserClosedError, exception_context
 
