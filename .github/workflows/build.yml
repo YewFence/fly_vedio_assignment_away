@@ -57,7 +57,15 @@ jobs:
       - name: Zip artifact (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          cd dist && zip ${{ matrix.asset_name }} ${{ matrix.artifact_name }}
+          chmod +x dist/${{ matrix.artifact_name }}
+          ditto -c -k --sequesterRsrc dist/${{ matrix.artifact_name }} dist/${{ matrix.asset_name }}
+
+      - name: Verify macOS artifact is executable
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir artifact-check
+          ditto -x -k dist/${{ matrix.asset_name }} artifact-check
+          test -x artifact-check/${{ matrix.artifact_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

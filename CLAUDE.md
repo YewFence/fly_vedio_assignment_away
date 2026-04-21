@@ -27,7 +27,7 @@ Python 版本要求: **3.13+**，使用 uv 管理依赖，无 lint/test 配置�
 
 项目采用 **Manager 三层架构** + **包结构**，入口为 `main.py`，核心逻辑在 `fly_video_assignment_away/` 包中：
 
-```
+```text
 main.py                                  # 入口脚本（向后兼容）
 
 fly_video_assignment_away/               # 主包

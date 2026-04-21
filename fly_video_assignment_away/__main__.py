@@ -52,10 +52,10 @@ def _custom_excepthook(exc_type, exc_value, exc_traceback):
     logger.critical("未捕获的异常", exc_info=(exc_type, exc_value, exc_traceback))
 
 
+logger = get_logger(__name__)
+
 sys.unraisablehook = _custom_unraisablehook
 sys.excepthook = _custom_excepthook
-
-logger = get_logger(__name__)
 
 
 def print_welcome():
@@ -156,6 +156,8 @@ async def main():
                                 logger.warning(
                                     f"本次登录未成功，还可重试 {remaining} 次"
                                 )
+                        if not login_success:
+                            logger.error("账号密码登录失败，已达最大重试次数")
                         break
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录
@@ -205,6 +207,12 @@ async def main():
         # 只打印一次：RichHandler 会负责美化堆栈，避免和 traceback.print_exc() 重复输出。
         logger.error("\n❌ 发生错误", exc_info=True)
         suggestions()
+    finally:
+        if browser_manager is not None:
+            try:
+                await browser_manager.close()
+            except Exception:
+                logger.debug("关闭浏览器资源时出现异常，忽略", exc_info=True)
 
 
 def suggestions():

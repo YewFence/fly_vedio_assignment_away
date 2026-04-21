@@ -45,9 +45,41 @@ class BrowserManager:
         logger.info("✓ 浏览器启动成功 (已静音)")
 
     async def close(self):
-        """关闭浏览器"""
-        if self.browser:
-            await self.browser.close()
+        """关闭浏览器及 Playwright 资源，允许重复调用"""
+        had_resources = any(
+            resource is not None
+            for resource in (self.page, self.context, self.browser, self.playwright)
+        )
+
+        if self.context is not None:
+            try:
+                await self.context.close()
+            except Exception:
+                logger.debug("关闭浏览器上下文时出现异常，忽略", exc_info=True)
+            finally:
+                self.context = None
+                self.page = None
+
+        if self.browser is not None:
+            try:
+                if self.browser.is_connected():
+                    await self.browser.close()
+            except Exception:
+                logger.debug("关闭浏览器进程时出现异常，忽略", exc_info=True)
+            finally:
+                self.browser = None
+
+        if self.playwright is not None:
+            try:
+                await self.playwright.stop()
+            except Exception:
+                logger.debug("停止 Playwright 时出现异常，忽略", exc_info=True)
+            finally:
+                self.playwright = None
+
+        self.page = None
+
+        if had_resources:
             logger.info("\n✓ 浏览器已关闭")
 
     def get_page(self) -> Page:

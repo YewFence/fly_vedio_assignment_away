@@ -1,4 +1,5 @@
-# convert_cookies.py
+"""Cookie 转换工具。"""
+
 import json
 
 from fly_video_assignment_away.automation.exception_context import exception_context

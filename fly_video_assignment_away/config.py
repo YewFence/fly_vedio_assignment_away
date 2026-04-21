@@ -16,7 +16,8 @@ HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"  # 是否使用无�
 _video_list_url = os.getenv("VIDEO_LIST_URL")
 if not _video_list_url or "YOUR_COURSE_ID" in _video_list_url:
     raise ValueError(
-        "错误: 环境变量 'VIDEO_LIST_URL' 未设置或为空。请在 .env 文件中配置它。"
+        "错误: 环境变量 'VIDEO_LIST_URL' 未设置、为空，或仍包含示例值 "
+        "'YOUR_COURSE_ID'。请在 .env 文件中配置真实课程链接。"
     )
 VIDEO_LIST_URL: str = _video_list_url
 
