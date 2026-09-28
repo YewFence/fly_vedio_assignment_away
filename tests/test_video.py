@@ -180,17 +180,14 @@ def test_platform_progress_stays_hidden_without_platform_data() -> None:
     progress.update.assert_not_called()
 
 
-@pytest.mark.parametrize(
-    ("watched", "expected_remaining"),
-    # 剩余按需观看时长计算：2082.8 - 411 = 1671.8 秒；超过目标则无需等待
-    [(411.0, "27:51"), (2100.0, "0:00")],
-)
-def test_play_video_remaining_is_measured_against_target(
+def make_play_manager(
     monkeypatch: pytest.MonkeyPatch,
-    caplog: pytest.LogCaptureFixture,
-    watched: float,
-    expected_remaining: str,
-) -> None:
+    completed: AsyncMock,
+    *,
+    duration: float | None = VIDEO_DURATION,
+    watched: float = 411.0,
+    video_state: dict | None = None,
+) -> VideoManager:
     monkeypatch.setattr(asyncio, "sleep", AsyncMock())
     page = MagicMock()
     page.goto = AsyncMock()
@@ -200,29 +197,93 @@ def test_play_video_remaining_is_measured_against_target(
     auth.refresh_cookies = AsyncMock()
     auth.check_cookie_validity = AsyncMock(return_value=True)
     manager = VideoManager(page, auth)
-    # 进入页面时未完成，第一次轮询即被平台标记完成，避免真的进入长时间等待
-    monkeypatch.setattr(
-        manager, "check_video_completed", AsyncMock(side_effect=[False, True])
-    )
-    monkeypatch.setattr(
-        manager, "get_video_duration", AsyncMock(return_value=VIDEO_DURATION)
-    )
-    monkeypatch.setattr(
-        manager, "get_platform_required_percent", AsyncMock(return_value=90.0)
-    )
-    monkeypatch.setattr(
-        manager, "get_platform_watched_seconds", AsyncMock(return_value=watched)
-    )
-    monkeypatch.setattr(
-        manager, "get_platform_progress_percent", AsyncMock(return_value=None)
-    )
-    monkeypatch.setattr(manager, "pass_human_challenge", AsyncMock())
-    monkeypatch.setattr(manager, "ensure_video_playing", AsyncMock(return_value=None))
+    patches = {
+        "check_video_completed": completed,
+        "get_video_duration": AsyncMock(return_value=duration),
+        "get_platform_required_percent": AsyncMock(return_value=90.0),
+        "get_platform_watched_seconds": AsyncMock(return_value=watched),
+        "get_platform_progress_percent": AsyncMock(return_value=None),
+        "pass_human_challenge": AsyncMock(),
+        "ensure_video_playing": AsyncMock(return_value=video_state),
+    }
+    for name, mock in patches.items():
+        monkeypatch.setattr(manager, name, mock)
+    return manager
 
+
+def run_play(manager: VideoManager, caplog: pytest.LogCaptureFixture) -> list[str]:
     with caplog.at_level("INFO"):
         asyncio.run(manager.play_video("https://example.test/video", "video", ".play"))
+    return [r.getMessage() for r in caplog.records]
 
-    info = next(r.getMessage() for r in caplog.records if "总时长" in r.getMessage())
+
+@pytest.mark.parametrize(
+    ("watched", "expected_remaining"),
+    # 剩余按需观看时长计算：2082.8 - 411 = 1671.8 秒；已超过需观看时长时显示 0:00
+    [(411.0, "27:51"), (2100.0, "0:00")],
+)
+def test_play_video_remaining_is_display_only(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    watched: float,
+    expected_remaining: str,
+) -> None:
+    # 进入页面时未完成，第一次轮询时平台标记完成
+    completed = AsyncMock(side_effect=[False, True])
+    manager = make_play_manager(monkeypatch, completed, watched=watched)
+
+    messages = run_play(manager, caplog)
+
+    info = next(m for m in messages if "总时长" in m)
     assert f"剩余: {expected_remaining}" in info
     assert "需观看: 34:42 (90%)" in info
     assert info.index("剩余") < info.index("需观看")
+    # 即使估算剩余为 0 也必须进入等待循环，由平台完成标记决定是否完成
+    assert completed.await_count == 2
+    assert "✓ 平台已标记视频完成" in messages
+
+
+def test_play_video_timeout_is_not_reported_as_completed(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    manager = make_play_manager(
+        monkeypatch, AsyncMock(return_value=False), duration=4.0
+    )
+
+    messages = run_play(manager, caplog)
+
+    assert any("仍未确认完成" in m for m in messages)
+    assert "✓ 平台已标记视频完成" not in messages
+    assert "✓ 视频已播放到结尾" not in messages
+
+
+def test_play_video_falls_back_to_video_reaching_the_end(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    ended_state = {
+        "paused": True,
+        "currentTime": VIDEO_DURATION,
+        "duration": VIDEO_DURATION,
+        "ended": True,
+    }
+    manager = make_play_manager(
+        monkeypatch, AsyncMock(return_value=False), video_state=ended_state
+    )
+
+    messages = run_play(manager, caplog)
+
+    assert "✓ 视频已播放到结尾" in messages
+    assert not any("仍未确认完成" in m for m in messages)
+
+
+def test_play_video_without_duration_does_not_claim_completion(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    manager = make_play_manager(
+        monkeypatch, AsyncMock(return_value=False), duration=None
+    )
+
+    messages = run_play(manager, caplog)
+
+    assert any("无法确认该链接是否完成" in m for m in messages)
+    assert not any(m.startswith("✓") and "完成" in m for m in messages)

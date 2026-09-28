@@ -312,45 +312,35 @@ class VideoManager:
                 logger.warning("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
                 return
 
-        # 以平台要求的完成比例（如 90%）对应的观看时长为目标，计算还需等待多久
-        duration = None
-        target_percent = 100.0
-        target_duration = 0.0
-        max_wait_time = 0.0
-
         # 获取视频总时长
         video_duration = await self.get_video_duration(video_selector)
 
-        if video_duration is None:
-            logger.warning("⚠ 无法获取视频总时长")
-        else:
+        if video_duration is not None:
+            # 以下按平台信息估算的时长只用于展示，不参与完成判断：
+            # 是否完成只看平台的完成标记，读不到时退回到视频播放到结尾
             required_percent = await self.get_platform_required_percent()
             if required_percent is None:
-                logger.warning("⚠ 无法读取平台的完成要求，按完整看完计算")
+                logger.warning("⚠ 无法读取平台的完成要求，按完整看完估算")
             target_percent = required_percent or 100.0
             target_duration = video_duration * target_percent / 100
 
             info = [f"总时长: {self.format_time(video_duration)}"]
             watched_duration = await self.get_platform_watched_seconds()
             if watched_duration is None:
-                logger.warning("⚠ 无法读取平台记录的观看时长，按需观看时长等待")
+                logger.warning("⚠ 无法读取平台记录的观看时长")
             else:
                 info.append(f"已观看: {self.format_time(watched_duration)}")
-            watched = watched_duration or 0.0
-            duration = max(target_duration - watched, 0.0)
-            info.append(f"剩余: {self.format_time(duration)}")
+            remaining = max(target_duration - (watched_duration or 0.0), 0.0)
+            info.append(f"剩余: {self.format_time(remaining)}")
             target_text = self.format_time(target_duration)
             if required_percent is not None:
                 target_text += f" ({required_percent:g}%)"
             info.append(f"需观看: {target_text}")
             logger.info(f"✓ {', '.join(info)}")
 
-            # 等待上限按视频完整剩余时长计算，给平台分批上报、学习确认弹窗期间不计时留出余量；
-            # 正常情况下平台标记完成或视频播放结束时会提前退出
-            max_wait_time = video_duration - watched + 60
-
-        # 根据计算结果等待
-        if duration is not None and duration > 0:
+            # 等待上限只是防止卡死的兜底，按完整视频时长加余量，不依赖平台估算；
+            # 正常情况下平台标记完成或视频播放到结尾时会提前退出
+            max_wait_time = video_duration + 60
             logger.info("⏳ 等待视频播放完成...")
 
             # 使用 rich 进度条并列显示视频播放进度和平台记录的观看进度
@@ -412,6 +402,7 @@ class VideoManager:
                                 completed=100,
                                 description="[green]播放完毕[/green]",
                             )
+                            logger.info("✓ 视频已播放到结尾")
                             break
 
                         # 更新进度条
@@ -436,18 +427,17 @@ class VideoManager:
                     if not await self.auth_manager.check_cookie_validity():
                         logger.error("⚠ Cookie已失效，停止观看视频")
                         raise RuntimeError("Cookie已失效，请重新获取Cookie")
-
-            logger.info("✓ 视频播放完毕")
-        elif duration == 0:
-            # 视频已完成，无需等待
-            logger.info("✓ 视频无需等待")
+                else:
+                    # 超时只是兜底退出，不代表完成
+                    logger.warning(
+                        f"⚠ 已等待 {self.format_time(elapsed)} 仍未确认完成（平台未标记完成，视频也未播放到结尾），跳到下一个链接"
+                    )
         else:
-            # 使用默认等待时间
+            # 读不到视频时长就无法判断播放结束，只能按默认时间等待，结束后无法确认是否完成
             logger.warning("⚠ 无法获取视频时长，使用默认等待时间...")
             logger.info(f"⏳ 等待 {self.format_time(default_wait_time)}...")
             await asyncio.sleep(default_wait_time)
-
-        logger.info("✓ 视频播放完成")
+            logger.warning("⚠ 已等待默认时间，无法确认该链接是否完成")
 
     @exception_context("批量观看视频")
     async def watch_videos(
