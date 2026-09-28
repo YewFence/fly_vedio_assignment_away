@@ -1,10 +1,30 @@
 [project]
-name = "school-vedio-hw"
+name = "fly-vedio-assignment-away"
 version = "0.1.0"
-description = "Add your description here"
+description = "SCNU 砺儒云 (Moodle) 视频自动观看工具"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "playwright>=1.55.0",
     "python-dotenv>=1.2.1",
     "rich>=14.2.0",
 ]
+
+[project.scripts]
+fly-video-assignment-away = "fly_vedio_assignment_away.main:run"
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6,<7",
+    "pytest>=9,<10",
+]
+
+[build-system]
+requires = ["hatchling>=1,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fly_vedio_assignment_away"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

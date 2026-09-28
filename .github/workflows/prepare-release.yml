@@ -1,0 +1,160 @@
+name: Prepare Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - CHANGELOG.md
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare Release PR
+    runs-on: ubuntu-latest
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
+      RELEASE_BRANCH: release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          install_args: git-cliff
+          add_shims_to_path: true
+          cache_key: "mise-prepare-release-{{install_args_hash}}-{{file_hash}}"
+
+      - name: Resolve release version
+        id: release
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(mise run release:version)"
+          tag="$(mise run release:tag)"
+          base_sha="$(git rev-parse HEAD)"
+          notes_file="${RUNNER_TEMP}/release-notes.md"
+          RELEASE_TAG="${tag}" RELEASE_NOTES_OUTPUT="${notes_file}" mise run release:notes
+
+          should_prepare="true"
+          if ! grep -Eq '^[[:space:]]*[*-] ' "${notes_file}"; then
+            should_prepare="false"
+          fi
+
+          echo "Resolved release tag ${tag}"
+          echo "Release notes contain entries ${should_prepare}"
+
+          {
+            echo "## Prepare Release"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Release tag | \`${tag}\` |"
+            echo "| Release base SHA | \`${base_sha}\` |"
+            echo "| Release notes contain entries | \`${should_prepare}\` |"
+            echo "| Release branch | \`${RELEASE_BRANCH}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          {
+            echo "tag=${tag}"
+            echo "version=${version}"
+            echo "base_sha=${base_sha}"
+            echo "notes_file=${notes_file}"
+            echo "should_prepare=${should_prepare}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Stop when there are no release notes
+        if: ${{ steps.release.outputs.should_prepare != 'true' }}
+        run: |
+          echo "No release notes were generated. Skipping release PR."
+          echo "| Result | No release notes were generated, release PR skipped |" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Update changelog
+        if: ${{ steps.release.outputs.should_prepare == 'true' }}
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: mise run release:changelog
+
+      - name: Push release branch
+        id: branch
+        if: ${{ steps.release.outputs.should_prepare == 'true' }}
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          release_files=("CHANGELOG.md")
+          if [[ -z "$(git status --porcelain -- "${release_files[@]}")" ]]; then
+            echo "Release files are already up to date"
+            {
+              echo "| Release files changed | \`false\` |"
+              echo "| Release branch pushed | \`false\` |"
+              echo "| Release PR action | \`skipped\` |"
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "Preparing release branch ${RELEASE_BRANCH} for ${RELEASE_TAG}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git switch -c "${RELEASE_BRANCH}"
+          git add -- "${release_files[@]}"
+          git commit -m "chore: release ${RELEASE_TAG}"
+          git push --force origin "HEAD:${RELEASE_BRANCH}"
+          {
+            echo "| Release files changed | \`true\` |"
+            echo "| Release branch pushed | \`true\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+          echo "changed=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Create or update release PR
+        if: ${{ steps.branch.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BASE_SHA: ${{ steps.release.outputs.base_sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NOTES_FILE: ${{ steps.release.outputs.notes_file }}
+        run: |
+          body_file="${RUNNER_TEMP}/release-pr-body.md"
+          {
+            echo "<!-- release-base-sha: ${RELEASE_BASE_SHA} -->"
+            echo
+            echo "Prepare ${RELEASE_TAG}."
+            echo
+            cat "${RELEASE_NOTES_FILE}"
+          } > "${body_file}"
+
+          pr_number="$(gh pr list --head "${RELEASE_BRANCH}" --base main --state open --json number --jq '.[0].number // ""')"
+          if [[ -n "${pr_number}" ]]; then
+            echo "Found existing release PR #${pr_number}. Updating it."
+            gh pr edit "${pr_number}" --title "chore: release ${RELEASE_TAG}" --body-file "${body_file}"
+            pr_url="$(gh pr view "${pr_number}" --json url --jq .url)"
+            pr_action="updated"
+          else
+            echo "No open release PR found. Creating a new one."
+            pr_url="$(gh pr create --head "${RELEASE_BRANCH}" --base main --title "chore: release ${RELEASE_TAG}" --body-file "${body_file}")"
+            pr_action="created"
+          fi
+
+          echo "Release PR ${pr_action} ${pr_url}"
+          {
+            echo "| Release PR action | \`${pr_action}\` |"
+            echo "| Release PR | ${pr_url} |"
+          } >> "${GITHUB_STEP_SUMMARY}"

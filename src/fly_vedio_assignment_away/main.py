@@ -9,11 +9,11 @@ import warnings
 from getpass import getpass
 from pathlib import Path
 
-import config
-from automation import AuthManager, BrowserManager, VideoManager
-from automation.exception_context import BrowserClosedError
-from cookie_fix import cookie_fix
-from logger import get_logger, setup_logging
+from . import config
+from .automation import AuthManager, BrowserManager, VideoManager
+from .automation.exception_context import BrowserClosedError
+from .cookie_fix import cookie_fix
+from .logger import get_logger, setup_logging
 
 # 抑制 asyncio 在 Windows 上关闭时的资源警告
 warnings.filterwarnings("ignore", category=ResourceWarning, message=".*unclosed.*")
@@ -197,7 +197,7 @@ async def main():
         logger.info("\n👋 检测到浏览器已关闭，程序正常退出")
     except Exception:
         # 只打印一次：RichHandler 会负责美化堆栈，避免和 traceback.print_exc() 重复输出。
-        logger.error("\n❌ 发生错误", exc_info=True)
+        logger.exception("\n❌ 发生错误")
         suggestions()
 
 
@@ -210,8 +210,13 @@ def suggestions():
     )
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """运行命令行程序。"""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print("\n\n👋 程序已由用户中断，再见！")
+
+
+if __name__ == "__main__":
+    run()

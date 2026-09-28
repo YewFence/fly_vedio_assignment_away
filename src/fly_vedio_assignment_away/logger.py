@@ -5,7 +5,7 @@ from pathlib import Path
 from rich.logging import RichHandler
 
 # 日志目录
-LOG_DIR = Path(__file__).parent / "log"
+LOG_DIR = Path.cwd() / "log"
 
 _initialized = False
 

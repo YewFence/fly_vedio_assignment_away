@@ -3,9 +3,15 @@
 负责浏览器的启动、配置和关闭
 """
 
-from playwright.async_api import Browser, BrowserContext, Page, async_playwright
+from playwright.async_api import (
+    Browser,
+    BrowserContext,
+    Page,
+    Playwright,
+    async_playwright,
+)
 
-from logger import get_logger
+from ..logger import get_logger
 
 logger = get_logger("automation.browser")
 
@@ -21,10 +27,10 @@ class BrowserManager:
         """
         self.browser_type = browser_type
         self.headless = headless
-        self.playwright = None
-        self.browser: Browser = None
-        self.context: BrowserContext = None
-        self.page: Page = None
+        self.playwright: Playwright | None = None
+        self.browser: Browser | None = None
+        self.context: BrowserContext | None = None
+        self.page: Page | None = None
 
     async def setup(self):
         """启动浏览器并创建页面"""
@@ -52,8 +58,10 @@ class BrowserManager:
 
     def get_page(self) -> Page:
         """获取当前页面对象"""
+        assert self.page is not None
         return self.page
 
     def get_context(self) -> BrowserContext:
         """获取浏览器上下文"""
+        assert self.context is not None
         return self.context

@@ -10,8 +10,7 @@ from urllib.parse import urlparse
 
 from playwright.async_api import BrowserContext, Page
 
-from logger import get_logger
-
+from ..logger import get_logger
 from .exception_context import exception_context
 
 logger = get_logger("automation.auth")
@@ -41,8 +40,9 @@ class AuthManager:
             logger.warning(f"⚠ Cookie文件不存在: {cookie_file}")
             return False
 
-        with open(cookie_file, "r", encoding="utf-8") as f:
-            cookies = json.load(f)
+        cookies = json.loads(
+            await asyncio.to_thread(cookie_path.read_text, encoding="utf-8")
+        )
         await self.context.add_cookies(cookies)
         logger.info(f"✓ Cookie已从文件加载: {cookie_file}")
         return True
@@ -54,8 +54,8 @@ class AuthManager:
         :param cookie_file: Cookie文件路径
         """
         cookies = await self.context.cookies()
-        with open(cookie_file, "w", encoding="utf-8") as f:
-            json.dump(cookies, f, indent=2, ensure_ascii=False)
+        content = json.dumps(cookies, indent=2, ensure_ascii=False)
+        await asyncio.to_thread(Path(cookie_file).write_text, content, encoding="utf-8")
         logger.info(f"✓ Cookie已保存到: {cookie_file}")
 
     @exception_context("刷新Cookie")
@@ -171,9 +171,7 @@ class AuthManager:
 
         # 同时等待：页面跳转成功 / 出现错误提示
         nav_task = asyncio.create_task(
-            self.page.wait_for_url(
-                lambda url: "login.html" not in url, timeout=15000
-            )
+            self.page.wait_for_url(lambda url: "login.html" not in url, timeout=15000)
         )
         error_task = asyncio.create_task(
             self.page.locator("text=用户密码不正确").wait_for(timeout=15000)

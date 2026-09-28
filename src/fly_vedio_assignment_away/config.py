@@ -4,11 +4,11 @@
 """
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-# 加载 .env 文件
-load_dotenv()
+load_dotenv(Path.cwd() / ".env")
 
 # ============= 从环境变量读取的配置 =============
 BROWSER = os.getenv("BROWSER", "msedge")  # 浏览器类型(msedge/chrome/firefox)

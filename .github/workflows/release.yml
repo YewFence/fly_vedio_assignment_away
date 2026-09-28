@@ -1,0 +1,363 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+    paths:
+      - CHANGELOG.md
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to publish"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event_name }}-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Resolve Version
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.merged == true &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.head.ref == 'release'
+      )
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+      checkout_ref: ${{ steps.release.outputs.checkout_ref }}
+      should_release: ${{ steps.release.outputs.should_release }}
+      allow_tag_creation: ${{ steps.release.outputs.allow_tag_creation }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
+    steps:
+      - name: Ensure tag input
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag == '' }}
+        run: |
+          echo "tag must not be empty"
+          exit 1
+
+      - name: Validate tag input
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ ! "${INPUT_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "tag must use vMAJOR.MINOR.PATCH, optionally followed by a pre-release suffix like -rc.1"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.merge_commit_sha || inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          install_args: git-cliff
+          add_shims_to_path: true
+          cache_key: "mise-release-version-{{install_args_hash}}-{{file_hash}}"
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          tag=""
+          checkout_ref="$(git rev-parse HEAD)"
+          should_release="false"
+          allow_tag_creation="false"
+          prerelease="false"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            tag="${INPUT_TAG}"
+            should_release="true"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            tag="${REF_NAME}"
+            should_release="true"
+          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            tag="$(mise run release:tag)"
+            should_release="true"
+            allow_tag_creation="true"
+          fi
+
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "tag must use vMAJOR.MINOR.PATCH, optionally followed by a pre-release suffix like -rc.1"
+            exit 1
+          fi
+
+          if [[ "${tag}" == *-* ]]; then
+            prerelease="true"
+          fi
+
+          echo "Resolved release tag ${tag}"
+          echo "Release checkout ref ${checkout_ref}"
+          echo "Allow tag creation ${allow_tag_creation}"
+          echo "Prerelease ${prerelease}"
+
+          {
+            echo "## Release Metadata"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Event | \`${GITHUB_EVENT_NAME}\` |"
+            echo "| Release tag | \`${tag}\` |"
+            echo "| Version | \`${tag#v}\` |"
+            echo "| Checkout ref | \`${checkout_ref}\` |"
+            echo "| Should release | \`${should_release}\` |"
+            echo "| Allow tag creation | \`${allow_tag_creation}\` |"
+            echo "| Prerelease | \`${prerelease}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          {
+            echo "tag=${tag}"
+            echo "version=${tag#v}"
+            echo "checkout_ref=${checkout_ref}"
+            echo "should_release=${should_release}"
+            echo "allow_tag_creation=${allow_tag_creation}"
+            echo "prerelease=${prerelease}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Validate release PR freshness
+        if: ${{ github.event_name == 'pull_request' && steps.release.outputs.allow_tag_creation == 'true' }}
+        env:
+          MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          release_base_sha="$(
+            jq -r '.pull_request.body // ""' "${GITHUB_EVENT_PATH}" |
+              sed -n -E 's/^<!-- release-base-sha: ([0-9a-f]{40}) -->$/\1/p' |
+              head -n 1
+          )"
+          if [[ -z "${release_base_sha}" ]]; then
+            echo "release PR does not contain a release-base-sha marker"
+            echo "rerun the prepare release workflow to refresh the release PR"
+            exit 1
+          fi
+
+          parent_count="$(git show -s --format=%P "${MERGE_COMMIT_SHA}" | wc -w)"
+          if [[ "${parent_count}" -lt 1 ]]; then
+            echo "release commit has no parent, so the release base cannot be validated"
+            exit 1
+          fi
+
+          merge_base_sha="$(git rev-parse "${MERGE_COMMIT_SHA}^1")"
+          if [[ "${merge_base_sha}" != "${release_base_sha}" ]]; then
+            echo "release PR is stale"
+            echo "release PR was prepared from ${release_base_sha}"
+            echo "release PR was merged into ${merge_base_sha}"
+            echo "rerun the prepare release workflow and merge the refreshed release PR"
+            exit 1
+          fi
+
+          changelog_version="$(grep -Eom1 'v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?' CHANGELOG.md || true)"
+          if [[ -z "${changelog_version}" ]]; then
+            echo "could not find a release version in CHANGELOG.md"
+            exit 1
+          fi
+
+          changelog_tag="v${changelog_version#v}"
+          if [[ "${changelog_tag}" != "${RELEASE_TAG}" ]]; then
+            echo "CHANGELOG.md first release version ${changelog_tag} does not match resolved release tag ${RELEASE_TAG}"
+            echo "rerun the prepare release workflow to regenerate CHANGELOG.md"
+            exit 1
+          fi
+
+          echo "Validated release PR freshness"
+          {
+            echo "| Release PR Fresh | \`true\` |"
+            echo "| Release Base SHA | \`${release_base_sha}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  build:
+    name: Build ${{ matrix.artifact_name }}
+    needs: version
+    if: ${{ needs.version.outputs.should_release == 'true' }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: fly_video_assignment_away-windows.exe
+            artifact_path: dist/fly_video_assignment_away-windows.exe
+          - os: macos-latest
+            artifact_name: fly_video_assignment_away-macos
+            artifact_path: dist/fly_video_assignment_away-macos
+    runs-on: ${{ matrix.os }}
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.checkout_ref }}
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add_shims_to_path: true
+          cache_key: "mise-release-package-${{ runner.os }}-{{file_hash}}"
+
+      - name: Package release executable
+        run: mise run release:package
+
+      - name: Upload release executable
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs:
+      - version
+      - build
+    if: ${{ needs.version.outputs.should_release == 'true' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: github-release-${{ needs.version.outputs.tag }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.checkout_ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          install_args: git-cliff
+          add_shims_to_path: true
+          cache_key: "mise-release-notes-{{install_args_hash}}-{{file_hash}}"
+
+      - name: Generate release notes
+        id: notes
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          notes_file="${RUNNER_TEMP}/release-notes.md"
+          RELEASE_NOTES_OUTPUT="${notes_file}" mise run release:notes
+
+          echo "Generated release notes at ${notes_file}"
+          {
+            echo "## Publish GitHub Release"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Release tag | \`${RELEASE_TAG}\` |"
+            echo "| Prerelease | \`${{ needs.version.outputs.prerelease }}\` |"
+            echo "| Allow tag creation | \`${{ needs.version.outputs.allow_tag_creation }}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          echo "path=${notes_file}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download release executables
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: ${{ runner.temp }}/release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.version.outputs.checkout_ref }}
+          ALLOW_TAG_CREATION: ${{ needs.version.outputs.allow_tag_creation }}
+          RELEASE_PRERELEASE: ${{ needs.version.outputs.prerelease }}
+          RELEASE_NOTES_FILE: ${{ steps.notes.outputs.path }}
+          RELEASE_ASSET_DIR: ${{ runner.temp }}/release-assets
+
+        run: bash .github/scripts/publish-release.sh
+
+      - name: Summarize published release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          release_url="$(gh release view "${RELEASE_TAG}" --json url --jq .url)"
+          echo "Published GitHub Release ${release_url}"
+          echo "| URL | ${release_url} |" >> "${GITHUB_STEP_SUMMARY}"
+
+  close-superseded-release-pr:
+    name: Close Superseded Release PR
+    needs:
+      - version
+      - release
+    if: >-
+      needs.version.outputs.should_release == 'true' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Close superseded release PR
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          pr_json="$(gh pr list --head release --base main --state open --json number,title,body --jq '.[0] // empty')"
+          if [[ -z "${pr_json}" ]]; then
+            echo "No open release PR to close"
+            echo "| Superseded Release PR | \`none\` |" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          pr_number="$(jq -r '.number' <<< "${pr_json}")"
+          pr_title="$(jq -r '.title // ""' <<< "${pr_json}")"
+          pr_body="$(jq -r '.body // ""' <<< "${pr_json}")"
+          if [[ "${pr_title}" != "chore: release ${RELEASE_TAG}" || "${pr_body}" != *"Prepare ${RELEASE_TAG}."* ]]; then
+            echo "Open release PR #${pr_number} does not match ${RELEASE_TAG}. Skipping close."
+            echo "| Superseded Release PR | \`skipped #${pr_number}\` |" >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          gh pr comment "${pr_number}" --body "Autoclosing because ${RELEASE_TAG} has already been published manually."
+          gh pr edit "${pr_number}" --title "chore: release ${RELEASE_TAG} [autoclosed]"
+          gh pr close "${pr_number}"
+          echo "Closed superseded release PR #${pr_number}"
+          echo "| Superseded Release PR | \`closed #${pr_number}\` |" >> "${GITHUB_STEP_SUMMARY}"

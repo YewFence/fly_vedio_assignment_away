@@ -1,0 +1,55 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - "mise.toml"
+      - "mise.lock"
+      - "mise.ci.toml"
+      - "mise.ci.lock"
+      - ".github/workflows/audit.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - "mise.toml"
+      - "mise.lock"
+      - "mise.ci.toml"
+      - "mise.ci.lock"
+      - ".github/workflows/audit.yml"
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add_shims_to_path: true
+          cache_key: "mise-audit-{{file_hash}}"
+
+      - name: Audit
+        run: mise run audit

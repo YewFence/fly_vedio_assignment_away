@@ -1,56 +1,51 @@
-name: PR Build Test
+name: PR Executable Build
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-executable-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Build ${{ matrix.artifact_name }}
     strategy:
       matrix:
         include:
           - os: windows-latest
             artifact_name: fly_video_assignment_away-windows.exe
+            artifact_path: dist/fly_video_assignment_away-windows.exe
           - os: macos-latest
             artifact_name: fly_video_assignment_away-macos
-
+            artifact_path: dist/fly_video_assignment_away-macos
     runs-on: ${{ matrix.os }}
-
+    env:
+      MISE_TASK_RUN_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      MISE_ENV: "ci"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: '3.13'
+          persist-credentials: false
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install dependencies
-        run: |
-          uv sync
-          uv add pyinstaller
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add_shims_to_path: true
+          cache_key: "mise-pr-executable-${{ runner.os }}-{{file_hash}}"
 
       - name: Build executable
-        run: |
-          uv run pyinstaller --onefile --name fly_video_assignment_away main.py
+        run: mise run executable:build
 
-      - name: Rename artifact (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          mv dist/fly_video_assignment_away.exe dist/${{ matrix.artifact_name }}
-
-      - name: Rename artifact (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          mv dist/fly_video_assignment_away dist/${{ matrix.artifact_name }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload executable
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
           retention-days: 7

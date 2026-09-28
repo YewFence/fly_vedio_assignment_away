@@ -1,11 +1,9 @@
-import asyncio
+import inspect
 from functools import wraps
 
 
 class BrowserClosedError(Exception):
     """用户手动关闭浏览器时抛出的异常"""
-
-    pass
 
 
 def _is_browser_closed_error(e: BaseException) -> bool:
@@ -22,21 +20,19 @@ def _is_browser_closed_error(e: BaseException) -> bool:
         + " "
         + ("".join(map(str, getattr(e, "args", ()))) or "").lower()
     )
-    if any(
+    return any(
         keyword in error_msg
         for keyword in [
             "target page, context or browser has been closed",
             "browser has been closed",
         ]
-    ):
-        return True
-    return False
+    )
 
 
 def exception_context(step_name):
     def decorator(func):
         # 检测是否为异步函数
-        if asyncio.iscoroutinefunction(func):
+        if inspect.iscoroutinefunction(func):
 
             @wraps(func)
             async def async_wrapper(*args, **kwargs):

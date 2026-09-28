@@ -1,0 +1,90 @@
+[tools]
+git-cliff = "latest"
+
+[tasks.audit]
+description = "Audit locked Python dependencies"
+run = "uv audit --locked"
+
+[tasks.'actions:pin:check']
+# Need github token to avoid rate limit
+description = "Check for action pinned version"
+run = "pinact run --check"
+
+[tasks.'actions:outdated']
+# Need github token to avoid rate limit
+description = "Check for outdated action versions"
+run = "pinact run --update --diff"
+
+[tasks.'actions:versions:check']
+description = "Check pinned GitHub Action versions and outdated releases"
+run = [
+  { task = "actions:pin:check" },
+  { task = "actions:outdated" },
+]
+
+[tasks.'release:version']
+description = "Print the next release version without the v prefix"
+shell = "bash -c"
+run = """
+version="$(git cliff --bumped-version)"
+version="${version#v}"
+if [[ -z "${version}" ]]; then
+  echo "git cliff did not resolve a version"
+  exit 1
+fi
+
+printf '%s\\n' "${version}"
+"""
+
+[tasks.'release:tag']
+description = "Print the release tag, automatically generate if RELEASE_TAG is not set"
+shell = "bash -c"
+run = """
+tag="${RELEASE_TAG:-}"
+if [[ -z "${tag}" ]]; then
+  version="$(mise run release:version)"
+  tag="v${version}"
+fi
+printf '%s\\n' "${tag}"
+"""
+
+[tasks.'release:notes']
+description = "Generate release notes for RELEASE_TAG, or for the next release tag"
+shell = "bash -c"
+run = """
+tag="$(mise run release:tag)"
+
+cliff_mode="--unreleased"
+if git tag --points-at HEAD | grep -Fxq "${tag}"; then
+  cliff_mode="--current"
+fi
+
+output="${RELEASE_NOTES_OUTPUT:-}"
+if [[ -n "${output}" ]]; then
+  mkdir -p "$(dirname "${output}")"
+  git cliff "${cliff_mode}" --tag "${tag}" --strip all > "${output}"
+
+  if [[ ! -s "${output}" ]]; then
+    echo "Release ${tag}" > "${output}"
+  fi
+else
+  git cliff "${cliff_mode}" --tag "${tag}" --strip all
+fi
+"""
+
+[tasks.'release:changelog']
+description = "Update CHANGELOG.md for RELEASE_TAG, or for the next release tag"
+shell = "bash -c"
+run = """
+tag="$(mise run release:tag)"
+
+if [[ -f CHANGELOG.md ]]; then
+  git cliff --unreleased --tag "${tag}" --prepend CHANGELOG.md
+else
+  git cliff --unreleased --tag "${tag}" --output CHANGELOG.md
+fi
+"""
+
+[tasks.'release:package']
+description = "Build the standalone release executable"
+run = "mise run executable:build"

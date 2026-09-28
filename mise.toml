@@ -1,0 +1,149 @@
+[settings]
+lockfile = true
+env_shell_expand = true
+minimum_release_age = "3d"
+
+[tools]
+python = "3.13"
+uv = "0"
+ruff = "0.16"
+ty = "0.0"
+
+hk = "1"
+"github:suzuki-shunsuke/nllint" = "1"
+pinact = "4"
+typos = "1.48.0"
+betterleaks = "1"
+actionlint = "1"
+
+[vars]
+nllint_excludes = ""
+
+[env]
+PINACT_MIN_AGE = "3"
+PINACT_GITHUB_TOKEN = { value = "${MISE_GITHUB_TOKEN:-}", redact = true }
+
+[tasks."deps:check"]
+description = "Check the Python dependency lockfile"
+run = "uv lock --check"
+
+[tasks."deps:fix"]
+description = "Regenerate the Python dependency lockfile"
+run = "uv lock"
+
+[tasks."deps:update"]
+description = "Update Python dependencies"
+run = "uv lock --upgrade"
+
+[tasks.test]
+description = "Run Python tests"
+run = "uv run --locked pytest"
+
+[tasks."fmt:check"]
+description = "Check Python formatting"
+run = "ruff format --check ."
+
+[tasks."fmt:fix"]
+description = "Format Python code"
+run = "ruff format ."
+
+[tasks.lint]
+description = "Lint and type-check Python code"
+run = ["ruff check .", "ty check"]
+
+[tasks.build]
+description = "Build Python distributions"
+run = "uv build"
+
+[tasks."executable:build"]
+description = "Build the standalone application executable"
+run = "uv run --locked python scripts/build_executable.py"
+
+[tasks."build:check"]
+description = "Check that the Python package imports"
+run = 'uv run --locked python -c "import fly_vedio_assignment_away"'
+
+[tasks."leaks:check"]
+description = "Run betterleaks checks"
+run = '''
+if jj root >/dev/null 2>&1; then
+    jj diff --git 2>/dev/null | betterleaks stdin --redact --no-banner
+else
+    betterleaks git . --pre-commit --redact --no-banner
+fi
+'''
+
+[tasks."typos:check"]
+description = "Run Typos Lint"
+run = "typos"
+
+[tasks."typos:fix"]
+description = "Fix Typos Lint"
+run = "typos --write-changes"
+
+[tasks."newline:check"]
+description = "Check final newlines and surrounding whitespace in tracked text files"
+shell = "bash -c"
+run = '''
+set -o pipefail
+if jj root >/dev/null 2>&1; then
+    jj --ignore-working-copy file list | xargs -d '\n' nllint --trim-space
+else
+    git grep -Ilz '' -- . {{ vars.nllint_excludes }} | xargs -0 nllint --trim-space
+fi
+'''
+
+[tasks."newline:fix"]
+description = "Fix final newlines and surrounding whitespace in tracked text files"
+shell = "bash -c"
+run = '''
+set -o pipefail
+if jj root >/dev/null 2>&1; then
+    jj --ignore-working-copy file list | xargs -d '\n' nllint --fix --trim-space
+else
+    git grep -Ilz '' -- . {{ vars.nllint_excludes }} | xargs -0 nllint --fix --trim-space
+fi
+'''
+
+[tasks.check]
+description = "Run read-only Python and repository checks"
+run = [
+  { tasks = [ "deps:check", "newline:check", "typos:check", "fmt:check", "build:check" ] },
+  { task = "leaks:check" },
+  { task = "actions:check" },
+  { task = "lint" },
+  { task = "test" }
+]
+alias = "c"
+
+[tasks.fix]
+description = "Fix Python dependencies and formatting"
+run = [
+  { task = "deps:fix" },
+  { task = "newline:fix" },
+  { task = "typos:fix" },
+  { task = "fmt:fix" },
+  { task = "lint:fix" }
+]
+alias = "f"
+
+[tasks."lint:fix"]
+description = "Fix auto-correctable Python lint issues"
+run = "ruff check --fix ."
+
+[tasks.'hooks:install']
+description = "Install Git hooks managed by hk"
+run = "hk install"
+
+[tasks."actions:check"]
+description = "Run actionlint"
+depends = ["actions:pin-offline:check"]
+run = "actionlint .github/workflows/*.yml"
+
+[tasks.'actions:update']
+description = "Update GitHub Action versions and pin to commit hashes"
+run = "pinact run --update"
+
+[tasks.'actions:pin-offline:check']
+description = "Check GitHub Action versions and pin to commit hashes"
+run = "unset PINACT_MIN_AGE && pinact run --fix=false --no-api"

@@ -4,7 +4,6 @@
 """
 
 import asyncio
-from typing import List, Optional
 
 from playwright.async_api import Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
@@ -18,8 +17,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from logger import get_logger
-
+from ..logger import get_logger
 from .exception_context import BrowserClosedError, exception_context
 
 logger = get_logger("automation.video")
@@ -55,9 +53,7 @@ class VideoManager:
         self.auth_manager = auth_manager
 
     @exception_context("确保视频播放")
-    async def ensure_video_playing(
-        self, video_selector: str = "video"
-    ) -> Optional[dict]:
+    async def ensure_video_playing(self, video_selector: str = "video") -> dict | None:
         """
         确保视频正在播放，如果暂停则自动恢复，并返回视频状态
         :param video_selector: 视频元素的CSS选择器
@@ -123,7 +119,7 @@ class VideoManager:
     @exception_context("获取视频链接")
     async def get_video_links_by_pattern(
         self, page_url: str, url_pattern: str
-    ) -> List[str]:
+    ) -> list[str]:
         """
         通过URL模式匹配获取视频链接
         :param page_url: 包含视频链接的页面URL
@@ -141,7 +137,7 @@ class VideoManager:
             "elements => elements.map(e => e.href)"
         )
         # 去重并排序
-        links = sorted(list(set(links)))
+        links = sorted(set(links))
 
         logger.info(f"✓ 找到 {len(links)} 个匹配的视频链接")
 
@@ -159,9 +155,7 @@ class VideoManager:
         return links
 
     @exception_context("获取视频时长")
-    async def get_video_duration(
-        self, video_selector: str = "video"
-    ) -> Optional[float]:
+    async def get_video_duration(self, video_selector: str = "video") -> float | None:
         """
         获取视频时长(秒)
         :param video_selector: 视频元素的CSS选择器
@@ -205,7 +199,7 @@ class VideoManager:
         self,
         video_url: str,
         video_selector: str = "video",
-        play_button_selector: Optional[str] = None,
+        play_button_selector: str | None = None,
         default_wait_time: int = 60,
     ):
         """
@@ -231,7 +225,7 @@ class VideoManager:
         # 检查Cookie是否有效
         if not await self.auth_manager.check_cookie_validity():
             logger.warning("⚠ Cookie已失效，停止观看视频")
-            raise Exception("Cookie已失效，请重新获取Cookie")
+            raise RuntimeError("Cookie已失效，请重新获取Cookie")
 
         # 检查视频是否已完成
         if await self.check_video_completed():
@@ -376,7 +370,7 @@ class VideoManager:
                     # 检查Cookie是否有效
                     if not await self.auth_manager.check_cookie_validity():
                         logger.error("⚠ Cookie已失效，停止观看视频")
-                        raise Exception("Cookie已失效，请重新获取Cookie")
+                        raise RuntimeError("Cookie已失效，请重新获取Cookie")
 
             logger.info("✓ 视频播放完毕")
         elif duration == 0:
@@ -393,9 +387,9 @@ class VideoManager:
     @exception_context("批量观看视频")
     async def watch_videos(
         self,
-        video_links: List[str],
+        video_links: list[str],
         video_selector: str = "video",
-        play_button_selector: Optional[str] = None,
+        play_button_selector: str | None = None,
         default_wait_time: int = 60,
     ):
         """

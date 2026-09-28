@@ -1,0 +1,23 @@
+amends "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.45.0/hk@1.45.0#/Builtins.pkl"
+
+local linters = new Mapping<String, Step> {
+  ["lint"] {
+    fix = "mise run fix"
+    check = "mise run check"
+  }
+  // This step don't contain autofix
+  ["large-file"] = Builtins.check_added_large_files
+}
+
+hooks {
+  ["pre-commit"] {
+    stash = "git"
+    steps = linters
+  }
+  ["check"] {
+    stage = true
+    stash = "git"
+    steps = linters
+  }
+}

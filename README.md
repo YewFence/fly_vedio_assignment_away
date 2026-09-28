@@ -1,4 +1,8 @@
-# FlyVedioAssignmentAway!
+# FlyVedioAssignmentAway
+
+[![Release](https://img.shields.io/github/v/release/YewFence/fly_vedio_assignment_away?sort=semver)](https://github.com/YewFence/fly_vedio_assignment_away/releases)
+[![License](https://img.shields.io/github/license/YewFence/fly_vedio_assignment_away)](LICENSE)
+
 > SCNU 砺儒云 (Moodle) 视频自动观看工具
 
 基于 Playwright 的自动化脚本，支持自动登录华南师范大学砺儒云系统、解析视频列表并完成自动播放。
@@ -93,7 +97,7 @@ uv sync
 cp .env.example .env
 
 # 4. 运行
-uv run python main.py
+uv run fly-video-assignment-away
 ```
 
 ### 快速开始 (pip + venv)
@@ -119,7 +123,7 @@ pip install .
 cp .env.example .env
 
 # 5. 运行
-python main.py
+fly-video-assignment-away
 ```
 
 ---
@@ -178,6 +182,21 @@ A: 请在 `.env` 文件中将 `BROWSER` 修改为 `msedge` 或 `chrome`，并确
 
 **Q: 登录状态失效怎么办？**
 A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号密码登录。
+
+---
+
+## 🧰 开发
+
+项目使用 mise 统一管理工具链和可复用任务：
+
+```bash
+mise trust
+mise install
+mise run hooks:install
+mise run check
+```
+
+完整开发流程参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ---
 

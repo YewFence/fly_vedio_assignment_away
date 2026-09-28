@@ -3,8 +3,8 @@
 提供浏览器管理、认证管理和视频操作功能
 """
 
-from .browser import BrowserManager
 from .auth import AuthManager
+from .browser import BrowserManager
 from .video import VideoManager
 
-__all__ = ['BrowserManager', 'AuthManager', 'VideoManager']
+__all__ = ["AuthManager", "BrowserManager", "VideoManager"]
