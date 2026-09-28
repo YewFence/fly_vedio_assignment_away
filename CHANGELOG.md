@@ -1,4 +1,19 @@
 ## What's Changed in 2.4.0
+* delete hk from deps by @YewFence
+* chore: release v2.4.0 by @github-actions[bot] in [#16](https://github.com/YewFence/fly_video_assignment_away/pull/16)
+* 列出全部视频链接而非前 5 条示例 by @YewFence
+* 改用课程索引选择器扫描所有视频 by @YewFence
+* 补充账号安全、运行边界与平台行为约定 by @YewFence
+* chore: release v2.4.0 by @github-actions[bot] in [#15](https://github.com/YewFence/fly_video_assignment_away/pull/15)
+* 让日志和进度条共用同一个 Console，避免输出错乱 by @YewFence
+* 每次启动都运行配置向导，旧配置作为默认值回车沿用 by @YewFence
+* 迁移 GitHub Alerts 并补充隐私与安全说明 by @YewFence
+* 按系统与架构分发四平台产物 by @YewFence
+* allow historical "vedio" spelling in CHANGELOG.md by @YewFence
+
+**Full Changelog**: https://github.com/YewFence/fly_video_assignment_away/compare/v2.3.0...v2.4.0
+
+## What's Changed in 2.4.0
 * 列出全部视频链接而非前 5 条示例 by @YewFence
 * 改用课程索引选择器扫描所有视频 by @YewFence
 * 补充账号安全、运行边界与平台行为约定 by @YewFence
