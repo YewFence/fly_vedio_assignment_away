@@ -2,10 +2,14 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from rich.console import Console
 from rich.logging import RichHandler
 
 # 日志目录
 LOG_DIR = Path.cwd() / "log"
+
+# 全局 Console 实例，供 RichHandler 和 Progress 共享，避免输出冲突
+console = Console()
 
 _initialized = False
 
@@ -58,6 +62,7 @@ def setup_logging(
 
     # --- 2. 终端处理器：追求极致美观 ---
     rich_handler = RichHandler(
+        console=console,
         show_time=False,
         show_path=False,
         markup=True,

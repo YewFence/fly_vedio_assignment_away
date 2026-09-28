@@ -9,7 +9,6 @@ from enum import Enum
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     Progress,
@@ -19,7 +18,7 @@ from rich.progress import (
     TextColumn,
 )
 
-from ..logger import get_logger
+from ..logger import console, get_logger
 from .exception_context import (
     BrowserClosedError,
     exception_context,
@@ -27,7 +26,6 @@ from .exception_context import (
 )
 
 logger = get_logger("automation.video")
-console = Console()
 
 # 视频播放到结尾时平台可能还没上报最后一批观看时长，留出时间等完成标记更新
 PLATFORM_CONFIRM_GRACE_SECONDS = 30
