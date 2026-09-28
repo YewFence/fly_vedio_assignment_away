@@ -35,6 +35,12 @@ run = "uv lock"
 description = "Update Python dependencies"
 run = "uv lock --upgrade"
 
+[tasks.dev]
+description = "Run the application from source for local development"
+# 配置向导、账号和密码输入都需要直接连接终端的 stdin
+interactive = true
+run = "uv run --locked fly-video-assignment-away"
+
 [tasks.test]
 description = "Run Python tests"
 run = "uv run --locked pytest"
