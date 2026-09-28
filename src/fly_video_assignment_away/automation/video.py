@@ -132,12 +132,12 @@ class VideoManager:
         # 等待页面加载完成
         await asyncio.sleep(2)
 
-        # 获取所有链接
-        links = await self.page.locator(f'a[href*="{url_pattern}"]').evaluate_all(
-            "elements => elements.map(e => e.href)"
-        )
-        # 去重并排序
-        links = sorted(set(links))
+        # 只在课程活动中查找，排除导航栏等区域中同样匹配模式的链接（如“使用介绍”）
+        links = await self.page.locator(
+            f'li.activity a[href*="{url_pattern}"]'
+        ).evaluate_all("elements => elements.map(e => e.href)")
+        # 同一活动包含多个指向自身的链接，按页面顺序去重以保持课程章节顺序
+        links = list(dict.fromkeys(links))
 
         logger.info(f"✓ 找到 {len(links)} 个匹配的视频链接")
 
