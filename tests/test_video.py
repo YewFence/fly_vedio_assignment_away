@@ -34,7 +34,10 @@ def test_video_links_are_scoped_to_course_activities(
 ) -> None:
     page, _links = get_links(monkeypatch, [f"{URL_PATTERN}870722"])
 
-    page.locator.assert_called_once_with(f'li.activity a[href*="{URL_PATTERN}"]')
+    # 新版本优先尝试课程索引（flexsections 布局），找到后就不会调用主内容区选择器
+    page.locator.assert_called_once_with(
+        f'#courseindex li.courseindex-item a[href*="{URL_PATTERN}"]'
+    )
 
 
 def test_video_links_are_deduplicated_in_page_order(
