@@ -110,7 +110,7 @@ def test_platform_read_failure_falls_back_instead_of_raising() -> None:
     manager = VideoManager(page, MagicMock())
 
     assert asyncio.run(manager.get_platform_watched_seconds()) is None
-    assert asyncio.run(manager.check_video_completed()) is False
+    assert asyncio.run(manager.check_video_completed()) is None
 
 
 def test_platform_read_still_reports_browser_closed() -> None:
@@ -124,9 +124,9 @@ def test_platform_read_still_reports_browser_closed() -> None:
 
 
 @pytest.mark.parametrize(
-    ("status", "expected"), [("已完成", True), ("未完成", False), (None, False)]
+    ("status", "expected"), [("已完成", True), ("未完成", False), (None, None)]
 )
-def test_check_video_completed(status: str | None, expected: bool) -> None:
+def test_check_video_completed(status: str | None, expected: bool | None) -> None:
     texts = {} if status is None else {STATUS: status}
     manager = VideoManager(platform_page(texts), MagicMock())
 
@@ -257,22 +257,36 @@ def test_play_video_timeout_is_not_reported_as_completed(
     assert "✓ 视频已播放到结尾" not in messages
 
 
-def test_play_video_falls_back_to_video_reaching_the_end(
-    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+ENDED_STATE = {
+    "paused": True,
+    "currentTime": VIDEO_DURATION,
+    "duration": VIDEO_DURATION,
+    "ended": True,
+}
+
+
+@pytest.mark.parametrize(
+    ("completed", "expected_message"),
+    [
+        # 读不到完成标记：退回到视频播放完毕
+        (AsyncMock(return_value=None), "以播放完毕为准"),
+        # 进入页面、轮询、播完时都未完成，宽限期内平台更新为已完成
+        (AsyncMock(side_effect=[False, False, False, True]), "平台已标记完成"),
+        # 宽限期后平台仍显示未完成：不能算作完成
+        (AsyncMock(return_value=False), "平台仍显示未完成"),
+    ],
+)
+def test_play_video_reaching_the_end_waits_for_platform(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    completed: AsyncMock,
+    expected_message: str,
 ) -> None:
-    ended_state = {
-        "paused": True,
-        "currentTime": VIDEO_DURATION,
-        "duration": VIDEO_DURATION,
-        "ended": True,
-    }
-    manager = make_play_manager(
-        monkeypatch, AsyncMock(return_value=False), video_state=ended_state
-    )
+    manager = make_play_manager(monkeypatch, completed, video_state=ENDED_STATE)
 
     messages = run_play(manager, caplog)
 
-    assert "✓ 视频已播放到结尾" in messages
+    assert any(expected_message in m for m in messages)
     assert not any("仍未确认完成" in m for m in messages)
 
 

@@ -28,6 +28,9 @@ from .exception_context import (
 logger = get_logger("automation.video")
 console = Console()
 
+# 视频播放到结尾时平台可能还没上报最后一批观看时长，留出时间等完成标记更新
+PLATFORM_CONFIRM_GRACE_SECONDS = 30
+
 
 class VideoManager:
     """视频管理器"""
@@ -213,13 +216,40 @@ class VideoManager:
         except ValueError:
             return None
 
-    async def check_video_completed(self) -> bool:
+    async def check_video_completed(self) -> bool | None:
         """
         检查页面上的完成标记，判断视频是否已被平台标记为完成
-        :return: 如果视频已完成返回 True，否则（含标记缺失或读取失败）返回 False
+        :return: True 已完成；False 标记显示未完成；None 标记缺失或读取失败
         """
         text = await self._read_platform_text(".tips-completion")
-        return text is not None and "已完成" in text
+        if not text:
+            return None
+        return "已完成" in text
+
+    async def confirm_completion_after_playback(self) -> bool | None:
+        """
+        视频播放到结尾后确认平台完成状态：标记仍显示未完成时等待平台上报，读不到标记时以播放完毕为准
+        :return: 与 check_video_completed 相同的三种状态
+        """
+        status = await self.check_video_completed()
+        if status is False:
+            logger.info("⏳ 视频已播放到结尾，等待平台更新完成状态...")
+        waited = 0
+        while status is False and waited < PLATFORM_CONFIRM_GRACE_SECONDS:
+            await asyncio.sleep(5)
+            waited += 5
+            await self.check_page_closed()
+            status = await self.check_video_completed()
+
+        if status:
+            logger.info("✓ 视频已播放到结尾，平台已标记完成")
+        elif status is None:
+            logger.info("✓ 视频已播放到结尾（读不到平台完成标记，以播放完毕为准）")
+        else:
+            logger.warning(
+                f"⚠ 视频已播放到结尾，但等待 {PLATFORM_CONFIRM_GRACE_SECONDS} 秒后平台仍显示未完成，请稍后手动确认"
+            )
+        return status
 
     async def get_platform_watched_seconds(self) -> float | None:
         """
@@ -402,7 +432,7 @@ class VideoManager:
                                 completed=100,
                                 description="[green]播放完毕[/green]",
                             )
-                            logger.info("✓ 视频已播放到结尾")
+                            await self.confirm_completion_after_playback()
                             break
 
                         # 更新进度条
