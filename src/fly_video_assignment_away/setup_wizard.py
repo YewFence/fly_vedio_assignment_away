@@ -1,11 +1,10 @@
 """
 配置引导模块
-在程序启动时检测 .env 文件，如果不存在或配置不完整则启动交互式引导
+每次启动都会运行交互式引导；已有配置（.env 或同名环境变量）作为默认值，直接回车即可沿用
 """
 
 import os
 import re
-import shutil
 import sys
 from pathlib import Path
 
@@ -17,34 +16,39 @@ from rich.table import Table
 
 console = Console()
 MANAGED_ENV_KEYS = ("BROWSER", "HEADLESS", "VIDEO_LIST_URL")
+BROWSER_CHOICES = ("msedge", "chrome")
+MOODLE_COURSE_URL_PREFIX = "https://moodle.scnu.edu.cn/course/view.php?id="
 ENV_ASSIGNMENT_RE = re.compile(
     r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)(\s+#.*)?$"
 )
 
 
-def _needs_setup() -> bool:
-    """判断是否需要启动配置引导"""
+def _read_existing_defaults() -> dict[str, str | None]:
+    """读取现有配置作为向导默认值，真实环境变量优先于 .env 中的同名值"""
     env_path = Path(".env")
-
-    # 1. 优先检查真实环境变量，避免在 CI / shell 已配置时强制启动向导
-    video_url = os.getenv("VIDEO_LIST_URL", "")
-
-    # 2. 若环境变量未提供，再尝试从 .env 加载
-    if not video_url and env_path.exists():
+    if env_path.exists():
         load_dotenv(env_path)
-        video_url = os.getenv("VIDEO_LIST_URL", "")
-
-    # 3. 必填项缺失或是示例值
-    return not video_url or "YOUR_COURSE_ID" in video_url
+    return {key: os.getenv(key) for key in MANAGED_ENV_KEYS}
 
 
 def _run_wizard() -> dict[str, str]:
-    """交互式配置收集"""
+    """交互式配置收集，已存在的配置作为各项默认值"""
+    existing = _read_existing_defaults()
+
+    browser_default = (
+        existing["BROWSER"] if existing["BROWSER"] in BROWSER_CHOICES else "msedge"
+    )
+    headless_default = (existing["HEADLESS"] or "").lower() == "true"
+    url_default = existing["VIDEO_LIST_URL"]
+    if not url_default or "YOUR_COURSE_ID" in url_default:
+        url_default = None
+
     # 欢迎界面
     console.print()
     console.print(
         Panel.fit(
-            "[bold cyan]首次运行配置向导[/bold cyan]\n需要配置课程链接才能使用本工具",
+            "[bold cyan]配置向导[/bold cyan]\n"
+            "直接回车即可沿用括号中的现有配置，输入新值则覆盖",
             border_style="cyan",
         )
     )
@@ -56,9 +60,13 @@ def _run_wizard() -> dict[str, str]:
     table.add_column("说明", style="white", width=40)
     table.add_column("默认值", style="yellow", width=15)
 
-    table.add_row("BROWSER", "浏览器类型", "msedge")
-    table.add_row("HEADLESS", "无头模式（浏览器窗口是否隐藏）", "false")
-    table.add_row("VIDEO_LIST_URL", "课程页面链接", "[red]必填[/red]")
+    table.add_row("BROWSER", "浏览器类型", browser_default)
+    table.add_row(
+        "HEADLESS",
+        "无头模式（浏览器窗口是否隐藏）",
+        "true" if headless_default else "false",
+    )
+    table.add_row("VIDEO_LIST_URL", "课程页面链接", url_default or "[red]必填[/red]")
 
     console.print(table)
     console.print()
@@ -66,16 +74,16 @@ def _run_wizard() -> dict[str, str]:
     # 收集配置 - BROWSER
     browser = Prompt.ask(
         "浏览器类型",
-        choices=["msedge", "chrome"],
-        default="msedge",
+        choices=list(BROWSER_CHOICES),
+        default=browser_default,
     )
 
     # 收集配置 - HEADLESS
     headless = Confirm.ask(
         "是否使用无头模式？\n"
-        "  [dim]• true: 浏览器窗口不显示（适合挂机）\n"
-        "  • false: 浏览器窗口正常显示（推荐新手）[/dim]",
-        default=False,
+        "  [dim]• true: 浏览器窗口不显示\n"
+        "  • false: 浏览器窗口正常显示[/dim]",
+        default=headless_default,
     )
 
     # 收集配置 - VIDEO_LIST_URL（必填且验证格式）
@@ -83,7 +91,8 @@ def _run_wizard() -> dict[str, str]:
     while True:
         video_url = Prompt.ask(
             "[bold]课程页面链接[/bold]\n"
-            "  [dim]示例: https://moodle.scnu.edu.cn/course/view.php?id=12345[/dim]"
+            "  [dim]示例: https://moodle.scnu.edu.cn/course/view.php?id=12345[/dim]",
+            default=url_default,
         )
 
         if not video_url:
@@ -94,7 +103,10 @@ def _run_wizard() -> dict[str, str]:
             console.print("[red]✗ 请替换示例中的 YOUR_COURSE_ID 为实际的课程 ID[/red]")
             continue
 
-        if not video_url.startswith("https://moodle.scnu.edu.cn/course/view.php?id="):
+        # 沿用的默认值此前已确认过格式，无需再次警告
+        if video_url != url_default and not video_url.startswith(
+            MOODLE_COURSE_URL_PREFIX
+        ):
             console.print("[yellow]⚠ 链接格式可能不正确，是否继续？[/yellow]")
             if not Confirm.ask("确认使用此链接", default=False):
                 continue
@@ -109,26 +121,30 @@ def _run_wizard() -> dict[str, str]:
 
 
 def _write_env(config: dict[str, str]) -> None:
-    """写入 .env 文件（自动处理扩展名问题）"""
+    """写入 .env 文件，内容无变化时跳过写入（自动处理扩展名问题）"""
     env_path = Path(".env")
 
     try:
         if env_path.exists():
-            _backup_env(env_path)
             try:
                 existing_content = env_path.read_text(encoding="utf-8")
-                content = _merge_env_content(existing_content, config)
             except UnicodeDecodeError:
                 console.print(
                     "[yellow]⚠ 现有 .env 不是 UTF-8 编码，将使用新配置重建该文件[/yellow]"
                 )
-                content = _render_env_content(config)
+                existing_content = None
         else:
-            content = _render_env_content(config)
+            existing_content = None
 
-        env_path.write_text(content, encoding="utf-8")
-        load_dotenv(env_path, override=True)
-        console.print(f"[green]✓ 配置已保存到 {env_path.absolute()}[/green]")
+        content = (
+            _merge_env_content(existing_content, config)
+            if existing_content is not None
+            else _render_env_content(config)
+        )
+        if content != existing_content:
+            env_path.write_text(content, encoding="utf-8")
+            load_dotenv(env_path, override=True)
+            console.print(f"[green]✓ 配置已保存到 {env_path.absolute()}[/green]")
     except OSError as exc:
         console.print(f"[red]✗ 无法写入配置文件 ({exc})，请检查目录权限[/red]")
         sys.exit(1)
@@ -139,17 +155,6 @@ def _write_env(config: dict[str, str]) -> None:
         console.print(
             "[yellow]⚠ 检测到 .env.txt 文件，建议删除（已自动创建正确的 .env）[/yellow]"
         )
-
-
-def _backup_env(env_path: Path) -> None:
-    """备份现有 .env，失败时仅提示，不阻止写入新配置"""
-    backup_path = env_path.parent / ".env.bak"
-    try:
-        shutil.copy2(env_path, backup_path)
-    except OSError as exc:
-        console.print(f"[yellow]⚠ 备份 .env 失败 ({exc})，将直接写入新配置[/yellow]")
-        return
-    console.print(f"[yellow]⚠ 已备份现有配置到 {backup_path.absolute()}[/yellow]")
 
 
 def _quote_env_value(value: str) -> str:
@@ -207,16 +212,11 @@ def _merge_env_content(existing_content: str, config: dict[str, str]) -> str:
 
 
 def ensure_env_configured() -> None:
-    """确保 .env 已正确配置（阻塞式）"""
-    if not _needs_setup():
-        return  # 配置已存在且有效
-
-    console.print("\n[yellow]⚠ 检测到配置缺失，启动配置向导...[/yellow]\n")
-
+    """每次启动都运行配置向导（阻塞式），已有配置作为默认值"""
     try:
         config = _run_wizard()
         _write_env(config)
-        console.print("\n[bold green]✓ 配置完成！程序即将启动...[/bold green]\n")
+        console.print("\n[bold green]✓ 配置就绪，程序即将启动...[/bold green]\n")
     except KeyboardInterrupt:
         console.print("\n[red]✗ 配置已取消，程序退出[/red]")
         sys.exit(0)
