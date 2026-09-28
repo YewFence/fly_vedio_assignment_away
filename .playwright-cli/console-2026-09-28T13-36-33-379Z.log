@@ -1,0 +1,12 @@
+[     790ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'join-ad-interest-group'. @ :0
+[     790ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'run-ad-auction'. @ :0
+[    1772ms] [LOG] Today you opened moodle.scnu.edu.cn 14 time(s), spending 3m 17s browsing it. @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[    1772ms] [LOG] You can disable these notifications in [Time Tracker] settings! @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[    1849ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://piwik.scnu.edu.cn/piwik.js:0
+[    2570ms] [LOG] Debug module "M.reactive" loaded. @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    2574ms] [LOG] Registering new reactive instance "M.reactive.ProcessMonitor" @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    2579ms] [LOG] Registering new reactive instance "M.reactive.CourseEditor19853" @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    2708ms] [LOG] Page is missing a drawer region @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:9636
+[    2708ms] [LOG] Page is missing a drawer toggle link @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:9636
+[    2774ms] [LOG] Starting Moodle session timeout warning. @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:656
+[    4642ms] [INFO] This page uses the built-in LanguageDetector feature. To learn more and leave feedback, see https://learn.microsoft.com/microsoft-edge/web-platform/languagedetector-api @ chrome-extension://amkbmndfnliijdhojkpoglbnaaahippg/content_main.js:5271

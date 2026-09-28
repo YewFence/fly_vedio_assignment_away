@@ -13,7 +13,9 @@ load_dotenv(Path.cwd() / ".env")
 # ============= 从环境变量读取的配置 =============
 BROWSER = os.getenv("BROWSER", "msedge")  # 浏览器类型(msedge/chrome/firefox)
 HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"  # 是否使用无头模式
-# 高级配置：连接已在运行的浏览器（如 Flatpak 版 Edge），设置后忽略 BROWSER 和 HEADLESS
+# 高级配置：指定浏览器可执行文件（如 Flatpak 导出的启动脚本），设置后忽略 BROWSER
+BROWSER_EXECUTABLE_PATH = os.getenv("BROWSER_EXECUTABLE_PATH") or None
+# 高级配置：连接已在运行的浏览器，优先级最高，设置后忽略 BROWSER、HEADLESS 和 BROWSER_EXECUTABLE_PATH
 CDP_ENDPOINT = os.getenv("CDP_ENDPOINT") or None
 _video_list_url = os.getenv("VIDEO_LIST_URL")
 if not _video_list_url or "YOUR_COURSE_ID" in _video_list_url:

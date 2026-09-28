@@ -1,0 +1,760 @@
+- generic [ref=f4e2]:
+  - status
+  - generic [ref=f4e3]:
+    - link "跳到主要内容" [ref=f4e4] [cursor=pointer]:
+      - /url: "#maincontent"
+    - generic [ref=f4e5]:
+      - generic [ref=f4e7]:
+        - generic [ref=f4e9]:
+          - button "课程索引选项" [ref=f4e10] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f4e11]: 
+          - text:   
+        - button "关闭课程索引" [ref=f4e12] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f4e13]: 
+      - navigation [ref=f4e15]:
+        - list [ref=f4e18]:
+          - listitem [ref=f4e19]
+          - listitem [ref=f4e23]
+          - listitem [ref=f4e27]
+          - listitem [ref=f4e31]
+    - generic [ref=f4e36]:
+      - banner [ref=f4e37]:
+        - generic [ref=f4e39]:
+          - link [ref=f4e41] [cursor=pointer]:
+            - /url: https://moodle.scnu.edu.cn
+            - img "砺儒云课堂" [ref=f4e42]
+          - generic [ref=f4e44]:
+            - generic [ref=f4e47]:
+              - generic [aria-hidden] [ref=f4e48]: 
+              - textbox "搜索课程或教师名称" [ref=f4e49]
+              - generic [ref=f4e50]: 搜索课程或教师名称
+            - button "显示14 新通知的通知窗口" [ref=f4e52] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f4e53]: 
+              - generic [aria-hidden] [ref=f4e54]: "14"
+            - generic [ref=f4e57]:
+              - link "用户菜单" [ref=f4e58] [cursor=pointer]:
+                - /url: "#"
+                - text: 20254001025姚博闻 
+              - text:          
+            - link [ref=f4e59] [cursor=pointer]:
+              - /url: https://moodle.scnu.edu.cn/user/view.php?id=152123&course=19853
+              - img "20254001025姚博闻" [ref=f4e60]: 姚
+      - banner [ref=f4e61]:
+        - navigation [ref=f4e62]:
+          - navigation [ref=f4e64]:
+            - menubar [ref=f4e65]:
+              - menuitem " 首页" [ref=f4e66] [cursor=pointer]
+              - menuitem "分类课程 " [ref=f4e67] [cursor=pointer]
+              - menuitem "平台操作指南" [ref=f4e68] [cursor=pointer]
+              - menuitem "砺儒云库" [ref=f4e69] [cursor=pointer]
+              - menuitem "砺儒文件库" [ref=f4e70] [cursor=pointer]
+              - menuitem "数据统计" [ref=f4e71] [cursor=pointer]
+              - menuitem "申请课程 " [ref=f4e72] [cursor=pointer]
+              - menuitem "我的课程 " [ref=f4e73] [cursor=pointer]
+              - text:   
+      - generic: 
+      - generic [ref=f4e74]:
+        - banner
+        - generic [ref=f4e77]:
+          - generic [ref=f4e78]:
+            - heading "毛泽东思想和中国特色社会主义理论体系概论(26-27上学期)" [level=3] [ref=f4e79]
+            - generic [ref=f4e80]: "# 26-27上学期"
+          - button "成绩" [ref=f4e84] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f4e85]: 
+      - generic [ref=f4e88]:
+        - navigation [ref=f4e90]:
+          - menubar [ref=f4e91]:
+            - menuitem "课程" [ref=f4e92] [cursor=pointer]
+            - menuitem "参与人" [ref=f4e93] [cursor=pointer]
+            - menuitem "成绩" [ref=f4e94] [cursor=pointer]
+            - menuitem "活动" [ref=f4e95] [cursor=pointer]
+            - text: 
+        - generic [ref=f4e96]:
+          - generic:
+            - region "版块":
+              - complementary "版块":
+                - heading "版块" [level=2] [ref=f4e97]
+          - main [ref=f4e98]:
+            - generic [ref=f4e101]:
+              - heading "章节大纲" [level=2] [ref=f4e102]
+              - list [ref=f4e103]:
+                - listitem [ref=f4e104]:
+                  - generic [ref=f4e105]:
+                    - generic [ref=f4e106]:
+                      - generic [ref=f4e107]:
+                        - button "常规" [expanded] [ref=f4e108] [cursor=pointer]:
+                          - generic "折叠" [ref=f4e109]:
+                            - generic [aria-hidden] [ref=f4e110]: 
+                          - text:  
+                        - heading [level=3] [ref=f4e112] [cursor=pointer]:
+                          - link "常规" [ref=f4e113]:
+                            - /url: https://moodle.scnu.edu.cn/course/section.php?id=402285
+                      - button "全部折叠" [expanded] [ref=f4e115] [cursor=pointer]
+                    - list [ref=f4e118]:
+                      - listitem [ref=f4e119]:
+                        - link "新闻发布区 讨论区" [ref=f4e126] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/forum/view.php?id=870718
+                          - generic [ref=f4e127]:
+                            - text: 新闻发布区
+                            - generic [ref=f4e128]: 讨论区
+                      - listitem [ref=f4e131]:
+                        - link "考勤" [ref=f4e138] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/attendance/view.php?id=870719
+                - listitem [ref=f4e139]:
+                  - generic [ref=f4e140]:
+                    - generic [ref=f4e142]:
+                      - button "导论 马克思主义中国化前史" [expanded] [ref=f4e143] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e144]:
+                          - generic [aria-hidden] [ref=f4e145]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e147] [cursor=pointer]:
+                        - link "导论 马克思主义中国化前史" [ref=f4e148]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402286
+                    - list [ref=f4e150]:
+                      - listitem [ref=f4e151]:
+                        - paragraph [ref=f4e157]:
+                          - generic [ref=f4e158]: 课程学习
+                      - listitem [ref=f4e159]:
+                        - generic [ref=f4e161]:
+                          - link "李张容：马克思主义中国化前史 资源库文件" [ref=f4e166] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870722
+                            - generic [ref=f4e167]:
+                              - text: 李张容：马克思主义中国化前史
+                              - generic [ref=f4e168]: 资源库文件
+                          - generic "李张容：马克思主义中国化前史的完成要求" [ref=f4e172]:
+                            - button "待办事项 " [ref=f4e174] [cursor=pointer]
+                      - listitem [ref=f4e175]:
+                        - generic [ref=f4e177]:
+                          - link "导论课后练习 测验" [ref=f4e182] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/quiz/view.php?id=870723
+                            - generic [ref=f4e183]:
+                              - text: 导论课后练习
+                              - generic [ref=f4e184]: 测验
+                          - generic "导论课后练习的完成要求" [ref=f4e188]:
+                            - button "待办事项 " [ref=f4e190] [cursor=pointer]
+                      - listitem [ref=f4e191]:
+                        - generic [ref=f4e196]:
+                          - separator [ref=f4e197]
+                          - paragraph [ref=f4e198]:
+                            - generic [ref=f4e199]: 课外阅读
+                      - listitem [ref=f4e200]:
+                        - link "1.习近平：《在纪念马克思诞辰200周年大会上的讲话》，新华社2018年5月4日 网页地址" [ref=f4e207] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870725
+                          - generic [ref=f4e208]:
+                            - text: 1.习近平：《在纪念马克思诞辰200周年大会上的讲话》，新华社2018年5月4日
+                            - generic [ref=f4e209]: 网页地址
+                      - listitem [ref=f4e210]:
+                        - link "2.马克思、恩格斯：《共产党宣言》，《马克思恩格斯选集》第一卷，人民出版社1995年版 网页地址" [ref=f4e217] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870726
+                          - generic [ref=f4e218]:
+                            - text: 2.马克思、恩格斯：《共产党宣言》，《马克思恩格斯选集》第一卷，人民出版社1995年版
+                            - generic [ref=f4e219]: 网页地址
+                      - listitem [ref=f4e220]:
+                        - generic [ref=f4e225]:
+                          - separator [ref=f4e226]
+                          - paragraph [ref=f4e227]:
+                            - strong [ref=f4e228]: 拓展视频
+                      - listitem [ref=f4e229]:
+                        - link "CCTV节目官网专题片《马克思是对的》第一、三、四、五集 网页地址" [ref=f4e236] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870728
+                          - generic [ref=f4e237]:
+                            - text: CCTV节目官网专题片《马克思是对的》第一、三、四、五集
+                            - generic [ref=f4e238]: 网页地址
+                - listitem [ref=f4e239]:
+                  - generic [ref=f4e240]:
+                    - generic [ref=f4e242]:
+                      - button "第1讲 正确认识和评价毛泽东晚年的错误" [expanded] [ref=f4e243] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e244]:
+                          - generic [aria-hidden] [ref=f4e245]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e247] [cursor=pointer]:
+                        - link "第1讲 正确认识和评价毛泽东晚年的错误" [ref=f4e248]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402287
+                    - list [ref=f4e250]:
+                      - listitem [ref=f4e251]:
+                        - paragraph [ref=f4e257]:
+                          - generic [ref=f4e258]: 课程学习
+                      - listitem [ref=f4e259]:
+                        - generic [ref=f4e261]:
+                          - link "周连顺：正确认识和评价毛泽东晚年的错误 资源库文件" [ref=f4e266] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870730
+                            - generic [ref=f4e267]:
+                              - text: 周连顺：正确认识和评价毛泽东晚年的错误
+                              - generic [ref=f4e268]: 资源库文件
+                          - generic "周连顺：正确认识和评价毛泽东晚年的错误的完成要求" [ref=f4e272]:
+                            - generic [ref=f4e273]:
+                              - button "完成 " [ref=f4e274] [cursor=pointer]:
+                                - generic [aria-hidden] [ref=f4e275]: 
+                                - text: 完成 
+                              - text: 
+                      - listitem [ref=f4e276]:
+                        - generic [ref=f4e278]:
+                          - link "第1讲课后练习 测验" [ref=f4e283] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/quiz/view.php?id=870731
+                            - generic [ref=f4e284]:
+                              - text: 第1讲课后练习
+                              - generic [ref=f4e285]: 测验
+                          - generic "第1讲课后练习的完成要求" [ref=f4e289]:
+                            - button "待办事项 " [ref=f4e291] [cursor=pointer]
+                      - listitem [ref=f4e292]:
+                        - generic [ref=f4e297]:
+                          - separator [ref=f4e298]
+                          - paragraph [ref=f4e299]:
+                            - generic [ref=f4e300]: 课外阅读
+                      - listitem [ref=f4e301]:
+                        - link "1.《中国共产党中央委员会关于建国以来党的若干历史问题的决议》，《三中全会以来重要文献选编》下，人民出版社1982年版。 网页地址" [ref=f4e308] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870733
+                          - generic [ref=f4e309]:
+                            - text: 1.《中国共产党中央委员会关于建国以来党的若干历史问题的决议》，《三中全会以来重要文献选编》下，人民出版社1982年版。
+                            - generic [ref=f4e310]: 网页地址
+                      - listitem [ref=f4e311]:
+                        - link "2.邓小平：《对起草的意见》，《邓小平文选》第二卷，人民出版社1994年版。 网页地址" [ref=f4e318] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870734
+                          - generic [ref=f4e319]:
+                            - text: 2.邓小平：《对起草的意见》，《邓小平文选》第二卷，人民出版社1994年版。
+                            - generic [ref=f4e320]: 网页地址
+                      - listitem [ref=f4e321]:
+                        - generic [ref=f4e326]:
+                          - separator [ref=f4e327]
+                          - paragraph [ref=f4e328]:
+                            - strong [ref=f4e329]: 拓展视频
+                      - listitem [ref=f4e330]:
+                        - generic [ref=f4e332]:
+                          - link "CCTV节目官网《走近毛泽东》 网页地址" [ref=f4e337] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870736
+                            - generic [ref=f4e338]:
+                              - text: CCTV节目官网《走近毛泽东》
+                              - generic [ref=f4e339]: 网页地址
+                          - generic "CCTV节目官网《走近毛泽东》的完成要求" [ref=f4e343]:
+                            - button "待办事项 " [ref=f4e345] [cursor=pointer]
+                - listitem [ref=f4e346]:
+                  - generic [ref=f4e347]:
+                    - generic [ref=f4e349]:
+                      - button "第2讲 “新民主主义”概念的由来" [expanded] [ref=f4e350] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e351]:
+                          - generic [aria-hidden] [ref=f4e352]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e354] [cursor=pointer]:
+                        - link "第2讲 “新民主主义”概念的由来" [ref=f4e355]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402288
+                    - list [ref=f4e357]:
+                      - listitem [ref=f4e358]:
+                        - paragraph [ref=f4e364]:
+                          - generic [ref=f4e365]: 课程学习
+                      - listitem [ref=f4e366]:
+                        - generic [ref=f4e368]:
+                          - link "蒋积伟：“新民主主义”概念的由来 资源库文件" [ref=f4e373] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870738
+                            - generic [ref=f4e374]:
+                              - text: 蒋积伟：“新民主主义”概念的由来
+                              - generic [ref=f4e375]: 资源库文件
+                          - generic "蒋积伟：“新民主主义”概念的由来的完成要求" [ref=f4e379]:
+                            - button "待办事项 " [ref=f4e381] [cursor=pointer]
+                      - listitem [ref=f4e382]:
+                        - generic [ref=f4e384]:
+                          - generic [ref=f4e389]:
+                            - text: 第2讲课后练习
+                            - generic [ref=f4e390]: 测验
+                          - generic [ref=f4e392]:
+                            - generic [aria-hidden] [ref=f4e393]: 
+                            - text: 不能使用除非 这个活动
+                            - strong [ref=f4e394]:
+                              - link "蒋积伟：“新民主主义”概念的由来" [ref=f4e395] [cursor=pointer]:
+                                - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870738
+                            - text: 已标记完成
+                      - listitem [ref=f4e396]:
+                        - generic [ref=f4e401]:
+                          - separator [ref=f4e402]
+                          - paragraph [ref=f4e403]:
+                            - generic [ref=f4e404]: 课外阅读
+                      - listitem [ref=f4e405]:
+                        - link "1. 毛泽东：《中国革命和中国共产党》，《毛泽东选集》第二卷，人民出版社1991年版。 网页地址" [ref=f4e412] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870741
+                          - generic [ref=f4e413]:
+                            - text: 1. 毛泽东：《中国革命和中国共产党》，《毛泽东选集》第二卷，人民出版社1991年版。
+                            - generic [ref=f4e414]: 网页地址
+                      - listitem [ref=f4e415]:
+                        - link "2. 毛泽东：《新民主主义论》，《毛泽东选集》第二卷，人民出版社1991年版 网页地址" [ref=f4e422] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870742
+                          - generic [ref=f4e423]:
+                            - text: 2. 毛泽东：《新民主主义论》，《毛泽东选集》第二卷，人民出版社1991年版
+                            - generic [ref=f4e424]: 网页地址
+                      - listitem [ref=f4e425]:
+                        - generic [ref=f4e430]:
+                          - separator [ref=f4e431]
+                          - paragraph [ref=f4e432]:
+                            - strong [ref=f4e433]: 拓展视频
+                      - listitem [ref=f4e434]:
+                        - link "纪录片《人民的选择》 网页地址" [ref=f4e441] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870744
+                          - generic [ref=f4e442]:
+                            - text: 纪录片《人民的选择》
+                            - generic [ref=f4e443]: 网页地址
+                - listitem [ref=f4e444]:
+                  - generic [ref=f4e445]:
+                    - generic [ref=f4e447]:
+                      - button "第3讲 新中国“四个现代化”概念的形成与发展" [expanded] [ref=f4e448] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e449]:
+                          - generic [aria-hidden] [ref=f4e450]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e452] [cursor=pointer]:
+                        - link "第3讲 新中国“四个现代化”概念的形成与发展" [ref=f4e453]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402289
+                    - list [ref=f4e455]:
+                      - listitem [ref=f4e456]:
+                        - paragraph [ref=f4e462]:
+                          - generic [ref=f4e463]: 课程学习
+                      - listitem [ref=f4e464]:
+                        - generic [ref=f4e466]:
+                          - link "朱斌：新中国“四个现代化”概念的形成与发展 资源库文件" [ref=f4e471] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870746
+                            - generic [ref=f4e472]:
+                              - text: 朱斌：新中国“四个现代化”概念的形成与发展
+                              - generic [ref=f4e473]: 资源库文件
+                          - generic "朱斌：新中国“四个现代化”概念的形成与发展的完成要求" [ref=f4e477]:
+                            - button "待办事项 " [ref=f4e479] [cursor=pointer]
+                      - listitem [ref=f4e480]:
+                        - generic [ref=f4e482]:
+                          - generic [ref=f4e487]:
+                            - text: 第3讲课后练习
+                            - generic [ref=f4e488]: 测验
+                          - generic [ref=f4e490]:
+                            - button [ref=f4e491] [cursor=pointer]:
+                              - generic [ref=f4e492]:
+                                - text: 显示更多
+                                - generic [aria-hidden] [ref=f4e493]: 
+                              - text: 
+                            - generic [ref=f4e494]:
+                              - generic [aria-hidden] [ref=f4e495]: 
+                              - generic [ref=f4e496]:
+                                - text: 不能使用除非 这个活动
+                                - strong [ref=f4e497]:
+                                  - link "朱斌：新中国“四个现代化”概念的形成与发展" [ref=f4e498] [cursor=pointer]:
+                                    - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870746
+                                - text: 已标记完成 ...
+                            - text: 
+                      - listitem [ref=f4e499]:
+                        - generic [ref=f4e504]:
+                          - separator [ref=f4e505]
+                          - paragraph [ref=f4e506]:
+                            - generic [ref=f4e507]: 课外阅读
+                      - listitem [ref=f4e508]:
+                        - link "1.毛泽东：《在中国共产党第七届中央委员会第二次会议上的报告》，《毛泽东选集》第四卷，人民出版社1991年版。 网页地址" [ref=f4e515] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870749
+                          - generic [ref=f4e516]:
+                            - text: 1.毛泽东：《在中国共产党第七届中央委员会第二次会议上的报告》，《毛泽东选集》第四卷，人民出版社1991年版。
+                            - generic [ref=f4e517]: 网页地址
+                      - listitem [ref=f4e518]:
+                        - link "2.毛泽东：《中华人民共和国中央人民政府公告》，《毛泽东文集》第六卷，人民出版社1999年版，第315-318页。 网页地址" [ref=f4e525] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870750
+                          - generic [ref=f4e526]:
+                            - text: 2.毛泽东：《中华人民共和国中央人民政府公告》，《毛泽东文集》第六卷，人民出版社1999年版，第315-318页。
+                            - generic [ref=f4e527]: 网页地址
+                      - listitem [ref=f4e528]:
+                        - generic [ref=f4e533]:
+                          - separator [ref=f4e534]
+                          - paragraph [ref=f4e535]:
+                            - strong [ref=f4e536]: 拓展视频
+                      - listitem [ref=f4e537]:
+                        - link "新华社政论片《中国式现代化》 网页地址" [ref=f4e544] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870752
+                          - generic [ref=f4e545]:
+                            - text: 新华社政论片《中国式现代化》
+                            - generic [ref=f4e546]: 网页地址
+                - listitem [ref=f4e547]:
+                  - generic [ref=f4e548]:
+                    - generic [ref=f4e550]:
+                      - button "第4讲 社会主义建设道路初步探索的国际背景" [expanded] [ref=f4e551] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e552]:
+                          - generic [aria-hidden] [ref=f4e553]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e555] [cursor=pointer]:
+                        - link "第4讲 社会主义建设道路初步探索的国际背景" [ref=f4e556]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402290
+                    - list [ref=f4e558]:
+                      - listitem [ref=f4e559]:
+                        - paragraph [ref=f4e565]:
+                          - generic [ref=f4e566]: 课程
+                          - generic [ref=f4e567]: 学习
+                      - listitem [ref=f4e568]:
+                        - generic [ref=f4e570]:
+                          - link "沈志刚：社会主义建设道路初步探索的国际背景 资源库文件" [ref=f4e575] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870754
+                            - generic [ref=f4e576]:
+                              - text: 沈志刚：社会主义建设道路初步探索的国际背景
+                              - generic [ref=f4e577]: 资源库文件
+                          - generic "沈志刚：社会主义建设道路初步探索的国际背景的完成要求" [ref=f4e581]:
+                            - button "待办事项 " [ref=f4e583] [cursor=pointer]
+                      - listitem [ref=f4e584]:
+                        - generic [ref=f4e586]:
+                          - generic [ref=f4e591]:
+                            - text: 第4讲课后练习
+                            - generic [ref=f4e592]: 测验
+                          - generic [ref=f4e594]:
+                            - button [ref=f4e595] [cursor=pointer]:
+                              - generic [ref=f4e596]:
+                                - text: 显示更多
+                                - generic [aria-hidden] [ref=f4e597]: 
+                              - text: 
+                            - generic [ref=f4e598]:
+                              - generic [aria-hidden] [ref=f4e599]: 
+                              - generic [ref=f4e600]:
+                                - text: 不能使用除非 这个活动
+                                - strong [ref=f4e601]:
+                                  - link "沈志刚：社会主义建设道路初步探索的国际背景" [ref=f4e602] [cursor=pointer]:
+                                    - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870754
+                                - text: 已标记完成 ...
+                            - text: 
+                      - listitem [ref=f4e603]:
+                        - generic [ref=f4e608]:
+                          - separator [ref=f4e609]
+                          - paragraph [ref=f4e610]:
+                            - generic [ref=f4e611]: 课外阅读
+                      - listitem [ref=f4e612]:
+                        - link "1. 毛泽东：《论十大关系》，《毛泽东文集》第七卷，人民出版社1999年版 网页地址" [ref=f4e619] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870757
+                          - generic [ref=f4e620]:
+                            - text: 1. 毛泽东：《论十大关系》，《毛泽东文集》第七卷，人民出版社1999年版
+                            - generic [ref=f4e621]: 网页地址
+                      - listitem [ref=f4e622]:
+                        - link "2. 毛泽东：《关于正确处理人民内部矛盾的关系》第七卷，人民出版社1999年版 网页地址" [ref=f4e629] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870758
+                          - generic [ref=f4e630]:
+                            - text: 2. 毛泽东：《关于正确处理人民内部矛盾的关系》第七卷，人民出版社1999年版
+                            - generic [ref=f4e631]: 网页地址
+                      - listitem [ref=f4e632]:
+                        - generic [ref=f4e637]:
+                          - separator [ref=f4e638]
+                          - paragraph [ref=f4e639]:
+                            - strong [ref=f4e640]: 拓展视频
+                      - listitem [ref=f4e641]:
+                        - link "央视网纪录片《毛泽东出访苏联》 网页地址" [ref=f4e648] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870760
+                          - generic [ref=f4e649]:
+                            - text: 央视网纪录片《毛泽东出访苏联》
+                            - generic [ref=f4e650]: 网页地址
+                - listitem [ref=f4e651]:
+                  - generic [ref=f4e652]:
+                    - generic [ref=f4e654]:
+                      - button "第5讲 中国特色社会主义理论在新时代的形成与发展" [expanded] [ref=f4e655] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e656]:
+                          - generic [aria-hidden] [ref=f4e657]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e659] [cursor=pointer]:
+                        - link "第5讲 中国特色社会主义理论在新时代的形成与发展" [ref=f4e660]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402291
+                    - list [ref=f4e662]:
+                      - listitem [ref=f4e663]:
+                        - paragraph [ref=f4e669]:
+                          - generic [ref=f4e670]: 课程
+                          - generic [ref=f4e671]: 学习
+                      - listitem [ref=f4e672]:
+                        - generic [ref=f4e674]:
+                          - generic [ref=f4e679]:
+                            - text: 第5讲课后练习
+                            - generic [ref=f4e680]: 测验
+                          - generic [ref=f4e682]:
+                            - generic [aria-hidden] [ref=f4e683]: 
+                            - text: 不能使用除非 这个活动
+                            - strong [ref=f4e684]: 第4讲课后练习
+                            - text: 已标记完成
+                      - listitem [ref=f4e685]:
+                        - generic [ref=f4e690]:
+                          - separator [ref=f4e691]
+                          - paragraph [ref=f4e692]:
+                            - generic [ref=f4e693]: 课外阅读
+                      - listitem [ref=f4e694]:
+                        - link "1. 胡锦涛：《高举中国特色社会主义伟大旗帜 为夺取全面建设小康社会新胜利而奋斗》（2007年10月15日），《胡锦涛文选》第三卷， 网页地址" [ref=f4e701] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870764
+                          - generic [ref=f4e702]:
+                            - text: 1. 胡锦涛：《高举中国特色社会主义伟大旗帜 为夺取全面建设小康社会新胜利而奋斗》（2007年10月15日），《胡锦涛文选》第三卷，
+                            - generic [ref=f4e703]: 网页地址
+                      - listitem [ref=f4e704]:
+                        - link "2.《中共中央关于党的百年奋斗重大成就和历史经验的决议》，人民出版社2021年版。 网页地址" [ref=f4e711] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870765
+                          - generic [ref=f4e712]:
+                            - text: 2.《中共中央关于党的百年奋斗重大成就和历史经验的决议》，人民出版社2021年版。
+                            - generic [ref=f4e713]: 网页地址
+                      - listitem [ref=f4e714]:
+                        - generic [ref=f4e719]:
+                          - separator [ref=f4e720]
+                          - paragraph [ref=f4e721]:
+                            - strong [ref=f4e722]: 拓展视频
+                      - listitem [ref=f4e723]:
+                        - link "新华社《中国共产党第二十次全国代表大会在京开幕 习近平代表第十九届中央委员会向大会作报告》 网页地址" [ref=f4e730] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870767
+                          - generic [ref=f4e731]:
+                            - text: 新华社《中国共产党第二十次全国代表大会在京开幕 习近平代表第十九届中央委员会向大会作报告》
+                            - generic [ref=f4e732]: 网页地址
+                - listitem [ref=f4e733]:
+                  - generic [ref=f4e734]:
+                    - generic [ref=f4e736]:
+                      - button "第6讲 中国改革开放的历史使命与时代担当" [expanded] [ref=f4e737] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e738]:
+                          - generic [aria-hidden] [ref=f4e739]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e741] [cursor=pointer]:
+                        - link "第6讲 中国改革开放的历史使命与时代担当" [ref=f4e742]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402292
+                    - list [ref=f4e744]:
+                      - listitem [ref=f4e745]:
+                        - paragraph [ref=f4e751]:
+                          - generic [ref=f4e752]: 课程
+                          - generic [ref=f4e753]: 学习
+                      - listitem [ref=f4e754]:
+                        - generic [ref=f4e756]:
+                          - link "胡国胜：中国改革开放的历史使命与时代担当 资源库文件" [ref=f4e761] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870769
+                            - generic [ref=f4e762]:
+                              - text: 胡国胜：中国改革开放的历史使命与时代担当
+                              - generic [ref=f4e763]: 资源库文件
+                          - generic "胡国胜：中国改革开放的历史使命与时代担当的完成要求" [ref=f4e767]:
+                            - button "待办事项 " [ref=f4e769] [cursor=pointer]
+                      - listitem [ref=f4e770]:
+                        - generic [ref=f4e772]:
+                          - generic [ref=f4e777]:
+                            - text: 第6讲课后练习
+                            - generic [ref=f4e778]: 测验
+                          - generic [ref=f4e780]:
+                            - button [ref=f4e781] [cursor=pointer]:
+                              - generic [ref=f4e782]:
+                                - text: 显示更多
+                                - generic [aria-hidden] [ref=f4e783]: 
+                              - text: 
+                            - generic [ref=f4e784]:
+                              - generic [aria-hidden] [ref=f4e785]: 
+                              - generic [ref=f4e786]:
+                                - text: 不能使用除非 这个活动
+                                - strong [ref=f4e787]:
+                                  - link "胡国胜：中国改革开放的历史使命与时代担当" [ref=f4e788] [cursor=pointer]:
+                                    - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870769
+                                - text: 已标记完成 ...
+                            - text: 
+                      - listitem [ref=f4e789]:
+                        - generic [ref=f4e794]:
+                          - separator [ref=f4e795]
+                          - paragraph [ref=f4e796]:
+                            - generic [ref=f4e797]: 课外阅读
+                      - listitem [ref=f4e798]:
+                        - link "1.邓小平：《解放思想，实事求是，团结一致向前看》，《邓小平文选》第二卷，人民出版社1994年版。 网页地址" [ref=f4e805] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870772
+                          - generic [ref=f4e806]:
+                            - text: 1.邓小平：《解放思想，实事求是，团结一致向前看》，《邓小平文选》第二卷，人民出版社1994年版。
+                            - generic [ref=f4e807]: 网页地址
+                      - listitem [ref=f4e808]:
+                        - link "2. 习近平：《在纪念邓小平同志诞辰110周年座谈会上的讲话》（2014年8月20日），新华社 网页地址" [ref=f4e815] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870773
+                          - generic [ref=f4e816]:
+                            - text: 2. 习近平：《在纪念邓小平同志诞辰110周年座谈会上的讲话》（2014年8月20日），新华社
+                            - generic [ref=f4e817]: 网页地址
+                      - listitem [ref=f4e818]:
+                        - generic [ref=f4e823]:
+                          - separator [ref=f4e824]
+                          - paragraph [ref=f4e825]:
+                            - strong [ref=f4e826]: 拓展视频
+                      - listitem [ref=f4e827]:
+                        - link "新华社《改革开放40周年特别报道》 网页地址" [ref=f4e834] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870775
+                          - generic [ref=f4e835]:
+                            - text: 新华社《改革开放40周年特别报道》
+                            - generic [ref=f4e836]: 网页地址
+                - listitem [ref=f4e837]:
+                  - generic [ref=f4e838]:
+                    - generic [ref=f4e840]:
+                      - button "第7讲 社会主义市场经济体制的提出与建立" [expanded] [ref=f4e841] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e842]:
+                          - generic [aria-hidden] [ref=f4e843]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e845] [cursor=pointer]:
+                        - link "第7讲 社会主义市场经济体制的提出与建立" [ref=f4e846]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402293
+                    - list [ref=f4e848]:
+                      - listitem [ref=f4e849]:
+                        - paragraph [ref=f4e855]:
+                          - generic [ref=f4e856]: 课程
+                          - generic [ref=f4e857]: 学习
+                      - listitem [ref=f4e858]:
+                        - generic [ref=f4e860]:
+                          - link "陈小文：社会主义市场经济体制的确立及其意义 资源库文件" [ref=f4e865] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870777
+                            - generic [ref=f4e866]:
+                              - text: 陈小文：社会主义市场经济体制的确立及其意义
+                              - generic [ref=f4e867]: 资源库文件
+                          - generic "陈小文：社会主义市场经济体制的确立及其意义的完成要求" [ref=f4e871]:
+                            - button "待办事项 " [ref=f4e873] [cursor=pointer]
+                      - listitem [ref=f4e874]:
+                        - generic [ref=f4e876]:
+                          - generic [ref=f4e881]:
+                            - text: 第7讲课后练习
+                            - generic [ref=f4e882]: 测验
+                          - generic [ref=f4e884]:
+                            - button [ref=f4e885] [cursor=pointer]:
+                              - generic [ref=f4e886]:
+                                - text: 显示更多
+                                - generic [aria-hidden] [ref=f4e887]: 
+                              - text: 
+                            - generic [ref=f4e888]:
+                              - generic [aria-hidden] [ref=f4e889]: 
+                              - generic [ref=f4e890]:
+                                - text: 不能使用除非 这个活动
+                                - strong [ref=f4e891]:
+                                  - link "陈小文：社会主义市场经济体制的确立及其意义" [ref=f4e892] [cursor=pointer]:
+                                    - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870777
+                                - text: 已标记完成 ...
+                            - text: 
+                      - listitem [ref=f4e893]:
+                        - generic [ref=f4e898]:
+                          - separator [ref=f4e899]
+                          - paragraph [ref=f4e900]:
+                            - generic [ref=f4e901]: 课外阅读
+                      - listitem [ref=f4e902]:
+                        - link "1. 江泽民：《加快改革开放和现代化建设步伐 夺取有中国特色社会主义事业的更大胜利》（1992年10月12），《江泽民文选》第一卷，人民出版社2006年版 网页地址" [ref=f4e909] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870780
+                          - generic [ref=f4e910]:
+                            - text: 1. 江泽民：《加快改革开放和现代化建设步伐 夺取有中国特色社会主义事业的更大胜利》（1992年10月12），《江泽民文选》第一卷，人民出版社2006年版
+                            - generic [ref=f4e911]: 网页地址
+                      - listitem [ref=f4e912]:
+                        - link "2. 习近平：《在江泽民同志追悼大会上的悼词》（2022年12月6日），新华网 网页地址" [ref=f4e919] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870781
+                          - generic [ref=f4e920]:
+                            - text: 2. 习近平：《在江泽民同志追悼大会上的悼词》（2022年12月6日），新华网
+                            - generic [ref=f4e921]: 网页地址
+                      - listitem [ref=f4e922]:
+                        - generic [ref=f4e927]:
+                          - separator [ref=f4e928]
+                          - paragraph [ref=f4e929]:
+                            - strong [ref=f4e930]: 拓展视频
+                      - listitem [ref=f4e931]:
+                        - link "央视网《我们一起走过——致敬改革开放40周年》 第一至十二集 网页地址" [ref=f4e938] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870783
+                          - generic [ref=f4e939]:
+                            - text: 央视网《我们一起走过——致敬改革开放40周年》 第一至十二集
+                            - generic [ref=f4e940]: 网页地址
+                - listitem [ref=f4e941]:
+                  - generic [ref=f4e942]:
+                    - generic [ref=f4e944]:
+                      - button "第8讲 社会主义和谐社会的提出及其意义" [expanded] [ref=f4e945] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e946]:
+                          - generic [aria-hidden] [ref=f4e947]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e949] [cursor=pointer]:
+                        - link "第8讲 社会主义和谐社会的提出及其意义" [ref=f4e950]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402294
+                    - list [ref=f4e952]:
+                      - listitem [ref=f4e953]:
+                        - paragraph [ref=f4e959]:
+                          - generic [ref=f4e960]: 课程学习
+                      - listitem [ref=f4e961]:
+                        - generic [ref=f4e963]:
+                          - link "社会主义和谐社会的提出及其重大意义 资源库文件" [ref=f4e968] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870785
+                            - generic [ref=f4e969]:
+                              - text: 社会主义和谐社会的提出及其重大意义
+                              - generic [ref=f4e970]: 资源库文件
+                          - generic "社会主义和谐社会的提出及其重大意义的完成要求" [ref=f4e974]:
+                            - button "待办事项 " [ref=f4e976] [cursor=pointer]
+                      - listitem [ref=f4e977]:
+                        - generic [ref=f4e979]:
+                          - generic [ref=f4e984]:
+                            - text: 第8讲课后练习
+                            - generic [ref=f4e985]: 测验
+                          - generic [ref=f4e987]:
+                            - generic [aria-hidden] [ref=f4e988]: 
+                            - text: 不能使用除非 这个活动
+                            - strong [ref=f4e989]:
+                              - link "社会主义和谐社会的提出及其重大意义" [ref=f4e990] [cursor=pointer]:
+                                - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870785
+                            - text: 已标记完成
+                      - listitem [ref=f4e991]:
+                        - generic [ref=f4e996]:
+                          - separator [ref=f4e997]
+                          - paragraph [ref=f4e998]:
+                            - generic [ref=f4e999]: 课外阅读
+                      - listitem [ref=f4e1000]:
+                        - generic [ref=f4e1005]:
+                          - paragraph
+                          - paragraph [ref=f4e1006]: 1.胡锦涛：《坚定不移沿着中国特色社会主义道路前进 为全面建成小康社会而奋斗》（2012年11月8日），《胡锦涛文选》第三卷。
+                      - listitem [ref=f4e1007]:
+                        - link "2. 习近平：《在学习〈胡锦涛文选〉报告会上的讲话》，人民出版社2016年版。 网页地址" [ref=f4e1014] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870789
+                          - generic [ref=f4e1015]:
+                            - text: 2. 习近平：《在学习〈胡锦涛文选〉报告会上的讲话》，人民出版社2016年版。
+                            - generic [ref=f4e1016]: 网页地址
+                      - listitem [ref=f4e1017]:
+                        - generic [ref=f4e1022]:
+                          - separator [ref=f4e1023]
+                          - paragraph [ref=f4e1024]:
+                            - strong [ref=f4e1025]: 拓展视频
+                      - listitem [ref=f4e1026]:
+                        - link "《2003：万众一心抗非典》 网页地址" [ref=f4e1033] [cursor=pointer]:
+                          - /url: https://moodle.scnu.edu.cn/mod/url/view.php?id=870791
+                          - generic [ref=f4e1034]:
+                            - text: 《2003：万众一心抗非典》
+                            - generic [ref=f4e1035]: 网页地址
+                - listitem [ref=f4e1036]:
+                  - generic [ref=f4e1037]:
+                    - generic [ref=f4e1039]:
+                      - button "附录 书法大家毛泽东" [expanded] [ref=f4e1040] [cursor=pointer]:
+                        - generic "折叠" [ref=f4e1041]:
+                          - generic [aria-hidden] [ref=f4e1042]: 
+                        - text:  
+                      - heading [level=3] [ref=f4e1044] [cursor=pointer]:
+                        - link "附录 书法大家毛泽东" [ref=f4e1045]:
+                          - /url: https://moodle.scnu.edu.cn/course/section.php?id=402295
+                    - list [ref=f4e1047]:
+                      - listitem [ref=f4e1048]:
+                        - paragraph [ref=f4e1054]:
+                          - generic [ref=f4e1055]: 课程学习
+                      - listitem [ref=f4e1056]:
+                        - generic [ref=f4e1058]:
+                          - link "颜碧辉：书法大家毛泽东 资源库文件" [ref=f4e1063] [cursor=pointer]:
+                            - /url: https://moodle.scnu.edu.cn/mod/fsresource/view.php?id=870793
+                            - generic [ref=f4e1064]:
+                              - text: 颜碧辉：书法大家毛泽东
+                              - generic [ref=f4e1065]: 资源库文件
+                          - generic "颜碧辉：书法大家毛泽东的完成要求" [ref=f4e1069]:
+                            - button "待办事项 " [ref=f4e1071] [cursor=pointer]
+          - generic:
+            - generic:
+              - complementary "版块":
+                - heading "版块" [level=2] [ref=f4e1072]
+      - contentinfo [ref=f4e1073]:
+        - generic [ref=f4e1076]:
+          - complementary [ref=f4e1079]:
+            - heading "版块" [level=2] [ref=f4e1080]
+            - region "Text" [ref=f4e1081]:
+              - generic [ref=f4e1084]:
+                - paragraph [ref=f4e1085]
+                - paragraph [ref=f4e1086]: 砺儒云课堂致力于提供教学、学习与教学管理“一站式”服务，提升教师信息化教学能力和学生信息化学习能力，旨在建设成为高水平在线课程学习平台。砺儒云课堂以超融合基础架构作为技术架构，基于国际化开源教学平台Moodle，实现与多种校内信息化平台对接，实现利用教学大数据对学生进行跟踪反馈，具有功能插件多样、数据跟踪详细、开源式、扩展性能优异、维护简单等优点。
+                - generic [ref=f4e1087]:
+                  - paragraph [ref=f4e1088]:
+                    - generic [ref=f4e1089]: 
+                    - text: 电话：（网络信息中心）
+                  - paragraph [ref=f4e1090]:
+                    - generic [ref=f4e1091]: 
+                    - text: 反馈：请通过砺儒小课堂中“我的”-“意见反馈”进行意见反馈。
+                    - link " 立即反馈" [ref=f4e1092] [cursor=pointer]:
+                      - /url: /local/miniprogram/suggestion.php
+                      - generic [ref=f4e1093]: 
+                      - text: 立即反馈
+          - complementary [ref=f4e1096]:
+            - heading "版块" [level=2] [ref=f4e1097]
+            - region "Text" [ref=f4e1098]:
+              - generic [ref=f4e1103]:
+                - generic [ref=f4e1104]:
+                  - paragraph [ref=f4e1105]:
+                    - link [ref=f4e1106] [cursor=pointer]:
+                      - /url: https://higher.smartedu.cn/home
+                  - paragraph [ref=f4e1107]:
+                    - link "国家智慧教育平台" [ref=f4e1108] [cursor=pointer]:
+                      - /url: https://higher.smartedu.cn/home
+                - generic [ref=f4e1109]:
+                  - paragraph [ref=f4e1110]
+                  - paragraph [ref=f4e1111]: 华师E通-修改SSO密码
+                - generic [ref=f4e1112]:
+                  - paragraph [ref=f4e1113]
+                  - paragraph [ref=f4e1114]: 砺儒小程序
+                - generic [ref=f4e1115]:
+                  - paragraph [ref=f4e1116]
+                  - paragraph [ref=f4e1117]: 砺儒云课堂服务支持群 （QQ）
+        - paragraph [ref=f4e1122]: Copyright © 2024 South China Normal University.All Rights Reserved | 粤ICP备05008875号

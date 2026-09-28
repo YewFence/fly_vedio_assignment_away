@@ -92,6 +92,7 @@ async def main():
         browser_manager = BrowserManager(
             browser_type=config.BROWSER,
             headless=config.HEADLESS,
+            executable_path=config.BROWSER_EXECUTABLE_PATH,
             cdp_endpoint=config.CDP_ENDPOINT,
         )
         await browser_manager.setup()

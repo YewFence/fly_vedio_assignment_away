@@ -35,6 +35,7 @@ Thumbs.db
 # LLM
 .claude/
 .playwright-mcp/
+.playwright-cli/
 
 # Logs
 log/

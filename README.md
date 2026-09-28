@@ -179,10 +179,20 @@ A: 不会。向导只更新 `BROWSER`、`HEADLESS`、`VIDEO_LIST_URL` 三项，�
 A: 配置向导在所有平台上都可用。如需手动修改，可以把 `.env` 中的 `BROWSER` 改为 `msedge` 或 `chrome`，并确保系统中已安装相应浏览器。
 
 **Q: 浏览器是 Flatpak 等非标准方式安装的，程序找不到怎么办？**
-A: 可以自己启动浏览器并开启远程调试端口，再让程序通过 CDP 连接它。这是高级配置，配置向导不会询问，需要手动写进 `.env` 或设置同名环境变量：
+A: 可以通过 `.env` 或同名环境变量手动指定浏览器，这些是高级配置，配置向导不会询问。
+
+推荐做法是用 `BROWSER_EXECUTABLE_PATH` 指定浏览器的可执行文件，程序会照常自行启动和关闭浏览器，`HEADLESS` 和静音也照常生效。Flatpak 会为每个应用导出一个启动脚本，可以直接填这个路径（用户级安装在 `~/.local/share/flatpak/exports/bin/` 下）：
+
+```env
+BROWSER_EXECUTABLE_PATH=/var/lib/flatpak/exports/bin/com.microsoft.Edge
+```
+
+设置后 `BROWSER` 会被忽略。即使您已经开着同一个浏览器，程序也会使用独立的临时配置启动一个新实例，不会影响已打开的窗口。
+
+备选做法是自己启动浏览器并开启远程调试端口，再用 `CDP_ENDPOINT` 让程序连接它：
 
 ```bash
-# 1. 启动浏览器（以 Flatpak 版 Edge 为例，建议使用独立的配置目录，避免影响日常使用）
+# 1. 启动浏览器（以 Flatpak 版 Edge 为例，必须使用独立的配置目录，否则调试端口会被已打开的实例忽略）
 flatpak run com.microsoft.Edge \
   --remote-debugging-address=127.0.0.1 \
   --remote-debugging-port=9222 \
@@ -193,7 +203,7 @@ flatpak run com.microsoft.Edge \
 CDP_ENDPOINT=http://127.0.0.1:9222
 ```
 
-设置 `CDP_ENDPOINT` 后，`BROWSER` 和 `HEADLESS` 会被忽略，静音等启动参数也需要像上面一样自己加。程序退出时只会断开连接，不会关闭您的浏览器。请注意：调试端口开启期间，本机任何进程都可以完全控制该浏览器，用完请及时关闭。
+`CDP_ENDPOINT` 优先级最高，设置后 `BROWSER`、`HEADLESS` 和 `BROWSER_EXECUTABLE_PATH` 都会被忽略，静音等启动参数也需要像上面一样自己加。程序退出时只会断开连接，不会关闭您的浏览器。请注意：调试端口开启期间，本机任何进程都可以完全控制该浏览器，用完请及时关闭。
 
 **Q: 登录状态失效怎么办？**
 A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号密码登录。

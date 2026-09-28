@@ -1,0 +1,15 @@
+[  -67087ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0
+[  -65044ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0
+[  -64591ms] [INFO] This page uses the built-in LanguageDetector feature. To learn more and leave feedback, see https://learn.microsoft.com/microsoft-edge/web-platform/languagedetector-api @ chrome-extension://amkbmndfnliijdhojkpoglbnaaahippg/content_main.js:5271
+[  -63669ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[  -62500ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0
+[   -4943ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[   -2822ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[  -69904ms] [LOG] Today you opened github.com 57 time(s), spending 46m 26s browsing it. @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[  -69904ms] [LOG] You can disable these notifications in [Time Tracker] settings! @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[      54ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0
+[   24238ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[   24239ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0
+[   25561ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[   25564ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://api.github.com/_private/browser/stats:0
+[   30592ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://collector.github.com/github/collect:0

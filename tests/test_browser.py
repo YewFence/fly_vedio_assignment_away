@@ -45,5 +45,33 @@ def test_setup_launches_channel_without_endpoint(
     asyncio.run(manager.setup())
 
     fake_chromium.connect_over_cdp.assert_not_awaited()
-    assert fake_chromium.launch.await_args.kwargs["channel"] == "chrome"
-    assert fake_chromium.launch.await_args.kwargs["headless"] is True
+    kwargs = fake_chromium.launch.await_args.kwargs
+    assert kwargs["channel"] == "chrome"
+    assert kwargs["executable_path"] is None
+    assert kwargs["headless"] is True
+
+
+def test_setup_launches_executable_path_instead_of_channel(
+    fake_chromium: SimpleNamespace,
+) -> None:
+    edge = "/var/lib/flatpak/exports/bin/com.microsoft.Edge"
+    manager = BrowserManager(browser_type="chrome", executable_path=edge)
+
+    asyncio.run(manager.setup())
+
+    kwargs = fake_chromium.launch.await_args.kwargs
+    assert kwargs["executable_path"] == edge
+    assert kwargs["channel"] is None
+
+
+def test_cdp_endpoint_takes_precedence_over_executable_path(
+    fake_chromium: SimpleNamespace,
+) -> None:
+    manager = BrowserManager(
+        executable_path="/usr/bin/edge", cdp_endpoint="http://127.0.0.1:9222"
+    )
+
+    asyncio.run(manager.setup())
+
+    fake_chromium.connect_over_cdp.assert_awaited_once()
+    fake_chromium.launch.assert_not_awaited()

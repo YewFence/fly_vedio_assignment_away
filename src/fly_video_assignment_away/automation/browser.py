@@ -23,16 +23,19 @@ class BrowserManager:
         self,
         browser_type: str = "msedge",
         headless: bool = False,
+        executable_path: str | None = None,
         cdp_endpoint: str | None = None,
     ):
         """
         初始化浏览器管理器
         :param browser_type: 浏览器类型 (chrome, msedge)
         :param headless: 是否使用无头模式
+        :param executable_path: 浏览器可执行文件路径，设置后代替 browser_type 启动该浏览器
         :param cdp_endpoint: 已运行浏览器的 CDP 地址，设置后改为连接该浏览器而不是自行启动
         """
         self.browser_type = browser_type
         self.headless = headless
+        self.executable_path = executable_path
         self.cdp_endpoint = cdp_endpoint
         self.playwright: Playwright | None = None
         self.browser: Browser | None = None
@@ -48,7 +51,8 @@ class BrowserManager:
             )
         else:
             self.browser = await self.playwright.chromium.launch(
-                channel=self.browser_type,
+                channel=None if self.executable_path else self.browser_type,
+                executable_path=self.executable_path,
                 headless=self.headless,
                 args=[
                     "--disable-blink-features=AutomationControlled",  # 防止网站检测自动化

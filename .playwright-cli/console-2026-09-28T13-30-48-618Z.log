@@ -1,0 +1,32 @@
+[     647ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'join-ad-interest-group'. @ :0
+[     647ms] [WARNING] Error with Permissions-Policy header: Unrecognized feature: 'run-ad-auction'. @ :0
+[    1123ms] [LOG] Today you opened moodle.scnu.edu.cn 13 time(s), spending 3m 6s browsing it. @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[    1123ms] [LOG] You can disable these notifications in [Time Tracker] settings! @ chrome-extension://fepjgblalcnepokjblgbgmapmlkgfahc/content_scripts.js:44
+[    1237ms] [ERROR] Failed to load resource: net::ERR_BLOCKED_BY_CLIENT @ https://piwik.scnu.edu.cn/piwik.js:0
+[    1757ms] [LOG] Debug module "M.reactive" loaded. @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    1758ms] [LOG] Registering new reactive instance "M.reactive.ProcessMonitor" @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    1760ms] [LOG] Registering new reactive instance "M.reactive.CourseEditor19853" @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:975
+[    1794ms] [LOG] Page is missing a drawer region @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:9636
+[    1794ms] [LOG] Page is missing a drawer toggle link @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:9636
+[    1800ms] [LOG] Starting Moodle session timeout warning. @ https://moodle.scnu.edu.cn/lib/requirejs.php/1789802956/core/first.js:656
+[    2244ms] TypeError: Cannot read properties of undefined (reading 'Aesdecrypt')
+    at Array.<anonymous> (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:5:2784)
+    at T (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:5:3658)
+    at t.f (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:5:3171)
+    at r (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:10:6334)
+    at Generator.<anonymous> (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:10:7476)
+    at Generator.next (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:10:6514)
+    at i (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:10:12642)
+    at s (https://moodle.scnu.edu.cn/mod/fsresource/javascript/tcplayer/tcplayer/tcplayer.v5.1.0.min.js:10:12825)
+[    3451ms] [INFO] This page uses the built-in LanguageDetector feature. To learn more and leave feedback, see https://learn.microsoft.com/microsoft-edge/web-platform/languagedetector-api @ chrome-extension://amkbmndfnliijdhojkpoglbnaaahippg/content_main.js:5271
+[    8548ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    at XMLHttpRequest.<anonymous> (chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:7:2902) @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
+[    9947ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer'). @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
+[   10456ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    at XMLHttpRequest.<anonymous> (chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:7:2902) @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
+[   89626ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    at XMLHttpRequest.<anonymous> (chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:7:2902) @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
+[  100618ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    at XMLHttpRequest.<anonymous> (chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:7:2902) @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
+[  110153ms] [ERROR] Error processing XMLHttpRequest response: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').
+    at XMLHttpRequest.<anonymous> (chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:7:2902) @ chrome-extension://odphnbhiddhdpoccbialllejaajemdio/scripts/inspector.js:6
