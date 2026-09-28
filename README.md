@@ -38,13 +38,11 @@
 
 ### 第一步：下载程序
 
-前往 [Releases](https://github.com/YewFence/fly_video_assignment_away/releases) 页面，根据系统和芯片下载对应文件：
-- **Windows**: `fly_video_assignment_away-windows-x86_64.exe`
+前往 [Releases](https://github.com/YewFence/fly_video_assignment_away/releases) 页面，根据系统和芯片下载对应压缩包并解压，进入文件夹：
+- **Windows**: `fly_video_assignment_away-windows-x86_64.zip`
 - **macOS (Apple 芯片，即 M 系列)**: `fly_video_assignment_away-macos-arm64.tar.gz`
 - **macOS (Intel 芯片)**: `fly_video_assignment_away-macos-x86_64.tar.gz`
 - **Linux**: `fly_video_assignment_away-linux-x86_64.tar.gz`
-
-`.tar.gz` 是为了保留可执行权限（浏览器直接下载裸二进制会丢失执行位），解压后即得到可直接运行的文件，例如 `tar -xzf fly_video_assignment_away-linux-x86_64.tar.gz`。
 
 > [!IMPORTANT]
 > **Windows**: 可执行文件未签名，首次双击运行可能被 SmartScreen 拦截并提示「Windows 已保护您的电脑」。点击「更多信息」，再选择「仍要运行」即可。

@@ -4,6 +4,7 @@ import platform
 import subprocess
 import sys
 import tarfile
+import zipfile
 from pathlib import Path
 
 
@@ -38,13 +39,19 @@ def main() -> None:
         check=True,
     )
 
-    # 浏览器下载的裸二进制没有执行位，tar.gz 能把它带过去；Windows 双击 exe 最省事
-    if sys.platform != "win32":
+    # 浏览器下载的裸二进制没有执行位，tar.gz 能把执行位带过去；
+    # Windows 打包成 zip，让解压后的可执行文件落在单独文件夹里
+    if sys.platform == "win32":
+        executable = Path("dist") / f"{name}.exe"
+        archive_path = Path("dist") / f"{name}.zip"
+        with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.write(executable, arcname=executable.name)
+    else:
         executable = Path("dist") / name
-        tarball = Path("dist") / f"{name}.tar.gz"
-        with tarfile.open(tarball, "w:gz") as archive:
+        archive_path = Path("dist") / f"{name}.tar.gz"
+        with tarfile.open(archive_path, "w:gz") as archive:
             archive.add(executable, arcname=executable.name)
-        executable.unlink()
+    executable.unlink()
 
 
 if __name__ == "__main__":
