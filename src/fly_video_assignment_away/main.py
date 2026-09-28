@@ -9,11 +9,11 @@ import warnings
 from getpass import getpass
 from pathlib import Path
 
-from . import config
 from .automation import AuthManager, BrowserManager, VideoManager
 from .automation.exception_context import BrowserClosedError
 from .cookie_fix import cookie_fix
 from .logger import get_logger, setup_logging
+from .setup_wizard import ensure_env_configured
 
 # 抑制 asyncio 在 Windows 上关闭时的资源警告
 warnings.filterwarnings("ignore", category=ResourceWarning, message=".*unclosed.*")
@@ -46,10 +46,10 @@ def _custom_excepthook(exc_type, exc_value, exc_traceback):
     logger.critical("未捕获的异常", exc_info=(exc_type, exc_value, exc_traceback))
 
 
+logger = get_logger(__name__)
+
 sys.unraisablehook = _custom_unraisablehook
 sys.excepthook = _custom_excepthook
-
-logger = get_logger(__name__)
 
 
 def print_welcome():
@@ -74,6 +74,9 @@ def print_welcome():
 
 async def main():
     """主函数"""
+    # config 在导入时校验 .env，必须等配置向导写入 .env 之后再导入
+    from . import config
+
     # 初始化日志系统
     setup_logging()
 
@@ -150,6 +153,8 @@ async def main():
                                 logger.warning(
                                     f"本次登录未成功，还可重试 {remaining} 次"
                                 )
+                        if not login_success:
+                            logger.error("账号密码登录失败，已达最大重试次数")
                         break
                     elif choice == "2":
                         # 使用手动导出的 cookies 登录
@@ -199,6 +204,9 @@ async def main():
         # 只打印一次：RichHandler 会负责美化堆栈，避免和 traceback.print_exc() 重复输出。
         logger.exception("\n❌ 发生错误")
         suggestions()
+    finally:
+        if browser_manager is not None:
+            await browser_manager.close()
 
 
 def suggestions():
@@ -212,6 +220,7 @@ def suggestions():
 
 def run() -> None:
     """运行命令行程序。"""
+    ensure_env_configured()
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
