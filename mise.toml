@@ -8,8 +8,6 @@ python = "3.13"
 uv = "0"
 ruff = "0.16"
 ty = "0.0"
-
-hk = "1"
 "github:suzuki-shunsuke/nllint" = "1"
 pinact = "4"
 typos = "1.48.0"
@@ -136,10 +134,6 @@ alias = "f"
 [tasks."lint:fix"]
 description = "Fix auto-correctable Python lint issues"
 run = "ruff check --fix ."
-
-[tasks.'hooks:install']
-description = "Install Git hooks managed by hk"
-run = "hk install"
 
 [tasks."actions:check"]
 description = "Run actionlint"
