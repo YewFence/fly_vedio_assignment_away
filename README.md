@@ -2,6 +2,7 @@
 
 [![Release](https://img.shields.io/github/v/release/YewFence/fly_video_assignment_away?sort=semver)](https://github.com/YewFence/fly_video_assignment_away/releases)
 [![License](https://img.shields.io/github/license/YewFence/fly_video_assignment_away)](LICENSE)
+[![CI](https://github.com/YewFence/fly_video_assignment_away/actions/workflows/ci.yml/badge.svg)](https://github.com/YewFence/fly_video_assignment_away/actions/workflows/ci.yml)
 
 > SCNU 砺儒云 (Moodle) 视频自动观看工具
 
@@ -29,11 +30,11 @@
 - **Microsoft Edge** (推荐，已通过完整测试)
 - **Google Chrome**
 
-> 理论上 Playwright 支持 Firefox / Safari(Webkit) ，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_video_assignment_away/pulls)
+> [!NOTE]
+> 理论上 Playwright 支持 Firefox / Safari(Webkit)，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_video_assignment_away/pulls)
 
-> 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交反馈](#-反馈与建议)。
-> 
-> 本程序已经在 Mac 平台（Chrome 浏览器）上以[从源码运行](#️-从源码运行)的方式测试过，工作正常，非常感谢帮我测试的同学！但我没有 Mac 设备，无法持续测试 macOS 可执行文件，因此暂时无法保证它始终正常工作。
+> [!TIP]
+> 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交反馈](#-反馈与建议)。
 
 ### 第一步：下载程序
 
@@ -45,18 +46,21 @@
 
 `.tar.gz` 是为了保留可执行权限（浏览器直接下载裸二进制会丢失执行位），解压后即得到可直接运行的文件，例如 `tar -xzf fly_video_assignment_away-linux-x86_64.tar.gz`。
 
-> 🐧 **Linux 用户请注意**: 可执行文件在 Ubuntu 22.04 上打包，近几年发布的主流发行版（Ubuntu 22.04+、Debian 12+、Fedora、Arch 等）都可以直接运行；若系统较旧导致无法启动，请改用[从源码运行](#️-从源码运行)。
+> [!IMPORTANT]
+> **Windows**: 可执行文件未签名，首次双击运行可能被 SmartScreen 拦截并提示「Windows 已保护您的电脑」。点击「更多信息」，再选择「仍要运行」即可。
 
-> 🍎 **macOS 用户请注意**: 可执行文件未签名未公证，首次运行时系统可能提示「无法打开」或「已损坏」，在终端中移除隔离属性后即可正常运行：
+> [!IMPORTANT]
+> **macOS**: 可执行文件未签名未公证，首次运行时系统可能提示「无法打开」或「已损坏」，在终端中移除隔离属性后即可正常运行：
 >
 > ```bash
 > xattr -d com.apple.quarantine fly_video_assignment_away-macos-*
 > ```
 >
-> 这个项目不大，如果不想折腾，直接[从源码运行](#️-从源码运行)也是省心的选择。
+> 我没有 Mac 设备，macOS 可执行文件无法持续测试（从源码运行的方式已有同学验证通过），若不想折腾，直接[从源码运行](#️-从源码运行)也是省心的选择。
 
-> ⚠️ **重要提示**: 目前生成的可执行文件发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
-> 
+> [!WARNING]
+> 目前生成的可执行文件发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
+>
 > 若您在运行过程中遇到严重问题，建议：
 > 1. 跟随指引[从源码运行](#️-从源码运行)，源码已经经过端到端测试
 > 2. 欢迎[提交反馈](#-反馈与建议)报告问题，我会~~尽快~~找时间进行修复。
@@ -82,9 +86,6 @@
 如果未开启无头模式，程序会自动打开一个浏览器窗口，最小化即可。整个流程全自动完成，请不要手动操作该窗口，也不要关闭浏览器或结束进程，否则程序会直接终止。
 
 如果已有保存的 Cookie 会自动尝试登录；否则推荐选择「账号密码登录」，在命令行中输入账号密码即可自动完成 SSO 登录，程序随后会自动接管播放流程。
-
-> 请注意：短时间登录错误次数过多账户会被锁定一个小时
-> 手动端到端测试登录代码的弊端出现了😢
 
 ---
 
@@ -179,20 +180,26 @@ graph TD
 ### 1. 账号密码登录 (推荐)
 启动程序后，选择 `账号密码登录` 模式，在命令行中输入账号和密码。程序会自动完成 SSO 登录并获取砺儒云的会话 Cookie，全程无需手动操作浏览器。登录成功后 Cookie 会自动保存，下次启动时会优先尝试复用。
 
+> [!WARNING]
+> 短时间登录错误次数过多会导致账户被锁定一个小时，请确认账号密码无误后再重试。~~别问我怎么知道这事的~~
+
 ### 2. 手动获取 Cookies 登录
 1. 安装 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi) 扩展。
 2. 在浏览器中登录 [SCNU 砺儒云](https://moodle.scnu.edu.cn/)。
 3. 点击插件，选择 "Export" 将 Cookies 导出为 **JSON** 格式。
 4. 运行程序，选择 `使用您手动获取的 Cookies 登录` 模式，将导出的内容粘贴进程序中。
 
-> [详细 Cookie 获取指南](docs/how_to_get_cookie.md)
+更多细节参见 [详细 Cookie 获取指南](docs/how_to_get_cookie.md)。
 
 ---
 
-## ⚠️ 安全与规范
+## 🔒 隐私与安全
 
-- **隐私保护**: 请妥善保管您的 `.env` 和 `cookies.json` 文件，切勿分享给他人或上传至公开平台。
-- **定期更新**: Cookie 具有时效性，若登录失效请重新运行程序使用账号密码登录。
+本工具在您的电脑上纯本地运行，不内置遥测或统计上报，除砺儒云及其登录、视频服务外不连接任何地址。
+
+- **不保存账号密码**: 密码仅在内存中用于本次登录，不会写入任何文件；登录成功后只保存会话 Cookie。
+- **Cookie 即登录态**: 会话 Cookie 以明文保存在本机 `cookies.json` 中，等同登录凭证。请妥善保管 `.env` 和 `cookies.json`，切勿分享给他人或上传至公开平台。
+- **不碰您的浏览器**: 程序以独立临时配置启动新的浏览器实例，不影响您已打开的窗口和日常配置。
 - **合理使用**: 本工具仅用于辅助学习，请确保您的使用行为符合学校相关规定。
 
 ---
@@ -212,31 +219,7 @@ A: 不会。向导只更新 `BROWSER`、`HEADLESS`、`VIDEO_LIST_URL` 三项，�
 A: 配置向导在所有平台上都可用。如需手动修改，可以把 `.env` 中的 `BROWSER` 改为 `msedge` 或 `chrome`，并确保系统中已安装相应浏览器。
 
 **Q: 浏览器是 Flatpak 等非标准方式安装的，程序找不到怎么办？**
-A: 可以通过 `.env` 或同名环境变量手动指定浏览器，这些是高级配置，配置向导不会询问。
-
-推荐做法是用 `BROWSER_EXECUTABLE_PATH` 指定浏览器的可执行文件，程序会照常自行启动和关闭浏览器，`HEADLESS` 和静音也照常生效。Flatpak 会为每个应用导出一个启动脚本，可以直接填这个路径（用户级安装在 `~/.local/share/flatpak/exports/bin/` 下）：
-
-```env
-BROWSER_EXECUTABLE_PATH=/var/lib/flatpak/exports/bin/com.microsoft.Edge
-```
-
-设置后 `BROWSER` 会被忽略。即使您已经开着同一个浏览器，程序也会使用独立的临时配置启动一个新实例，不会影响已打开的窗口。
-
-备选做法是自己启动浏览器并开启远程调试端口，再用 `CDP_ENDPOINT` 让程序连接它：
-
-```bash
-# 1. 启动浏览器（以 Flatpak 版 Edge 为例，必须使用独立的配置目录，否则调试端口会被已打开的实例忽略）
-flatpak run com.microsoft.Edge \
-  --remote-debugging-address=127.0.0.1 \
-  --remote-debugging-port=9222 \
-  --user-data-dir="$HOME/.var/app/com.microsoft.Edge/fly-video-profile" \
-  --mute-audio
-
-# 2. 在 .env 中加入
-CDP_ENDPOINT=http://127.0.0.1:9222
-```
-
-`CDP_ENDPOINT` 优先级最高，设置后 `BROWSER`、`HEADLESS` 和 `BROWSER_EXECUTABLE_PATH` 都会被忽略，静音等启动参数也需要像上面一样自己加。程序退出时只会断开连接，不会关闭您的浏览器。请注意：调试端口开启期间，本机任何进程都可以完全控制该浏览器，用完请及时关闭。
+A: 可以通过 `.env` 或同名环境变量手动指定浏览器：推荐用 `BROWSER_EXECUTABLE_PATH` 直接指向浏览器可执行文件，或用 `CDP_ENDPOINT` 连接自己启动的浏览器。详细配置方法参见[故障排除指南](docs/troubleshooting.md)。
 
 **Q: 登录状态失效怎么办？**
 A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号密码登录。
@@ -258,7 +241,7 @@ mise run check
 
 ---
 
-## 🚀 反馈与建议
+## 💬 反馈与建议
 如果您在使用过程中遇到任何问题或有改进建议，欢迎提交 [Issue](https://github.com/YewFence/fly_video_assignment_away/issues)。
 
 ## 📄 开源协议
