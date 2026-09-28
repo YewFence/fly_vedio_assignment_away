@@ -85,6 +85,28 @@ class VideoManager:
 
         return video_state
 
+    @exception_context("通过学习确认")
+    async def pass_human_challenge(self):
+        """
+        检测并通过平台的"学习确认"弹窗（需按住按钮直到进度条满）
+        弹窗未通过期间平台不累计观看时长，因此必须先于恢复播放处理
+        """
+        challenge_mask = self.page.locator('[id^="anti-bot-"]')
+        if await challenge_mask.count() == 0:
+            return
+
+        logger.info("🔒 检测到学习确认弹窗，正在按住按钮...")
+        await challenge_mask.locator('button[id^="ab-btn-"]').hover()
+        await self.page.mouse.down()
+        try:
+            # 所需按住时长由平台随机生成（约 1.2~2.2 秒），通过后弹窗会被移除
+            await challenge_mask.wait_for(state="detached", timeout=10000)
+            logger.info("✓ 已通过学习确认")
+        except PlaywrightTimeoutError:
+            logger.warning("⚠️ 学习确认未通过，将在下次检测时重试")
+        finally:
+            await self.page.mouse.up()
+
     @exception_context("检查页面状态")
     async def check_page_closed(self):
         """
@@ -301,6 +323,8 @@ class VideoManager:
 
                     # 检查浏览器是否已关闭
                     await self.check_page_closed()
+
+                    await self.pass_human_challenge()
 
                     # 检查视频状态并恢复播放
                     video_state = await self.ensure_video_playing(video_selector)
