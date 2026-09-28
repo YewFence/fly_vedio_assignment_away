@@ -37,9 +37,23 @@
 
 ### 第一步：下载程序
 
-前往 [Releases](https://github.com/YewFence/fly_video_assignment_away/releases) 页面，下载对应系统的可执行文件：
-- **Windows**: `fly_video_assignment_away-windows.exe`
-- **macOS**: `fly_video_assignment_away-macos`
+前往 [Releases](https://github.com/YewFence/fly_video_assignment_away/releases) 页面，根据系统和芯片下载对应文件：
+- **Windows**: `fly_video_assignment_away-windows-x86_64.exe`
+- **macOS (Apple 芯片，即 M 系列)**: `fly_video_assignment_away-macos-arm64.tar.gz`
+- **macOS (Intel 芯片)**: `fly_video_assignment_away-macos-x86_64.tar.gz`
+- **Linux**: `fly_video_assignment_away-linux-x86_64.tar.gz`
+
+`.tar.gz` 是为了保留可执行权限（浏览器直接下载裸二进制会丢失执行位），解压后即得到可直接运行的文件，例如 `tar -xzf fly_video_assignment_away-linux-x86_64.tar.gz`。
+
+> 🐧 **Linux 用户请注意**: 可执行文件在 Ubuntu 22.04 上打包，近几年发布的主流发行版（Ubuntu 22.04+、Debian 12+、Fedora、Arch 等）都可以直接运行；若系统较旧导致无法启动，请改用[从源码运行](#️-从源码运行)。
+
+> 🍎 **macOS 用户请注意**: 可执行文件未签名未公证，首次运行时系统可能提示「无法打开」或「已损坏」，在终端中移除隔离属性后即可正常运行：
+>
+> ```bash
+> xattr -d com.apple.quarantine fly_video_assignment_away-macos-*
+> ```
+>
+> 这个项目不大，如果不想折腾，直接[从源码运行](#️-从源码运行)也是省心的选择。
 
 > ⚠️ **重要提示**: 目前生成的可执行文件发行版（Release）**尚未经过充分测试**，可能存在运行不稳定的情况。
 > 

@@ -201,11 +201,18 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact_name: fly_video_assignment_away-windows.exe
-            artifact_path: dist/fly_video_assignment_away-windows.exe
+            artifact_name: fly_video_assignment_away-windows-x86_64.exe
+            artifact_path: dist/fly_video_assignment_away-windows-x86_64.exe
           - os: macos-latest
-            artifact_name: fly_video_assignment_away-macos
-            artifact_path: dist/fly_video_assignment_away-macos
+            artifact_name: fly_video_assignment_away-macos-arm64.tar.gz
+            artifact_path: dist/fly_video_assignment_away-macos-arm64.tar.gz
+          - os: macos-15-intel
+            artifact_name: fly_video_assignment_away-macos-x86_64.tar.gz
+            artifact_path: dist/fly_video_assignment_away-macos-x86_64.tar.gz
+          # PyInstaller 产物动态链接构建机 glibc，用 22.04 打包以覆盖更老的发行版
+          - os: ubuntu-22.04
+            artifact_name: fly_video_assignment_away-linux-x86_64.tar.gz
+            artifact_path: dist/fly_video_assignment_away-linux-x86_64.tar.gz
     runs-on: ${{ matrix.os }}
     env:
       MISE_TASK_RUN_AUTO_INSTALL: "false"
@@ -223,7 +230,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           add_shims_to_path: true
-          cache_key: "mise-release-package-${{ runner.os }}-{{file_hash}}"
+          cache_key: "mise-release-package-${{ runner.os }}-${{ runner.arch }}-{{file_hash}}"
 
       - name: Package release executable
         run: mise run release:package
