@@ -1,2 +1,9 @@
 [type.svg]
 check-file = false
+
+[type.changelog]
+extend-glob = ["CHANGELOG.md"]
+
+[type.changelog.extend-words]
+# changelog 需要保留历史上的 vedio 拼写记录
+vedio = "vedio"
