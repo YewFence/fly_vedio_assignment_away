@@ -5,6 +5,7 @@
 
 import asyncio
 
+from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from rich.console import Console
@@ -12,13 +13,17 @@ from rich.progress import (
     BarColumn,
     Progress,
     SpinnerColumn,
+    TaskID,
     TaskProgressColumn,
     TextColumn,
-    TimeElapsedColumn,
 )
 
 from ..logger import get_logger
-from .exception_context import BrowserClosedError, exception_context
+from .exception_context import (
+    BrowserClosedError,
+    exception_context,
+    is_browser_closed_error,
+)
 
 logger = get_logger("automation.video")
 console = Console()
@@ -182,17 +187,83 @@ class VideoManager:
             logger.warning("⚠ 未找到视频元素,可能并非视频页")
             return None
 
+    async def _read_platform_text(self, selector: str) -> str | None:
+        """
+        读取平台信息区域中的文本
+        不同视频页的平台信息可能缺失或结构不同，读取失败时返回 None 而不中断播放流程
+        """
+        locator = self.page.locator(selector)
+        try:
+            if await locator.count() == 0:
+                return None
+            return (await locator.first.text_content(timeout=2000) or "").strip()
+        except PlaywrightError as e:
+            if is_browser_closed_error(e):
+                raise BrowserClosedError("用户已关闭浏览器") from None
+            logger.debug(f"读取平台信息 {selector} 失败，忽略", exc_info=True)
+            return None
+
+    async def _read_platform_number(self, selector: str) -> float | None:
+        """读取平台信息中的数值，兼容带 % 后缀的写法，无法解析时返回 None"""
+        text = await self._read_platform_text(selector)
+        if not text:
+            return None
+        try:
+            return float(text.removesuffix("%"))
+        except ValueError:
+            return None
+
     async def check_video_completed(self) -> bool:
         """
         检查页面上的完成标记，判断视频是否已被平台标记为完成
-        :return: 如果视频已完成返回 True，否则返回 False
+        :return: 如果视频已完成返回 True，否则（含标记缺失或读取失败）返回 False
         """
-        tips_locator = self.page.locator(".tips-completion")
-        if await tips_locator.count() > 0:
-            text = await tips_locator.text_content()
-            if text and "已完成" in text.strip():
-                return True
-        return False
+        text = await self._read_platform_text(".tips-completion")
+        return text is not None and "已完成" in text
+
+    async def get_platform_watched_seconds(self) -> float | None:
+        """
+        读取平台记录的观看时长（秒）
+        平台分批上报观看时长，该值会阶梯式增长，与视频播放位置不同步
+        """
+        return await self._read_platform_number(".num-gksc > span")
+
+    async def get_platform_progress_percent(self) -> float | None:
+        """读取平台显示的播放进度百分比，即平台判定是否完成所依据的进度"""
+        return await self._read_platform_number(".num-bfjd > span")
+
+    async def get_platform_required_percent(self) -> float | None:
+        """读取平台要求达到的完成进度百分比（如 90）"""
+        return await self._read_platform_number(".tips > span:not(.tips-completion)")
+
+    async def update_platform_progress(
+        self,
+        progress: Progress,
+        task: TaskID,
+        target_percent: float,
+        target_duration: float,
+    ) -> None:
+        """
+        以平台的完成要求为基线更新完成度进度条：达到要求（如 90%）即为 100%
+        优先使用平台显示的播放进度，读不到时用观看时长估算，都读不到则保持原状（首次读到前保持隐藏）
+        """
+        percent = await self.get_platform_progress_percent()
+        watched = await self.get_platform_watched_seconds()
+        if percent is not None and target_percent > 0:
+            completed = percent / target_percent * 100
+        elif watched is not None and target_duration > 0:
+            completed = watched / target_duration * 100
+        else:
+            return
+        description = "完成度"
+        if watched is not None:
+            description += f" [magenta]{self.format_time(watched)}[/magenta]/[dim]{self.format_time(target_duration)}[/dim]"
+        progress.update(
+            task,
+            completed=min(completed, 100),
+            description=description,
+            visible=True,
+        )
 
     @exception_context("播放视频并等待完成")
     async def play_video(
@@ -241,8 +312,11 @@ class VideoManager:
                 logger.warning("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
                 return
 
-        # 智能计算视频剩余时间
+        # 以平台要求的完成比例（如 90%）对应的观看时长为目标，计算还需等待多久
         duration = None
+        target_percent = 100.0
+        target_duration = 0.0
+        max_wait_time = 0.0
 
         # 获取视频总时长
         video_duration = await self.get_video_duration(video_selector)
@@ -250,65 +324,53 @@ class VideoManager:
         if video_duration is None:
             logger.warning("⚠ 无法获取视频总时长")
         else:
-            # 尝试获取已观看时长
-            watched_locator = self.page.locator(".num-gksc > span")
+            required_percent = await self.get_platform_required_percent()
+            if required_percent is None:
+                logger.warning("⚠ 无法读取平台的完成要求，按完整看完计算")
+            target_percent = required_percent or 100.0
+            target_duration = video_duration * target_percent / 100
 
-            if await watched_locator.count() > 0:
-                watched_text = await watched_locator.text_content()
-
-                if watched_text:
-                    # 尝试解析已观看时长（去除空格和可能的单位）
-                    watched_text = watched_text.strip()
-                    try:
-                        watched_duration = float(watched_text)
-
-                        # 计算剩余时间
-                        remaining = video_duration - watched_duration
-
-                        if remaining < 0:
-                            logger.warning(
-                                f"⚠ 已观看时长({self.format_time(watched_duration)}) 大于总时长({self.format_time(video_duration)})，视频可能已完成"
-                            )
-                            duration = 0  # 视频已完成，无需等待
-                        elif remaining == 0:
-                            logger.info("✓ 视频已观看完毕")
-                            duration = 0
-                        else:
-                            duration = remaining
-                            logger.info(
-                                f"✓ 总时长: {self.format_time(video_duration)}, 已观看: {self.format_time(watched_duration)}, 剩余: {self.format_time(duration)}"
-                            )
-                    except ValueError:
-                        # 数据解析失败是预期行为，使用降级方案
-                        logger.warning(
-                            f"⚠ 无法解析已观看时长: '{watched_text}', 使用视频总时长"
-                        )
-                        duration = video_duration
-                else:
-                    logger.warning("⚠ 已观看时长元素为空，使用视频总时长")
-                    duration = video_duration
+            info = [f"总时长: {self.format_time(video_duration)}"]
+            watched_duration = await self.get_platform_watched_seconds()
+            if watched_duration is None:
+                logger.warning("⚠ 无法读取平台记录的观看时长，按需观看时长等待")
             else:
-                logger.warning("⚠ 未找到已观看时长元素，使用视频总时长")
-                duration = video_duration
+                info.append(f"已观看: {self.format_time(watched_duration)}")
+            watched = watched_duration or 0.0
+            duration = max(target_duration - watched, 0.0)
+            info.append(f"剩余: {self.format_time(duration)}")
+            target_text = self.format_time(target_duration)
+            if required_percent is not None:
+                target_text += f" ({required_percent:g}%)"
+            info.append(f"需观看: {target_text}")
+            logger.info(f"✓ {', '.join(info)}")
+
+            # 等待上限按视频完整剩余时长计算，给平台分批上报、学习确认弹窗期间不计时留出余量；
+            # 正常情况下平台标记完成或视频播放结束时会提前退出
+            max_wait_time = video_duration - watched + 60
 
         # 根据计算结果等待
         if duration is not None and duration > 0:
-            # 等待视频播放完成
-            max_wait_time = duration + 60  # 最大等待时间，防止无限循环
-            logger.info(f"⏳ 等待视频播放完成(预计 {self.format_time(duration)})...")
+            logger.info("⏳ 等待视频播放完成...")
 
-            # 使用 rich 进度条显示播放进度
+            # 使用 rich 进度条并列显示视频播放进度和平台记录的观看进度
             with Progress(
                 SpinnerColumn(),
                 TextColumn("[progress.description]{task.description}"),
                 BarColumn(bar_width=40),
-                TaskProgressColumn(),
-                TextColumn("•"),
-                TimeElapsedColumn(),
+                # 进度保留一位小数，以免平台进度（如 17.8%）被四舍五入成整数
+                TaskProgressColumn(
+                    text_format="[progress.percentage]{task.percentage:>5.1f}%"
+                ),
                 console=console,
                 transient=True,
             ) as progress:
-                task = progress.add_task("播放中", total=100)
+                video_task = progress.add_task("播放进度", total=100)
+                # 读到平台进度前隐藏，避免显示一条不会动的空进度条
+                platform_task = progress.add_task("完成度", total=100, visible=False)
+                await self.update_platform_progress(
+                    progress, platform_task, target_percent, target_duration
+                )
 
                 elapsed = 0
                 while elapsed < max_wait_time:
@@ -323,11 +385,14 @@ class VideoManager:
                     # 检查视频状态并恢复播放
                     video_state = await self.ensure_video_playing(video_selector)
 
+                    await self.update_platform_progress(
+                        progress, platform_task, target_percent, target_duration
+                    )
+
                     # 检查平台是否已标记视频完成
                     if await self.check_video_completed():
                         progress.update(
-                            task,
-                            completed=100,
+                            platform_task,
                             description="[green]已完成[/green]",
                         )
                         logger.info("✓ 平台已标记视频完成")
@@ -343,7 +408,7 @@ class VideoManager:
                             video_duration > 0 and current_time >= video_duration - 1
                         ):
                             progress.update(
-                                task,
+                                video_task,
                                 completed=100,
                                 description="[green]播放完毕[/green]",
                             )
@@ -353,14 +418,14 @@ class VideoManager:
                         if video_duration > 0:
                             percent = current_time / video_duration * 100
                             progress.update(
-                                task,
+                                video_task,
                                 completed=percent,
-                                description=f"[cyan]{self.format_time(current_time)}[/cyan]/[dim]{self.format_time(video_duration)}[/dim]",
+                                description=f"播放进度 [cyan]{self.format_time(current_time)}[/cyan]/[dim]{self.format_time(video_duration)}[/dim]",
                             )
                     else:
                         # 无法获取视频状态时
                         progress.update(
-                            task,
+                            video_task,
                             description=f"[yellow]等待中 {self.format_time(elapsed)}[/yellow]",
                         )
 
