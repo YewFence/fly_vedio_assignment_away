@@ -1,3 +1,12 @@
+## What's Changed in 2.4.0
+* 让日志和进度条共用同一个 Console，避免输出错乱 by @YewFence
+* 每次启动都运行配置向导，旧配置作为默认值回车沿用 by @YewFence
+* 迁移 GitHub Alerts 并补充隐私与安全说明 by @YewFence
+* 按系统与架构分发四平台产物 by @YewFence
+* allow historical "vedio" spelling in CHANGELOG.md by @YewFence
+
+**Full Changelog**: https://github.com/YewFence/fly_video_assignment_away/compare/v2.3.0...v2.4.0
+
 ## What's Changed in 2.3.0
 * 补充完成判断与进度显示说明 by @YewFence
 * 批量观看结束时输出汇总 by @YewFence
