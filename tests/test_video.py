@@ -7,7 +7,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from rich.progress import TaskID
 
 from fly_video_assignment_away.automation.exception_context import BrowserClosedError
-from fly_video_assignment_away.automation.video import VideoManager
+from fly_video_assignment_away.automation.video import VideoManager, VideoResult
 
 URL_PATTERN = "https://moodle.scnu.edu.cn/mod/fsresource/view.php?id="
 COURSE_URL = "https://moodle.scnu.edu.cn/course/view.php?id=19853"
@@ -211,10 +211,14 @@ def make_play_manager(
     return manager
 
 
-def run_play(manager: VideoManager, caplog: pytest.LogCaptureFixture) -> list[str]:
+def run_play(
+    manager: VideoManager, caplog: pytest.LogCaptureFixture
+) -> tuple[VideoResult, list[str]]:
     with caplog.at_level("INFO"):
-        asyncio.run(manager.play_video("https://example.test/video", "video", ".play"))
-    return [r.getMessage() for r in caplog.records]
+        result = asyncio.run(
+            manager.play_video("https://example.test/video", "video", ".play")
+        )
+    return result, [r.getMessage() for r in caplog.records]
 
 
 @pytest.mark.parametrize(
@@ -232,8 +236,9 @@ def test_play_video_remaining_is_display_only(
     completed = AsyncMock(side_effect=[False, True])
     manager = make_play_manager(monkeypatch, completed, watched=watched)
 
-    messages = run_play(manager, caplog)
+    result, messages = run_play(manager, caplog)
 
+    assert result is VideoResult.COMPLETED
     info = next(m for m in messages if "总时长" in m)
     assert f"剩余: {expected_remaining}" in info
     assert "需观看: 34:42 (90%)" in info
@@ -250,8 +255,9 @@ def test_play_video_timeout_is_not_reported_as_completed(
         monkeypatch, AsyncMock(return_value=False), duration=4.0
     )
 
-    messages = run_play(manager, caplog)
+    result, messages = run_play(manager, caplog)
 
+    assert result is VideoResult.UNCONFIRMED
     assert any("仍未确认完成" in m for m in messages)
     assert "✓ 平台已标记视频完成" not in messages
     assert "✓ 视频已播放到结尾" not in messages
@@ -266,14 +272,26 @@ ENDED_STATE = {
 
 
 @pytest.mark.parametrize(
-    ("completed", "expected_message"),
+    ("completed", "expected_message", "expected_result"),
     [
         # 读不到完成标记：退回到视频播放完毕
-        (AsyncMock(return_value=None), "以播放完毕为准"),
+        (
+            AsyncMock(return_value=None),
+            "以播放完毕为准",
+            VideoResult.PLAYED_TO_END,
+        ),
         # 进入页面、轮询、播完时都未完成，宽限期内平台更新为已完成
-        (AsyncMock(side_effect=[False, False, False, True]), "平台已标记完成"),
+        (
+            AsyncMock(side_effect=[False, False, False, True]),
+            "平台已标记完成",
+            VideoResult.COMPLETED,
+        ),
         # 宽限期后平台仍显示未完成：不能算作完成
-        (AsyncMock(return_value=False), "平台仍显示未完成"),
+        (
+            AsyncMock(return_value=False),
+            "平台仍显示未完成",
+            VideoResult.UNCONFIRMED,
+        ),
     ],
 )
 def test_play_video_reaching_the_end_waits_for_platform(
@@ -281,11 +299,13 @@ def test_play_video_reaching_the_end_waits_for_platform(
     caplog: pytest.LogCaptureFixture,
     completed: AsyncMock,
     expected_message: str,
+    expected_result: VideoResult,
 ) -> None:
     manager = make_play_manager(monkeypatch, completed, video_state=ENDED_STATE)
 
-    messages = run_play(manager, caplog)
+    result, messages = run_play(manager, caplog)
 
+    assert result is expected_result
     assert any(expected_message in m for m in messages)
     assert not any("仍未确认完成" in m for m in messages)
 
@@ -297,7 +317,84 @@ def test_play_video_without_duration_does_not_claim_completion(
         monkeypatch, AsyncMock(return_value=False), duration=None
     )
 
-    messages = run_play(manager, caplog)
+    result, messages = run_play(manager, caplog)
 
+    assert result is VideoResult.UNCONFIRMED
     assert any("无法确认该链接是否完成" in m for m in messages)
     assert not any(m.startswith("✓") and "完成" in m for m in messages)
+
+
+def test_play_video_already_completed_on_entry(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    manager = make_play_manager(monkeypatch, AsyncMock(return_value=True))
+
+    result, _messages = run_play(manager, caplog)
+
+    assert result is VideoResult.COMPLETED
+
+
+def test_play_video_without_play_button_is_unconfirmed(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    manager = make_play_manager(monkeypatch, AsyncMock(return_value=False))
+    manager.page.click = AsyncMock(side_effect=PlaywrightTimeoutError("Timeout"))
+
+    result, _messages = run_play(manager, caplog)
+
+    assert result is VideoResult.UNCONFIRMED
+
+
+LINKS = [f"{URL_PATTERN}{i}" for i in (1, 2, 3, 4)]
+
+
+def run_watch(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    play_results: list,
+) -> list[str]:
+    monkeypatch.setattr(asyncio, "sleep", AsyncMock())
+    page = MagicMock()
+    page.is_closed = MagicMock(return_value=False)
+    manager = VideoManager(page, MagicMock())
+    monkeypatch.setattr(manager, "play_video", AsyncMock(side_effect=play_results))
+    with caplog.at_level("INFO"):
+        asyncio.run(manager.watch_videos(LINKS))
+    return [r.getMessage() for r in caplog.records]
+
+
+def test_watch_videos_summarizes_results(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    messages = run_watch(
+        monkeypatch,
+        caplog,
+        [
+            VideoResult.COMPLETED,
+            VideoResult.COMPLETED,
+            VideoResult.PLAYED_TO_END,
+            VideoResult.UNCONFIRMED,
+        ],
+    )
+
+    assert "📋 观看汇总（共 4 个链接）" in messages
+    assert "  ✓ 平台已确认完成: 2" in messages
+    assert "  ✓ 已播放到结尾（读不到平台完成标记）: 1" in messages
+    assert any(m.startswith("  ⚠ 未确认完成: 1") for m in messages)
+    assert f"    - {LINKS[3]}" in messages
+    assert not any("未处理" in m for m in messages)
+
+
+def test_watch_videos_summarizes_when_interrupted(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    # 模拟在第二个视频播放期间按下 Ctrl+C（asyncio.run 会取消正在执行的协程）
+    with pytest.raises(asyncio.CancelledError):
+        run_watch(
+            monkeypatch, caplog, [VideoResult.COMPLETED, asyncio.CancelledError()]
+        )
+
+    messages = [r.getMessage() for r in caplog.records]
+    assert "⚠ 观看提前结束，已处理 1/4 个链接" in messages
+    assert "  ✓ 平台已确认完成: 1" in messages
+    assert any(m.startswith("  ⚠ 未处理: 3") for m in messages)

@@ -4,6 +4,7 @@
 """
 
 import asyncio
+from enum import Enum
 
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import Page
@@ -30,6 +31,14 @@ console = Console()
 
 # 视频播放到结尾时平台可能还没上报最后一批观看时长，留出时间等完成标记更新
 PLATFORM_CONFIRM_GRACE_SECONDS = 30
+
+
+class VideoResult(Enum):
+    """单个链接的观看结果，只按平台完成标记或视频是否播放到结尾划分，不参考估算的进度"""
+
+    COMPLETED = "completed"  # 平台完成标记显示已完成
+    PLAYED_TO_END = "played_to_end"  # 读不到平台完成标记，以视频播放到结尾为准
+    UNCONFIRMED = "unconfirmed"  # 无法确认完成，需要手动检查
 
 
 class VideoManager:
@@ -302,13 +311,14 @@ class VideoManager:
         video_selector: str = "video",
         play_button_selector: str | None = None,
         default_wait_time: int = 60,
-    ):
+    ) -> VideoResult:
         """
         播放视频并等待播放完成
         :param video_url: 视频页面URL
         :param video_selector: 视频元素的CSS选择器
         :param play_button_selector: 播放按钮的CSS选择器(如果需要手动点击播放)
         :param default_wait_time: 如果无法获取视频时长,使用的默认等待时间(秒)
+        :return: 该链接的观看结果
         """
         logger.info(f"\n{'=' * 60}")
         logger.info(f"正在访问视频页面: {video_url}")
@@ -331,7 +341,7 @@ class VideoManager:
         # 检查视频是否已完成
         if await self.check_video_completed():
             logger.info("✓ 该视频已标记为完成,跳过观看")
-            return
+            return VideoResult.COMPLETED
 
         # 如果需要点击播放按钮
         if play_button_selector:
@@ -340,7 +350,7 @@ class VideoManager:
                 logger.info("✓ 已点击播放按钮")
             except PlaywrightTimeoutError:
                 logger.warning("⚠ 未找到播放按钮,可能并非视频页，即将自动跳转下一链接")
-                return
+                return VideoResult.UNCONFIRMED
 
         # 获取视频总时长
         video_duration = await self.get_video_duration(video_selector)
@@ -416,7 +426,7 @@ class VideoManager:
                             description="[green]已完成[/green]",
                         )
                         logger.info("✓ 平台已标记视频完成")
-                        break
+                        return VideoResult.COMPLETED
 
                     if video_state:
                         current_time = video_state.get("currentTime", 0)
@@ -432,8 +442,14 @@ class VideoManager:
                                 completed=100,
                                 description="[green]播放完毕[/green]",
                             )
-                            await self.confirm_completion_after_playback()
-                            break
+                            status = await self.confirm_completion_after_playback()
+                            if status is None:
+                                return VideoResult.PLAYED_TO_END
+                            return (
+                                VideoResult.COMPLETED
+                                if status
+                                else VideoResult.UNCONFIRMED
+                            )
 
                         # 更新进度条
                         if video_duration > 0:
@@ -457,17 +473,18 @@ class VideoManager:
                     if not await self.auth_manager.check_cookie_validity():
                         logger.error("⚠ Cookie已失效，停止观看视频")
                         raise RuntimeError("Cookie已失效，请重新获取Cookie")
-                else:
-                    # 超时只是兜底退出，不代表完成
-                    logger.warning(
-                        f"⚠ 已等待 {self.format_time(elapsed)} 仍未确认完成（平台未标记完成，视频也未播放到结尾），跳到下一个链接"
-                    )
+                # 超时只是兜底退出，不代表完成
+                logger.warning(
+                    f"⚠ 已等待 {self.format_time(elapsed)} 仍未确认完成（平台未标记完成，视频也未播放到结尾），跳到下一个链接"
+                )
+                return VideoResult.UNCONFIRMED
         else:
             # 读不到视频时长就无法判断播放结束，只能按默认时间等待，结束后无法确认是否完成
             logger.warning("⚠ 无法获取视频时长，使用默认等待时间...")
             logger.info(f"⏳ 等待 {self.format_time(default_wait_time)}...")
             await asyncio.sleep(default_wait_time)
             logger.warning("⚠ 已等待默认时间，无法确认该链接是否完成")
+            return VideoResult.UNCONFIRMED
 
     @exception_context("批量观看视频")
     async def watch_videos(
@@ -486,18 +503,54 @@ class VideoManager:
         """
         logger.info(f"\n开始观看 {len(video_links)} 个视频")
 
-        for i, link in enumerate(video_links, 1):
-            # 检查浏览器是否已关闭
-            await self.check_page_closed()
+        results: dict[str, VideoResult] = {}
+        finished = False
+        try:
+            for i, link in enumerate(video_links, 1):
+                # 检查浏览器是否已关闭
+                await self.check_page_closed()
 
-            logger.info(f"\n[{i}/{len(video_links)}] 当前视频:")
-            await self.play_video(
-                link, video_selector, play_button_selector, default_wait_time
-            )
+                logger.info(f"\n[{i}/{len(video_links)}] 当前视频:")
+                results[link] = await self.play_video(
+                    link, video_selector, play_button_selector, default_wait_time
+                )
 
-            # 视频之间暂停2秒
-            if i < len(video_links):
-                await asyncio.sleep(2)
+                # 视频之间暂停2秒
+                if i < len(video_links):
+                    await asyncio.sleep(2)
+            finished = True
+        finally:
+            # 正常结束、Ctrl+C、关闭浏览器或出错时都输出汇总，方便确认还有哪些链接需要处理
+            self.log_summary(video_links, results, finished)
+
+    @staticmethod
+    def log_summary(
+        video_links: list[str], results: dict[str, VideoResult], finished: bool
+    ) -> None:
+        """输出观看汇总：按平台确认情况分类，列出需要手动确认的链接"""
+
+        def links_with(result: VideoResult) -> list[str]:
+            return [link for link, r in results.items() if r is result]
+
+        played = links_with(VideoResult.PLAYED_TO_END)
+        unconfirmed = links_with(VideoResult.UNCONFIRMED)
+        unprocessed = [link for link in video_links if link not in results]
 
         logger.info(f"\n{'=' * 60}")
-        logger.info(f"✓ 所有视频观看完成! 共完成 {len(video_links)} 个视频")
+        if finished:
+            logger.info(f"📋 观看汇总（共 {len(video_links)} 个链接）")
+        else:
+            logger.warning(
+                f"⚠ 观看提前结束，已处理 {len(results)}/{len(video_links)} 个链接"
+            )
+        logger.info(f"  ✓ 平台已确认完成: {len(links_with(VideoResult.COMPLETED))}")
+        if played:
+            logger.info(f"  ✓ 已播放到结尾（读不到平台完成标记）: {len(played)}")
+        if unconfirmed:
+            logger.warning(f"  ⚠ 未确认完成: {len(unconfirmed)}，请到砺儒云手动确认:")
+            for link in unconfirmed:
+                logger.warning(f"    - {link}")
+        if unprocessed:
+            logger.warning(
+                f"  ⚠ 未处理: {len(unprocessed)}，重新运行程序即可继续（已完成的视频会自动跳过）"
+            )
