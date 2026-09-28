@@ -90,7 +90,9 @@ async def main():
     try:
         # 1. 启动浏览器
         browser_manager = BrowserManager(
-            browser_type=config.BROWSER, headless=config.HEADLESS
+            browser_type=config.BROWSER,
+            headless=config.HEADLESS,
+            cdp_endpoint=config.CDP_ENDPOINT,
         )
         await browser_manager.setup()
         # 2. 初始化认证和视频管理器

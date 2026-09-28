@@ -178,6 +178,23 @@ A: 不会。向导只更新 `BROWSER`、`HEADLESS`、`VIDEO_LIST_URL` 三项，�
 **Q: macOS 或 Linux 用户如何配置？**
 A: 配置向导在所有平台上都可用。如需手动修改，可以把 `.env` 中的 `BROWSER` 改为 `msedge` 或 `chrome`，并确保系统中已安装相应浏览器。
 
+**Q: 浏览器是 Flatpak 等非标准方式安装的，程序找不到怎么办？**
+A: 可以自己启动浏览器并开启远程调试端口，再让程序通过 CDP 连接它。这是高级配置，配置向导不会询问，需要手动写进 `.env` 或设置同名环境变量：
+
+```bash
+# 1. 启动浏览器（以 Flatpak 版 Edge 为例，建议使用独立的配置目录，避免影响日常使用）
+flatpak run com.microsoft.Edge \
+  --remote-debugging-address=127.0.0.1 \
+  --remote-debugging-port=9222 \
+  --user-data-dir="$HOME/.var/app/com.microsoft.Edge/fly-video-profile" \
+  --mute-audio
+
+# 2. 在 .env 中加入
+CDP_ENDPOINT=http://127.0.0.1:9222
+```
+
+设置 `CDP_ENDPOINT` 后，`BROWSER` 和 `HEADLESS` 会被忽略，静音等启动参数也需要像上面一样自己加。程序退出时只会断开连接，不会关闭您的浏览器。请注意：调试端口开启期间，本机任何进程都可以完全控制该浏览器，用完请及时关闭。
+
 **Q: 登录状态失效怎么办？**
 A: 如果 Cookie 过期，最简单的方法是重新运行程序并选择账号密码登录。
 
