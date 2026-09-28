@@ -155,13 +155,11 @@ class VideoManager:
 
         logger.info(f"✓ 找到 {len(links)} 个匹配的视频链接")
 
-        # 打印前5个链接作为示例
+        # 列出所有视频链接
         if links:
-            logger.info("\n示例链接:")
-            for i, link in enumerate(links[:5], 1):
+            logger.info("\n视频链接:")
+            for i, link in enumerate(links, 1):
                 logger.info(f"  {i}. {link}")
-            if len(links) > 5:
-                logger.info(f"  ... 还有 {len(links) - 5} 个链接")
         else:
             logger.warning(f"\n⚠ 未找到匹配模式 '{url_pattern}' 的链接")
             logger.info("💡 提示: 检查 URL_PATTERN 配置是否正确")
