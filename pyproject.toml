@@ -1,5 +1,5 @@
 [project]
-name = "fly-vedio-assignment-away"
+name = "fly-video-assignment-away"
 version = "0.1.0"
 description = "SCNU 砺儒云 (Moodle) 视频自动观看工具"
 readme = "README.md"
@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-fly-video-assignment-away = "fly_vedio_assignment_away.main:run"
+fly-video-assignment-away = "fly_video_assignment_away.main:run"
 
 [dependency-groups]
 dev = [
@@ -24,7 +24,7 @@ requires = ["hatchling>=1,<2"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/fly_vedio_assignment_away"]
+packages = ["src/fly_video_assignment_away"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -57,12 +57,12 @@ def print_welcome():
     welcome_art = """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║              Fly Vedio Assignment Away                       ║
+║              Fly Video Assignment Away                       ║
 ║                                                              ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
-║  欢迎使用 FlyVedioAssignmentAway                              ║
-║  使用说明: github.com/YewFence/fly_vedio_assignment_away      ║
+║  欢迎使用 FlyVideoAssignmentAway                              ║
+║  使用说明: github.com/YewFence/fly_video_assignment_away      ║
 ║  作者: YewFence                                              ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -206,7 +206,7 @@ def suggestions():
     logger.info("  1. 检查 .env 文件中是否正确配置了课程链接")
     logger.info("  2. 确认网络状态良好")
     logger.info(
-        "  3. 如仍有问题，请附上 log/debug.log 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_vedio_assignment_away\n"
+        "  3. 如仍有问题，请附上 log/debug.log 文件提交 issue 至 GitHub 仓库：github.com/YewFence/fly_video_assignment_away\n"
     )
 
 

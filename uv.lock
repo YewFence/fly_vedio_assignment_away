@@ -21,7 +21,7 @@ wheels = [
 ]
 
 [[package]]
-name = "fly-vedio-assignment-away"
+name = "fly-video-assignment-away"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

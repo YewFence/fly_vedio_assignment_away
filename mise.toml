@@ -61,7 +61,7 @@ run = "uv run --locked python scripts/build_executable.py"
 
 [tasks."build:check"]
 description = "Check that the Python package imports"
-run = 'uv run --locked python -c "import fly_vedio_assignment_away"'
+run = 'uv run --locked python -c "import fly_video_assignment_away"'
 
 [tasks."leaks:check"]
 description = "Run betterleaks checks"

@@ -1,7 +1,7 @@
-# FlyVedioAssignmentAway
+# FlyVideoAssignmentAway
 
-[![Release](https://img.shields.io/github/v/release/YewFence/fly_vedio_assignment_away?sort=semver)](https://github.com/YewFence/fly_vedio_assignment_away/releases)
-[![License](https://img.shields.io/github/license/YewFence/fly_vedio_assignment_away)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/YewFence/fly_video_assignment_away?sort=semver)](https://github.com/YewFence/fly_video_assignment_away/releases)
+[![License](https://img.shields.io/github/license/YewFence/fly_video_assignment_away)](LICENSE)
 
 > SCNU 砺儒云 (Moodle) 视频自动观看工具
 
@@ -28,7 +28,7 @@
 - **Microsoft Edge** (推荐，已通过完整测试)
 - **Google Chrome**
 
-> 理论上 Playwright 支持 Firefox / Safari(Webkit) ，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_vedio_assignment_away/pulls)
+> 理论上 Playwright 支持 Firefox / Safari(Webkit) ，但是这俩用的人都不多，我就懒了，但是也欢迎提交 [PR](https://github.com/YewFence/fly_video_assignment_away/pulls)
 
 > 💡 **提示**: 目前主要在 Edge 浏览器上进行开发和测试。若在其他浏览器中遇到异常，欢迎[提交反馈](#-反馈与建议)。
 > 
@@ -36,7 +36,7 @@
 
 ### 第一步：下载程序
 
-前往 [Releases](https://github.com/YewFence/fly_vedio_assignment_away/releases) 页面，下载对应系统的可执行文件：
+前往 [Releases](https://github.com/YewFence/fly_video_assignment_away/releases) 页面，下载对应系统的可执行文件：
 - **Windows**: `fly_video_assignment_away-windows.exe`
 - **macOS**: `fly_video_assignment_away-macos`
 
@@ -87,8 +87,8 @@ VIDEO_LIST_URL=https://moodle.scnu.edu.cn/course/view.php?id=12345
 ### 快速开始 (uv，推荐)
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YewFence/fly_vedio_assignment_away.git
-cd fly_vedio_assignment_away
+git clone https://github.com/YewFence/fly_video_assignment_away.git
+cd fly_video_assignment_away
 
 # 2. 安装依赖
 uv sync
@@ -106,8 +106,8 @@ uv run fly-video-assignment-away
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YewFence/fly_vedio_assignment_away.git
-cd fly_vedio_assignment_away
+git clone https://github.com/YewFence/fly_video_assignment_away.git
+cd fly_video_assignment_away
 
 # 2. 创建并激活虚拟环境
 python -m venv .venv
@@ -201,7 +201,7 @@ mise run check
 ---
 
 ## 🚀 反馈与建议
-如果您在使用过程中遇到任何问题或有改进建议，欢迎提交 [Issue](https://github.com/YewFence/fly_vedio_assignment_away/issues)。
+如果您在使用过程中遇到任何问题或有改进建议，欢迎提交 [Issue](https://github.com/YewFence/fly_video_assignment_away/issues)。
 
 ## 📄 开源协议
 本项目基于 [MIT License](LICENSE) 协议开源。

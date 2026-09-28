@@ -11,7 +11,7 @@ def main() -> None:
         "win32": "windows",
     }.get(sys.platform, sys.platform)
     executable_name = f"fly_video_assignment_away-{platform_suffix}"
-    entrypoint = Path("src/fly_vedio_assignment_away/__main__.py")
+    entrypoint = Path("src/fly_video_assignment_away/__main__.py")
 
     subprocess.run(
         [
