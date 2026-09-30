@@ -1,59 +1,50 @@
-# 如何获取Cookie
+# 如何获取 Cookie
 
-## 方法一：使用浏览器扩展（推荐）⭐
+## 完整流程
 
-### Chrome/Edge
+### 1. 登录砺儒云
 
-1. 安装扩展：
-   - [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi) （推荐）
+从 [https://moodle.scnu.edu.cn/login/index.php](https://moodle.scnu.edu.cn/login/index.php) 登录
 
-2. 在浏览器中**登录你的目标网站**
+### 2. 确认已登录且页面在砺儒云
 
-3. 点击浏览器工具栏中的扩展图标
+能正常打开 [https://moodle.scnu.edu.cn/my/](https://moodle.scnu.edu.cn/my/) 且能看到你的课程列表
 
-4. 选择 "Export" → "JSON"
+### 3. 导出 Cookie
 
-此时 Cookies 就已经保存在你的剪贴板中了
-
-### Firefox
-
-1. 安装 [Cookie Quick Manager](https://addons.mozilla.org/zh-CN/firefox/addon/cookie-quick-manager/)
-
-2. 在浏览器中**登录你的目标网站**
-
-3. 点击扩展图标 → Export → JSON
-
-此时 Cookies 就已经保存在你的剪贴板中了
+使用下面任一方法导出 Cookie。
 
 ---
 
-## 方法二：使用开发者工具
+## 导出方法
 
-### 步骤1：登录网站
+### 方法一：使用浏览器扩展（推荐）
 
-在浏览器中正常登录你的目标网站
+#### Chrome/Edge
 
-### 步骤2：打开开发者工具
+1. 安装 [Cookie-Editor](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi)
+2. 在砺儒云页面点击扩展图标
+3. 选择 "Export" → "JSON"
+4. Cookie 已复制到剪贴板
 
-按 `F12` 打开开发者工具
+#### Firefox
 
-### 步骤3：查看Cookie
+1. 安装 [Cookie Quick Manager](https://addons.mozilla.org/zh-CN/firefox/addon/cookie-quick-manager/)
+2. 在砺儒云页面点击扩展图标
+3. 选择 Export → JSON
+4. Cookie 已复制到剪贴板
 
-- **Chrome/Edge**: `Application` → `Cookies` → 选择你的网站
-- **Firefox**: `Storage` → `Cookies` → 选择你的网站
+---
 
-### 步骤4：导出Cookie
+### 方法二：使用开发者工具
 
-你需要将Cookie转换为JSON格式。
+1. 打开开发者工具：按 `F12`
 
-#### 快速方法（在Console中运行）
+2. 切换到 Console 标签
 
-1. 切换到 `Console` 标签
-
-2. 粘贴并运行以下代码：
+3. 粘贴并运行以下代码：
 
 ```javascript
-// 获取当前网站的所有Cookie
 const cookies = document.cookie.split(';').map(item => {
   const [name, value] = item.split('=').map(s => s.trim());
   return {
@@ -67,53 +58,40 @@ const cookies = document.cookie.split(';').map(item => {
     sameSite: 'Lax'
   };
 });
-
-// 输出JSON格式
 console.log(JSON.stringify(cookies, null, 2));
 ```
 
-3. 复制输出的JSON内容
-
-
-## Cookie文件示例
-
-一个完整的 `cookies.json` 文件看起来像这样：
-
-```json
-[
-  {
-    "name": "SESSID",
-    "value": "abc123def456ghi789",
-    "domain": ".example.com",
-    "path": "/",
-    "expires": 1735689600,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "Lax"
-  },
-  {
-    "name": "user_token",
-    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "domain": "example.com",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": false,
-    "secure": true,
-    "sameSite": "Strict"
-  }
-]
-```
+4. 复制输出的 JSON 内容
 
 ---
 
 ## 常见问题
 
-### Q: Cookie安全吗？
+### Q: Cookie 安全吗？
 
-A: Cookie包含你的登录凭证，请注意：
-- ✅ 不要分享Cookie文件
-- ✅ 不要上传到公开平台
+A: **Cookie 等同于账号密码**，任何人拿到你的 Cookie 都可以以你的身份登录系统。请注意：
+- 不要分享 Cookie 文件
+- 不要上传到公开平台
+- Cookie 有有效期：通常几小时到几天后会自动过期
 
-### Q: 如何判断Cookie已过期？
+### Q: 如何判断 Cookie 已过期？
 
-A: 运行脚本时如果提示"登录失败"，说明Cookie可能已过期，需要重新获取。
+A: 运行程序时如果提示"登录失败"，说明 Cookie 可能已过期，需要重新获取。
+
+### Q: 为什么程序提示"登录失败"？
+
+A: 常见原因：
+1. **Cookie 已过期**：重新获取即可
+2. **导出时机不对**：必须在登录成功并跳回砺儒云后导出，地址栏应显示 `moodle.scnu.edu.cn` 而不是 `https://sso.scnu.edu.cn/`
+
+### Q: 如何验证导出的 Cookie 是否有效？
+
+A: 检查 Cookie JSON 中必须包含：
+```json
+{
+  "name": "MoodleSession",
+  "value": "...",
+  "domain": "moodle.scnu.edu.cn"
+}
+```
+如果没有这个字段，可能是在登录页面或 SSO 页面导出的，需要等登录成功跳回砺儒云后再导出。
