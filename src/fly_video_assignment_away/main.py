@@ -116,66 +116,122 @@ async def main():
                 )
         if not login_success:
             logger.warning("登录凭证已失效或不存在")
-            # 选择登录方式 - 保留 print 用于用户交互
-            print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
-            print("   1. 账号密码登录（推荐）- 在命令行输入账号密码，自动完成登录")
-            print(
-                "   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON"
-            )
 
-            login_success = False
-            while True:
-                try:
+            # 根据 LOGIN_MODE 决定登录方式
+            login_mode = config.LOGIN_MODE
+
+            if login_mode == "credential":
+                # 账号密码登录模式
+                logger.info("🔐 使用账号密码登录模式")
+                username = config.SCNU_USERNAME
+                password = config.SCNU_PASSWORD
+
+                if not username or not password:
+                    # 如果环境变量未设置，需要交互输入
                     loop = asyncio.get_running_loop()
-                    choice = await loop.run_in_executor(
-                        None, input, "请输入选择 (1/2，默认为1): "
+                    username = await loop.run_in_executor(None, input, "请输入账号: ")
+                    password = await loop.run_in_executor(
+                        None, getpass, "请输入密码（输入时不会显示）: "
                     )
-                    choice = choice.strip()
 
-                    if choice in ("", "1"):
-                        # 账号密码登录，最多允许3次尝试
-                        username = await loop.run_in_executor(
-                            None, input, "请输入账号: "
+                # 最多允许3次尝试
+                for attempt in range(1, 4):
+                    login_success = await auth_manager.credential_login(
+                        username.strip(),
+                        password,
+                        config.LOGIN_URL,
+                        config.BASE_URL,
+                        config.SSO_INDEX_URL,
+                        config.COOKIE_FILE,
+                    )
+                    if login_success:
+                        break
+                    remaining = 3 - attempt
+                    if remaining > 0:
+                        logger.warning(f"本次登录未成功，还可重试 {remaining} 次")
+                if not login_success:
+                    logger.error("账号密码登录失败，已达最大重试次数")
+
+            elif login_mode == "manual":
+                # 手动 Cookie JSON 模式
+                logger.info("🔐 使用手动 Cookie JSON 登录模式")
+                cookies_json = config.SCNU_COOKIES_JSON
+
+                if not cookies_json:
+                    # 如果环境变量未设置，需要交互输入
+                    logger.info("请输入 Cookie JSON 字符串")
+
+                # 使用 cookie_fix 处理（它会尝试从环境变量或交互输入读取）
+                if cookie_fix():
+                    logger.info("✓ Cookies 格式化成功")
+                    login_success = await auth_manager.login_with_cookies(
+                        config.BASE_URL, config.COOKIE_FILE
+                    )
+                else:
+                    logger.error(
+                        "⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束"
+                    )
+
+            else:
+                # 默认或未识别模式：交互选择登录方式
+                print("\n🔐 请选择获取登录凭证（Cookies）的方式:")
+                print("   1. 账号密码登录（推荐）- 在命令行输入账号密码，自动完成登录")
+                print(
+                    "   2. 使用您手动获取的 Cookies 登录 - 在命令行中直接粘贴浏览器导出的 Cookies JSON"
+                )
+
+                while True:
+                    try:
+                        loop = asyncio.get_running_loop()
+                        choice = await loop.run_in_executor(
+                            None, input, "请输入选择 (1/2，默认为1): "
                         )
-                        for attempt in range(1, 4):
-                            password = await loop.run_in_executor(
-                                None, getpass, "请输入密码（输入时不会显示）: "
+                        choice = choice.strip()
+
+                        if choice in ("", "1"):
+                            # 账号密码登录，最多允许3次尝试
+                            username = await loop.run_in_executor(
+                                None, input, "请输入账号: "
                             )
-                            login_success = await auth_manager.credential_login(
-                                username.strip(),
-                                password,
-                                config.LOGIN_URL,
-                                config.BASE_URL,
-                                config.SSO_INDEX_URL,
-                                config.COOKIE_FILE,
-                            )
-                            if login_success:
-                                break
-                            remaining = 3 - attempt
-                            if remaining > 0:
-                                logger.warning(
-                                    f"本次登录未成功，还可重试 {remaining} 次"
+                            for attempt in range(1, 4):
+                                password = await loop.run_in_executor(
+                                    None, getpass, "请输入密码（输入时不会显示）: "
                                 )
-                        if not login_success:
-                            logger.error("账号密码登录失败，已达最大重试次数")
-                        break
-                    elif choice == "2":
-                        # 使用手动导出的 cookies 登录
-                        if cookie_fix():
-                            logger.info("✓ Cookies 格式化成功")
-                            login_success = await auth_manager.login_with_cookies(
-                                config.BASE_URL, config.COOKIE_FILE
-                            )
+                                login_success = await auth_manager.credential_login(
+                                    username.strip(),
+                                    password,
+                                    config.LOGIN_URL,
+                                    config.BASE_URL,
+                                    config.SSO_INDEX_URL,
+                                    config.COOKIE_FILE,
+                                )
+                                if login_success:
+                                    break
+                                remaining = 3 - attempt
+                                if remaining > 0:
+                                    logger.warning(
+                                        f"本次登录未成功，还可重试 {remaining} 次"
+                                    )
+                            if not login_success:
+                                logger.error("账号密码登录失败，已达最大重试次数")
+                            break
+                        elif choice == "2":
+                            # 使用手动导出的 cookies 登录
+                            if cookie_fix():
+                                logger.info("✓ Cookies 格式化成功")
+                                login_success = await auth_manager.login_with_cookies(
+                                    config.BASE_URL, config.COOKIE_FILE
+                                )
+                            else:
+                                logger.error(
+                                    "⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束"
+                                )
+                            break
                         else:
-                            logger.error(
-                                "⚠ Cookies 格式化失败，请检查输入的 Cookies 内容是否正确，程序即将结束"
-                            )
-                        break
-                    else:
-                        print("⚠️  输入无效，请输入 1 或 2")
-                except KeyboardInterrupt:
-                    logger.info("\n\n程序已由用户中断。")
-                    return
+                            print("⚠️  输入无效，请输入 1 或 2")
+                    except KeyboardInterrupt:
+                        logger.info("\n\n程序已由用户中断。")
+                        return
 
         if not login_success:
             logger.error("\n❌ 登录失败!")

@@ -1,5 +1,6 @@
 # convert_cookies.py
 import json
+import os
 
 from .automation.exception_context import exception_context
 from .logger import get_logger
@@ -9,10 +10,18 @@ logger = get_logger("cookie_fix")
 
 @exception_context("Cookie转换")
 def cookie_fix():
-    # 从CLI读取浏览器导出的Cookie - 保留 print 用于用户交互
-    print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
-    lines = list(iter(input, ""))
-    content = "\n".join(lines)
+    """转换并保存 Cookie JSON
+
+    优先从环境变量 SCNU_COOKIES_JSON 读取，如果未设置则从 CLI 交互读取
+    """
+    # 优先从环境变量读取
+    content = os.getenv("SCNU_COOKIES_JSON", "").strip()
+
+    if not content:
+        # 从CLI读取浏览器导出的Cookie - 保留 print 用于用户交互
+        print("请粘贴浏览器导出的Cookie JSON (连续敲击两次回车(Enter)结束输入):")
+        lines = list(iter(input, ""))
+        content = "\n".join(lines)
 
     if content == "":
         logger.error("✗ 输入为空，请检查输入内容")

@@ -212,7 +212,21 @@ def _merge_env_content(existing_content: str, config: dict[str, str]) -> str:
 
 
 def ensure_env_configured() -> None:
-    """每次启动都运行配置向导（阻塞式），已有配置作为默认值"""
+    """每次启动都运行配置向导（阻塞式），已有配置作为默认值
+
+    如果设置了 SKIP_SETUP_WIZARD=true，则跳过向导，直接从环境变量读取配置
+    """
+    # 检查是否跳过配置向导
+    skip_wizard = os.getenv("SKIP_SETUP_WIZARD", "false").lower() == "true"
+
+    if skip_wizard:
+        console.print(
+            "[dim]跳过配置向导（SKIP_SETUP_WIZARD=true），直接从环境变量读取配置[/dim]"
+        )
+        # 不运行向导，所有配置从环境变量读取
+        # config.py 中会进行必需配置的校验
+        return
+
     try:
         config = _run_wizard()
         _write_env(config)
