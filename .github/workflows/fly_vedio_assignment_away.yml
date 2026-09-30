@@ -1,0 +1,48 @@
+name: fly_vedio_assignment_away
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'Course URL'
+        required: true
+        type: string
+      cookies_json:
+        description: 'Cookie JSON'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  watch-videos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      
+      - name: Mask secrets
+        env:
+          INPUT_COOKIES: ${{ inputs.cookies_json }}
+          VIDEO_URL: ${{ inputs.video_url }}
+        run: |
+          # Mask 所有敏感值，避免在日志中泄露
+          if [ -n "$INPUT_COOKIES" ]; then
+            printf '::add-mask::%s\n' "$INPUT_COOKIES"
+          fi
+          # Mask 课程 URL（避免泄露个人课程信息）
+          printf '::add-mask::%s\n' "$VIDEO_URL"
+      
+      - name: Run video watcher
+        env:
+          SKIP_SETUP_WIZARD: 'true'
+          VIDEO_LIST_URL: ${{ inputs.video_url }}
+          LOGIN_MODE: 'manual'
+          SCNU_COOKIES_JSON: ${{ inputs.cookies_json || secrets.SCNU_COOKIES_JSON }}
+          BROWSER: 'msedge'
+          HEADLESS: 'true'
+        run: uv run fly-video-assignment-away

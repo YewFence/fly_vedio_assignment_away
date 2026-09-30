@@ -67,48 +67,9 @@ SCNU_COOKIES_JSON='[{"name":"MoodleSession","value":"...","domain":".moodle.scnu
 
 ## CI/CD 集成
 
-### GitHub Actions 示例
-
-```yaml
-name: fly-video-assignment-away
-
-on:
-  workflow_dispatch:      # 手动触发
-
-jobs:
-  watch-videos:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      
-      - name: Install uv
-        run: pip install uv
-      
-      - name: Install dependencies
-        run: uv sync
-      
-      - name: Run video watcher
-        env:
-          SKIP_SETUP_WIZARD: true
-          VIDEO_LIST_URL: ${{ secrets.VIDEO_LIST_URL }}
-          LOGIN_MODE: credential
-          SCNU_USERNAME: ${{ secrets.SCNU_USERNAME }}
-          SCNU_PASSWORD: ${{ secrets.SCNU_PASSWORD }}
-          BROWSER: chrome
-          HEADLESS: true
-        run: uv run fly-video-assignment-away
-```
-
-在 GitHub 仓库的 Settings → Secrets 中添加账户密码，然后手动触发它即可。
+见 [../.github/workflows/fly_vedio_assignment_away.yml](../.github/workflows/fly_vedio_assignment_away.yml)
 
 ## 注意事项
 
 1. **Cookie 有效期**: 使用 `LOGIN_MODE=cookie` 时，需要定期检查 Cookie 是否过期
 2. **密码安全**: 使用 `LOGIN_MODE=credential` 时，确保环境变量不会被记录到日志中
-
